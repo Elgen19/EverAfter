@@ -11,6 +11,9 @@ export const metadata: Metadata = {
     title: "EverAfter | Send a Sealed Envelope",
     description: "Write and share a beautiful digital love letter with custom wax seals and physical-feeling animations.",
     type: "website",
+  },
+  verification: {
+    google: "xiBtB2kEv1o3uoA372KzftN7hx5CkqkSv1VpKWLZhx4",
   }
 };
 
