@@ -76,8 +76,9 @@ export default function FloatingHearts() {
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Create new background hearts occasionally
-      if (Math.random() < 0.03 && hearts.length < 80) {
+      // Create new background hearts occasionally (limit to 25 on mobile to save CPU)
+      const maxHearts = window.innerWidth < 768 ? 25 : 80;
+      if (Math.random() < 0.03 && hearts.length < maxHearts) {
         hearts.push(createHeart(Math.random() * canvas.width, canvas.height + 20));
       }
 

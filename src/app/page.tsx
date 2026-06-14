@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import FloatingHearts from "@/components/FloatingHearts";
+import dynamic from "next/dynamic";
+const FloatingHearts = dynamic(() => import("@/components/FloatingHearts"), { ssr: false });
 import { db } from "@/utils/firebase";
 import { collection, addDoc } from "firebase/firestore";
 
@@ -87,13 +88,12 @@ export default function LandingPage() {
   }, [displayedText, isDeleting, statementIndex, typingSpeed, mounted]);
 
   return (
-    <div style={{ 
+    <div className="landing-page-root" style={{ 
       minHeight: "100vh", 
       display: "flex",
       flexDirection: "column",
       position: "relative", 
       overflow: "hidden",
-      backgroundImage: "linear-gradient(rgba(11, 7, 17, 0.55), rgba(11, 7, 17, 0.55)), url('/desk_bg.jpg')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundAttachment: "fixed",
@@ -110,6 +110,10 @@ export default function LandingPage() {
           overflow-y: scroll;
           overflow-x: hidden;
           width: 100%;
+        }
+
+        .landing-page-root {
+          background-image: linear-gradient(rgba(11, 7, 17, 0.55), rgba(11, 7, 17, 0.55)), url('/desk_bg.jpg');
         }
 
         .landing-hero {
@@ -178,6 +182,9 @@ export default function LandingPage() {
         }
 
         @media (max-width: 860px) {
+          .landing-page-root {
+            background-image: linear-gradient(rgba(11, 7, 17, 0.55), rgba(11, 7, 17, 0.55)), url('/desk_bg_mobile.jpg') !important;
+          }
           .header-nav {
             display: none !important;
           }
