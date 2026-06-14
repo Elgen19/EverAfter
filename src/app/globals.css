@@ -528,7 +528,7 @@ body {
   height: 100%;
   background-image: var(--env-bg-image, url(/vintage_envelope_open.png));
   background-size: 130.1% 199.2%;
-  background-position: -81.7px -277.3px;
+  background-position: var(--env-bg-pos, -81.7px -277.3px);
   background-repeat: no-repeat;
   transition: clip-path 1.5s cubic-bezier(0.4, 0, 0.2, 1);
   clip-path: inset(0% 0% 0% 0%); /* hides open flap above container top by default */
@@ -549,7 +549,7 @@ body {
   height: 100%;
   background-image: var(--env-bg-image, url(/vintage_envelope_open.png));
   background-size: 130.1% 199.2%;
-  background-position: -81.7px -277.3px;
+  background-position: var(--env-bg-pos, -81.7px -277.3px);
   background-repeat: no-repeat;
   clip-path: inset(0% 0% 0% 0%); /* clips the pocket bounds */
   z-index: 5; /* in front of the letter */
@@ -569,7 +569,7 @@ body {
   height: 240px; /* Height of the flap */
   background-image: var(--env-flap-image, url(/vintage_envelope_flap.png));
   background-size: 715.6px 657.4px; /* Exact pixel dimensions matching 130.1% 199.2% scaling */
-  background-position: -81.7px -211.9px; /* Crease Y=704 (scaled to 451.9px) aligned at the bottom (Y=240px) */
+  background-position: var(--env-flap-pos, -81.7px -211.9px); /* Crease Y=704 (scaled to 451.9px) aligned at the bottom (Y=240px) */
   background-repeat: no-repeat;
   z-index: 6; /* on top of pocket and seal when closed */
   transform-origin: bottom; /* Rotates around the bottom crease (Y=0 of the container) */

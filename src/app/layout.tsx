@@ -38,12 +38,44 @@ const dancingScript = Dancing_Script({
 export const metadata: Metadata = {
   title: "EverAfter | Write & Send Interactive Wax-Sealed Letters",
   description: "Express your feelings with beautiful custom stationery, romantic music, floating hearts, and an interactive 3D wax-sealed envelope that opens physically in your partner's browser.",
-  keywords: "love letter, valentine, anniversary, anniversary gift, digital letter, animated envelope, wax seal, everafter",
-  authors: [{ name: "Antigravity" }],
+  keywords: "love letter, valentine, anniversary, anniversary gift, digital letter, animated envelope, wax seal, everafter, digital stationery, romantic card",
+  authors: [{ name: "EverAfter Team" }],
+  metadataBase: new URL("https://everafterletters.xyz"),
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
-    title: "EverAfter | Send a Sealed Envelope",
-    description: "Write and share a beautiful digital love letter with custom wax seals and physical-feeling animations.",
+    title: "EverAfter | Write & Send Interactive Wax-Sealed Letters",
+    description: "Express your feelings with beautiful custom stationery, romantic music, floating hearts, and an interactive 3D wax-sealed envelope that opens physically in your partner's browser.",
     type: "website",
+    url: "https://everafterletters.xyz",
+    siteName: "EverAfter",
+    locale: "en_US",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "EverAfter Interactive Digital Love Letters",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "EverAfter | Write & Send Interactive Wax-Sealed Letters",
+    description: "Express your feelings with beautiful custom stationery, romantic music, floating hearts, and an interactive 3D wax-sealed envelope that opens physically in your partner's browser.",
+    images: ["/og-image.jpg"],
   },
   verification: {
     google: "xiBtB2kEv1o3uoA372KzftN7hx5CkqkSv1VpKWLZhx4",

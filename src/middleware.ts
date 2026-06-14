@@ -3,22 +3,13 @@ import { verifyJWT } from "@/utils/web3";
 
 const PROTECTED_ROUTES: string[] = [];
 const PROTECTED_API_ROUTES = ["/api/protected"];
-const MAINTENANCE_ROUTES = [
-  "/login",
-  "/dashboard",
-  "/create",
-  "/recipient-setup",
-  "/profile",
-];
+const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === "true" || process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true";
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  const isMaintenanceRoute = MAINTENANCE_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(route + "/")
-  );
-
-  if (isMaintenanceRoute) {
+  // Maintenance Mode redirect
+  if (MAINTENANCE_MODE && pathname !== "/coming-soon") {
     return NextResponse.redirect(new URL("/coming-soon", req.url));
   }
 
@@ -61,11 +52,14 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
+    "/",
     "/api/protected/:path*",
     "/login/:path*",
     "/dashboard/:path*",
     "/create/:path*",
     "/recipient-setup/:path*",
     "/profile/:path*",
+    "/animation/:path*",
+    "/letter/:path*",
   ],
 };

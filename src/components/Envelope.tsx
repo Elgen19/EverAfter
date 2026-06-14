@@ -247,6 +247,10 @@ export default function Envelope({
                               isVintageWhite ? "url(/white_envelope_open.png)" : "url(/vintage_envelope_open.png)",
             "--env-flap-image": isCelestialBlue ? "url(/celestial_envelope_flap.png)" :
                                 isVintageWhite ? "url(/white_envelope_flap.png)" : "url(/vintage_envelope_flap.png)",
+            "--env-bg-pos": isCelestialBlue ? "-81.7px -278px" :
+                            isVintageWhite ? "-81.7px -278px" : "-81.7px -277.3px",
+            "--env-flap-pos": isCelestialBlue ? "-81.7px -57.2px" :
+                              isVintageWhite ? "-81.7px -32.8px" : "-81.7px -211.9px",
           } as React.CSSProperties}
         >
           <>

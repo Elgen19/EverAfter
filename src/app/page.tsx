@@ -4,6 +4,9 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import dynamic from "next/dynamic";
+import "./landing.css";
+import HowItWorksSimulator from "@/components/HowItWorksSimulator";
+
 const FloatingHearts = dynamic(() => import("@/components/FloatingHearts"), { ssr: false });
 
 const starsList = [
@@ -45,6 +48,11 @@ export default function LandingPage() {
   const [contactEmail, setContactEmail] = useState("");
   const [contactMessage, setContactMessage] = useState("");
   const [contactSubmitted, setContactSubmitted] = useState(false);
+
+  // FAQ state
+  const [activeFaq, setActiveFaq] = useState<number | null>(null);
+
+
 
   useEffect(() => {
     setMounted(true);
@@ -100,357 +108,83 @@ export default function LandingPage() {
       {/* Floating Hearts background */}
       <FloatingHearts />
 
-      {/* Inline styles for custom animations and hover effects */}
-      <style>{`
-        html, body {
-          scroll-behavior: smooth;
-          scrollbar-gutter: stable;
-          overflow-y: scroll;
-          overflow-x: hidden;
-          width: 100%;
-        }
-
-        .landing-page-root {
-          background-image: linear-gradient(rgba(11, 7, 17, 0.55), rgba(11, 7, 17, 0.55)), url('/desk_bg.jpg');
-        }
-
-        .landing-hero {
-          display: grid;
-          grid-template-columns: calc(55% - 20px) calc(45% - 20px);
-          gap: 40px;
-          align-items: center;
-          min-height: 500px;
-          margin-bottom: 80px;
-        }
-
-        .landing-hero-content {
-          min-width: 0;
-        }
-
-        .landing-hero > div {
-          min-width: 0;
-        }
-
-        .features-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
-          gap: 24px;
-        }
-
-        .feature-card {
-          padding: 36px 30px;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-          border-radius: 20px;
-          border: 1px solid var(--border-card);
-          background: rgba(20, 15, 30, 0.5);
-          transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-
-        .feature-card:hover {
-          transform: translateY(-5px);
-          border-color: rgba(255, 75, 114, 0.3) !important;
-          background: linear-gradient(135deg, rgba(30, 20, 45, 0.8) 0%, rgba(255, 75, 114, 0.05) 100%) !important;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
-        }
-
-        .feature-icon {
-          font-size: 32px;
-          width: 50px;
-          height: 50px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 12px;
-        }
-
-        .feature-title {
-          font-size: 18px;
-          font-weight: 600;
-          color: #fff;
-          margin: 0;
-        }
-
-        .feature-desc {
-          font-size: 14px;
-          color: var(--text-muted);
-          line-height: 1.6;
-          margin: 0;
-        }
-
-        @media (max-width: 860px) {
-          .landing-page-root {
-            background-image: linear-gradient(rgba(11, 7, 17, 0.55), rgba(11, 7, 17, 0.55)), url('/desk_bg_mobile.jpg') !important;
-          }
-          .header-nav {
-            display: none !important;
-          }
-          .header-dashboard-btn {
-            display: none !important;
-          }
-          .landing-hero {
-            grid-template-columns: 1fr !important;
-            gap: 20px !important;
-            text-align: center !important;
-            min-height: auto !important;
-            margin-bottom: 40px !important;
-          }
-          .landing-hero-content {
-            align-items: center !important;
-            text-align: center !important;
-            min-width: 0;
-            gap: 16px !important;
-          }
-          .landing-hero-content > div {
-            justify-content: center !important;
-          }
-          .landing-hero-title {
-            font-size: 48px !important;
-            min-height: 130px !important;
-            margin-bottom: 8px !important;
-            width: 100% !important;
-            max-width: 100% !important;
-          }
-          .hero-subtext {
-            font-size: 15px !important;
-          }
-          .hero-envelope-column {
-            display: none !important;
-          }
-          .features-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 16px !important;
-          }
-          .feature-card {
-            padding: 24px 20px !important;
-            gap: 12px !important;
-            border-radius: 16px !important;
-          }
-          .feature-icon {
-            font-size: 24px !important;
-            width: 44px !important;
-            height: 44px !important;
-            border-radius: 10px !important;
-          }
-          .feature-title {
-            font-size: 16px !important;
-          }
-          .feature-desc {
-            font-size: 13px !important;
-            line-height: 1.5 !important;
-          }
-        }
-
-        @media (max-width: 600px) {
-          .landing-hero-title {
-            font-size: 44px !important;
-            min-height: 110px !important;
-            margin-bottom: 6px !important;
-            width: 100% !important;
-            max-width: 100% !important;
-          }
-          .hero-subtext {
-            font-size: 14px !important;
-          }
-          .landing-main {
-            margin-top: 100px !important;
-            padding: 0 16px !important;
-          }
-          .features-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 12px !important;
-          }
-          .feature-card {
-            padding: 16px 12px !important;
-            gap: 10px !important;
-            border-radius: 12px !important;
-          }
-          .feature-icon {
-            font-size: 20px !important;
-            width: 38px !important;
-            height: 38px !important;
-            border-radius: 8px !important;
-          }
-          .feature-title {
-            font-size: 14px !important;
-          }
-          .feature-desc {
-            font-size: 12px !important;
-            line-height: 1.4 !important;
-          }
-        }
-
-        @keyframes blink-cursor {
-          from, to { border-color: transparent }
-          50% { border-color: var(--accent-rose); }
-        }
-
-        .typewriter-cursor {
-          border-right: 3px solid var(--accent-rose);
-          animation: blink-cursor 0.75s step-end infinite;
-          margin-left: 2px;
-          display: inline-block;
-          height: 0.9em;
-          vertical-align: middle;
-        }
-
-        @keyframes pulse-glowing {
-          0%, 100% {
-            box-shadow: 0 0 15px rgba(255, 75, 114, 0.4);
-            transform: scale(1);
-          }
-          50% {
-            box-shadow: 0 0 25px rgba(255, 75, 114, 0.7);
-            transform: scale(1.02);
-          }
-        }
-
-        .cta-button {
-          animation: pulse-glowing 2s infinite;
-          transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-
-        .cta-button:hover {
-          transform: translateY(-3px) scale(1.04) !important;
-          box-shadow: 0 15px 30px rgba(255, 75, 114, 0.6) !important;
-        }
-
-        .feature-card-hover-placeholder {
-          /* keep a placeholder here or just remove */
-        }
-
-        /* 3D Envelope Demo styling */
-        .demo-envelope-container {
-          position: relative;
-          width: 320px;
-          height: 200px;
-          perspective: 800px;
-          cursor: pointer;
-          margin: 40px auto;
-        }
-
-        .demo-envelope {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(135deg, #ffffff 0%, #faf9f6 100%);
-          border-radius: 8px;
-          box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-          border: 1px solid rgba(226, 184, 87, 0.4);
-          transition: transform 0.5s;
-          transform-style: preserve-3d;
-        }
-
-        .demo-flap {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100px;
-          background: #faf9f6;
-          border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-          clip-path: polygon(0 0, 100% 0, 50% 100%);
-          transform-origin: top;
-          transition: transform 0.6s ease;
-          z-index: 5;
-        }
-
-        .demo-pocket {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 100%;
-          height: 110px;
-          background: #f7f6f2;
-          clip-path: polygon(0 100%, 100% 100%, 100% 0, 80% 0, 50% 60%, 20% 0, 0 0);
-          border-radius: 0 0 8px 8px;
-          z-index: 4;
-          box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
-        }
-
-        .demo-letter {
-          position: absolute;
-          bottom: 10px;
-          left: 15px;
-          right: 15px;
-          height: 140px;
-          background: #fff;
-          border: 1px solid #ebdcb9;
-          border-radius: 4px;
-          padding: 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-          transition: transform 0.6s ease 0.1s;
-          z-index: 3;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-
-        .demo-seal {
-          position: absolute;
-          top: 85px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 36px;
-          height: 36px;
-          background: radial-gradient(circle, #e2b857 0%, #c59734 100%);
-          border-radius: 50%;
-          box-shadow: 0 4px 8px rgba(0,0,0,0.15), inset 0 0 4px rgba(255,255,255,0.4);
-          z-index: 6;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #fff;
-          font-size: 14px;
-          transition: all 0.5s ease;
-        }
-
-        .demo-envelope-container:hover .demo-flap {
-          transform: rotateX(180deg);
-          z-index: 2;
-        }
-
-        .demo-envelope-container:hover .demo-letter {
-          transform: translateY(-70px);
-          z-index: 7;
-        }
-
-        .demo-envelope-container:hover .demo-seal {
-          transform: translateX(-50%) translateY(30px) scale(0.9);
-          opacity: 0.3;
-        }
-
-        .step-card {
-          transition: all 0.3s ease;
-        }
-
-        .step-card:hover {
-          transform: translateY(-2px);
-          background: rgba(255, 255, 255, 0.04) !important;
-        }
-
-        @media (max-width: 400px) {
-          .demo-envelope-container {
-            transform: scale(0.8) !important;
-            margin: 10px auto !important;
-            height: 160px !important;
-          }
-        }
-
-        .contact-form-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 16px;
-        }
-
-        @media (max-width: 500px) {
-          .contact-form-grid {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
-
+      {/* JSON-LD Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([
+            {
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              "name": "EverAfter",
+              "url": "https://everafterletters.xyz",
+              "description": "Express your feelings with beautiful custom stationery, romantic music, floating hearts, and an interactive 3D wax-sealed envelope that opens physically in your partner's browser.",
+              "applicationCategory": "RelationshipApplication",
+              "operatingSystem": "All",
+              "browserRequirements": "Requires HTML5 compatible browser",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+              }
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              "mainEntity": [
+                {
+                  "@type": "Question",
+                  "name": "How does the time-lock release work?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "When creating a letter, you can set a specific date and time for it to unlock. Your partner can open the link anytime, but they will be greeted with a beautiful countdown screen showing exactly when the seal can be broken."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "How secure and private are my letters?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Privacy is our utmost priority. Along with data encryption, you can add a Security Gate—a custom question (e.g., 'Where was our first vacation?') that only your partner knows the answer to."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "Can my partner reply to my letter?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes! Once they read your letter, they are presented with a 'Write Back' option. They can compose a response, choose a theme, and send it back, which appears on your dashboard under 'Received Writebacks'."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "Will I know when they read my letter?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes, EverAfter features real-time tracking. Your dashboard will immediately update to 'Read' with a green checkmark as soon as they break the digital wax seal."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "Is EverAfter free to use?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Creating, styling, and sending letters is completely free. We believe everyone deserves a beautiful space to express their deepest emotions without barriers."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "Can I add music and custom themes?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Absolutely. You can select from curated background scenes (like Cozy Cafe, Cherry Blossoms, or Starry Night) and attach ambient soundtrack loops to create a multi-sensory reading experience."
+                  }
+                }
+              ]
+            }
+          ])
+        }}
+      />
       {/* Top Header Navigation */}
       <header 
         className="glass"
@@ -521,6 +255,14 @@ export default function LandingPage() {
           {/* Center Navigation Links */}
           <nav style={{ display: "flex", alignItems: "center", gap: "24px" }} className="header-nav">
             <a 
+              href="#how-it-works" 
+              style={{ fontSize: "14px", color: "var(--text-muted)", textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-main)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
+            >
+              How It Works
+            </a>
+            <a 
               href="#features" 
               style={{ fontSize: "14px", color: "var(--text-muted)", textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-main)")}
@@ -529,15 +271,21 @@ export default function LandingPage() {
               Features
             </a>
             <a 
-              href="#how-it-works" 
+              href="#use-cases" 
               style={{ fontSize: "14px", color: "var(--text-muted)", textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-main)")}
               onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
             >
-              How It Works
+              Use Cases
             </a>
-
-
+            <a 
+              href="#faq" 
+              style={{ fontSize: "14px", color: "var(--text-muted)", textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-main)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
+            >
+              FAQ
+            </a>
             <a 
               href="#contact" 
               style={{ fontSize: "14px", color: "var(--text-muted)", textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }}
@@ -740,23 +488,70 @@ export default function LandingPage() {
           </div>
 
           {/* Interactive Envelope Preview */}
-          <div className="hero-envelope-column" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-            <div className="demo-envelope-container">
-              <div className="demo-envelope">
-                <div className="demo-flap"></div>
-                <div className="demo-letter">
-                  <div style={{ width: "24px", height: "4px", backgroundColor: "var(--accent-rose)", borderRadius: "2px" }}></div>
-                  <div style={{ fontSize: "14px", fontFamily: "'Dancing Script', cursive", color: "#590d22", fontWeight: "bold", marginTop: "4px" }}>To My Dearest,</div>
-                  <div style={{ fontSize: "9px", color: "#666", lineHeight: "1.3" }}>
-                    "From the moment we met, I knew you were my forever. These words represent my heart, sealed in digital stars..."
+          <div className="hero-envelope-column" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%" }}>
+            <div className="demo-envelope-wrapper-parent" style={{ display: "flex", alignItems: "center", justifyContent: "center", overflow: "visible", position: "relative" }}>
+              <div className="envelope-wrapper vintage-rose-style demo-envelope-container">
+                <div className="envelope vintage-rose-style" style={{
+                  "--env-bg-image": "url(/white_envelope_open.png)",
+                  "--env-flap-image": "url(/white_envelope_flap.png)",
+                  "--env-bg-pos": "-81.7px -278px",
+                  "--env-flap-pos": "-81.7px -32.8px",
+                  background: "transparent",
+                  border: "none",
+                  boxShadow: "none"
+                } as React.CSSProperties}>
+                  <div className="vintage-envelope-back" />
+                  <div className="envelope-letter theme-royal" style={{ background: "#fcf8ee", border: "4px double #c3a175" }}>
+                    <div style={{ fontSize: "24px", fontFamily: "'Dancing Script', cursive", fontWeight: "bold", color: "#590d22", marginBottom: "4px" }}>To My Dearest,</div>
+                    <div style={{ fontSize: "15px", fontFamily: "'Playfair Display', serif", lineHeight: "1.6", color: "#4a2c11" }}>
+                      "From the moment we met, I knew you were my forever. These words represent my heart, sealed in digital stars..."
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: "auto", fontSize: "11px", fontFamily: "var(--font-ui)", color: "#c3a175" }}>
+                      <span>Unlocks on Anniversary ⏳</span>
+                      <span>with Love ❤️</span>
+                    </div>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: "auto", fontSize: "7px", color: "#999" }}>
-                    <span>Unlocks on Anniversary ⏳</span>
-                    <span>with Love ❤️</span>
+                  <div className="vintage-envelope-front-pocket">
+                    {/* Mock Delivery Address */}
+                    <div 
+                      className="envelope-mock-address" 
+                      style={{ 
+                        position: "absolute",
+                        bottom: "25px",
+                        right: "35px",
+                        fontFamily: "var(--font-ui)",
+                        fontSize: "13px",
+                        color: "#6b5952",
+                        textAlign: "left",
+                        lineHeight: "1.2",
+                        zIndex: 7,
+                        pointerEvents: "none",
+                        maxWidth: "220px",
+                      }}
+                    >
+                      <div style={{ fontSize: "8px", fontFamily: "var(--font-ui)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "2px", color: "#9e867c" }}>Deliver To:</div>
+                      <div style={{ fontWeight: "bold", fontSize: "16px", color: "#4a2c11" }}>My Beloved</div>
+                      <div>777 Sweetheart Lane</div>
+                      <div>Garden of Eden, LV 14314</div>
+                    </div>
+                  </div>
+                  <div className="vintage-envelope-flap-part" style={{ backgroundPosition: "-81.7px -32.8px" }} />
+                  <div className="wax-seal vintage-rose-style" style={{
+                    "--seal-color-main": "#b38f36",
+                    "--seal-color-light": "#ffd670",
+                    "--seal-color-dark": "#7a5c18",
+                    "--seal-bg-image": "url(/vintage_red_seal.png)",
+                    width: "112px",
+                    height: "112px",
+                    left: "calc(50% - 56px)",
+                    top: "164px"
+                  } as React.CSSProperties}>
+                    <div className="wax-seal-quarter top-left" />
+                    <div className="wax-seal-quarter top-right" />
+                    <div className="wax-seal-quarter bottom-left" />
+                    <div className="wax-seal-quarter bottom-right" />
                   </div>
                 </div>
-                <div className="demo-pocket"></div>
-                <div className="demo-seal">❤</div>
               </div>
             </div>
             <p style={{ fontSize: "12px", color: "var(--text-muted)", fontStyle: "italic", textAlign: "center", marginTop: "12px" }}>
@@ -764,6 +559,104 @@ export default function LandingPage() {
             </p>
           </div>
 
+        </section>
+
+        {/* PROBLEM SECTION */}
+        <section className="problem-section" style={{ padding: "0 24px" }}>
+          
+          <div className="problem-left">
+            <span className="problem-subtitle">The Digital Connection Gap</span>
+            <h2 className="problem-title">Some moments deserve more than a text.</h2>
+            <p className="problem-desc">
+              In an age of instant gratification, our most meaningful expressions are reduced to brief, low-effort messages. We send letters that get buried under work notifications, group chat clutter, and fleeting social feeds.
+            </p>
+            <p className="problem-desc">
+              <strong>EverAfter</strong> is built to reclaim the weight of words. By introducing time-locks, digital wax seals, ambient soundtracks, and intimate custom pages, we create a sacred digital space for the sentiments that shape our lives.
+            </p>
+
+            <div className="problem-cards-grid">
+              {/* Card 1: Lost in Mundane Clutter */}
+              <div className="problem-card">
+                <div className="problem-card-icon">📱</div>
+                <h4 className="problem-card-title">Lost in Mundane Clutter</h4>
+                <p className="problem-card-desc">Intimate sentiments get sent in the same chat apps used for work messages or chore reminders, instantly getting buried under daily noise.</p>
+              </div>
+
+              {/* Card 2: Cold, Soul-Less Formats */}
+              <div className="problem-card">
+                <div className="problem-card-icon">❄️</div>
+                <h4 className="problem-card-title">Cold, Soul-Less Formats</h4>
+                <p className="problem-card-desc">Modern chat bubbles are flat, static, and silent. They lack the emotional warmth of custom stationery, looping music, and romantic presentation.</p>
+              </div>
+
+              {/* Card 3: No Anticipation or Suspense */}
+              <div className="problem-card">
+                <div className="problem-card-icon">⏳</div>
+                <h4 className="problem-card-title">No Anticipation or Suspense</h4>
+                <p className="problem-card-desc">Instant delivery robs special occasions of build-up. Messages are read immediately, ruining the sweet anticipation of a midnight release.</p>
+              </div>
+
+              {/* Card 4: Fragile & Unsecured Memories */}
+              <div className="problem-card">
+                <div className="problem-card-icon">🔓</div>
+                <h4 className="problem-card-title">Fragile & Unsecured Memories</h4>
+                <p className="problem-card-desc">Casual chat histories are easily lost, deleted, or screenshotted. There is no private, sacred vault to protect your relationship milestones.</p>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%" }}>
+            <div className="chat-mockup">
+              {/* Title bar of chat mockup */}
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "12px", marginBottom: "8px" }}>
+                <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px" }}>💬</div>
+                <div>
+                  <div style={{ fontSize: "13px", fontWeight: "600", color: "#fff" }}>Crowded Chat App</div>
+                  <div style={{ fontSize: "10px", color: "var(--text-muted)" }}>Active now • 99+ unread</div>
+                </div>
+              </div>
+
+              {/* Messages simulating fading away / disappearing in crowded chats */}
+              <div className="chat-bubble incoming" style={{ animationDelay: "0s" }}>
+                Hey, did you remember to buy milk on your way back? 🥛
+              </div>
+              <div className="chat-bubble outgoing" style={{ animationDelay: "2s" }}>
+                Yeah got it. Also, happy anniversary! Love you! ❤️
+              </div>
+              <div className="chat-bubble incoming" style={{ animationDelay: "4s" }}>
+                Awesome. Thanks! Can you also grab some bread? 🍞
+              </div>
+              <div className="chat-bubble incoming" style={{ animationDelay: "6s" }}>
+                Oh wait, boss just posted the new shift schedule, check the group chat. 📞
+              </div>
+              <div className="chat-bubble outgoing" style={{ animationDelay: "8s" }}>
+                Oh... okay, checking now.
+              </div>
+
+              <div style={{ position: "absolute", inset: "0", background: "rgba(11, 7, 17, 0.4)", display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 10 }}>
+                <div className="glass" style={{ padding: "16px 20px", textAlign: "center", border: "1px solid rgba(255, 75, 114, 0.3)", boxShadow: "0 0 20px rgba(255, 75, 114, 0.15)" }}>
+                  <span style={{ fontSize: "24px", display: "block", marginBottom: "8px" }}>🗑️</span>
+                  <span style={{ fontSize: "14px", fontWeight: "600", color: "#fff", display: "block" }}>Disappears in the Noise</span>
+                  <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>Anniversaries & deepest thoughts deserve more.</span>
+                </div>
+              </div>
+            </div>
+            <p style={{ fontSize: "12px", color: "var(--text-muted)", fontStyle: "italic", textAlign: "center" }}>
+              Quick messages are easily buried. Let your meaningful words stand out.
+            </p>
+          </div>
+
+        </section>
+
+        {/* HOW IT WORKS SECTION */}
+        <section id="how-it-works" style={{ marginBottom: "100px", padding: "40px", borderRadius: "24px", background: "linear-gradient(135deg, rgba(20, 15, 30, 0.4) 0%, rgba(255, 75, 114, 0.01) 100%)", border: "1px solid var(--border-card)" }}>
+          
+          <div style={{ textAlign: "center", marginBottom: "40px" }}>
+            <h2 style={{ fontSize: "44px", fontWeight: "normal", fontFamily: "var(--font-cursive)" }}>How EverAfter Works</h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "14px", marginTop: "8px" }}>Explore the beautiful journey of a digital love letter</p>
+          </div>
+
+          <HowItWorksSimulator />
         </section>
 
         {/* FEATURES GRID */}
@@ -862,54 +755,201 @@ export default function LandingPage() {
 
         </section>
 
-        {/* HOW IT WORKS SECTION */}
-        <section id="how-it-works" style={{ marginBottom: "100px", padding: "40px", borderRadius: "24px", background: "linear-gradient(135deg, rgba(20, 15, 30, 0.4) 0%, rgba(255, 75, 114, 0.01) 100%)", border: "1px solid var(--border-card)" }}>
-          
+        {/* EMOTIONAL USE CASES */}
+        <section id="use-cases" style={{ marginBottom: "100px" }}>
+          <div style={{ textAlign: "center", marginBottom: "50px" }}>
+            <span style={{ fontSize: "14px", color: "var(--accent-rose)", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Designed for Connection</span>
+            <h2 style={{ fontSize: "48px", fontWeight: "normal", marginTop: "8px", marginBottom: "12px", fontFamily: "var(--font-cursive)" }}>Moments Crafted in Pixels</h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "16px", maxWidth: "600px", margin: "0 auto" }}>
+              Every relationship is unique. Here is how users leverage EverAfter to build lasting, emotional bridges.
+            </p>
+          </div>
+
+          <div className="use-cases-grid">
+            {/* Use Case 1 */}
+            <div className="use-case-card-container">
+              <div className="use-case-card-inner">
+                {/* Front */}
+                <div className="use-case-card-front glass">
+                  <div style={{ fontSize: "32px", width: "50px", height: "50px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "12px", background: "rgba(255, 75, 114, 0.1)", color: "var(--accent-rose)", marginBottom: "4px" }}>⏳</div>
+                  <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#fff", margin: 0 }}>Anniversaries & Surprises</h3>
+                  <p style={{ fontSize: "12px", color: "var(--text-muted)", lineHeight: "1.5", margin: 0, textAlign: "center" }}>
+                    Lock your letter ahead of time to unlock exactly at midnight on a birthday or anniversary.
+                  </p>
+                </div>
+                {/* Back */}
+                <div className="use-case-card-back glass">
+                  <div style={{ fontSize: "28px", color: "var(--accent-rose)", marginBottom: "4px" }}>✨</div>
+                  <h4 style={{ fontSize: "14px", fontWeight: 600, color: "#fff", margin: 0 }}>Midnight Anticipation</h4>
+                  <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.75)", lineHeight: "1.6", margin: 0, textAlign: "center" }}>
+                    Your partner sees a live countdown ticking down to the exact second. The digital wax seal breaks only when the time arrives, turning a simple link into a shared milestone event.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Use Case 2 */}
+            <div className="use-case-card-container">
+              <div className="use-case-card-inner">
+                {/* Front */}
+                <div className="use-case-card-front glass">
+                  <div style={{ fontSize: "32px", width: "50px", height: "50px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "12px", background: "rgba(156, 108, 250, 0.1)", color: "var(--accent-purple)", marginBottom: "4px" }}>✈️</div>
+                  <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#fff", margin: 0 }}>Long-Distance Devotion</h3>
+                  <p style={{ fontSize: "12px", color: "var(--text-muted)", lineHeight: "1.5", margin: 0, textAlign: "center" }}>
+                    Bridge the physical gap with sensory details and lo-fi backing tracks that feel like real mail.
+                  </p>
+                </div>
+                {/* Back */}
+                <div className="use-case-card-back glass">
+                  <div style={{ fontSize: "28px", color: "var(--accent-purple)", marginBottom: "4px" }}>🎵</div>
+                  <h4 style={{ fontSize: "14px", fontWeight: 600, color: "#fff", margin: 0 }}>Bridging the Miles</h4>
+                  <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.75)", lineHeight: "1.6", margin: 0, textAlign: "center" }}>
+                    Combine customized paper stationery styles, animated wax seals, and peaceful soundtrack loops. It creates a warm, multi-sensory reading experience that feels like holding a piece of home.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Use Case 3 */}
+            <div className="use-case-card-container">
+              <div className="use-case-card-inner">
+                {/* Front */}
+                <div className="use-case-card-front glass">
+                  <div style={{ fontSize: "32px", width: "50px", height: "50px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "12px", background: "rgba(226, 184, 87, 0.1)", color: "var(--accent-gold)", marginBottom: "4px" }}>🩹</div>
+                  <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#fff", margin: 0 }}>Reconciliation & Apologies</h3>
+                  <p style={{ fontSize: "12px", color: "var(--text-muted)", lineHeight: "1.5", margin: 0, textAlign: "center" }}>
+                    Provide your partner with an intimate reading space designed for deep emotional safety.
+                  </p>
+                </div>
+                {/* Back */}
+                <div className="use-case-card-back glass">
+                  <div style={{ fontSize: "28px", color: "var(--accent-gold)", marginBottom: "4px" }}>🤍</div>
+                  <h4 style={{ fontSize: "14px", fontWeight: 600, color: "#fff", margin: 0 }}>Space to Heal</h4>
+                  <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.75)", lineHeight: "1.6", margin: 0, textAlign: "center" }}>
+                    Delicate conversations require calm environments. Deliver your sincere reflections in a private, quiet space without chat bubbles or work reminders, letting them process at their own pace.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Use Case 4 */}
+            <div className="use-case-card-container">
+              <div className="use-case-card-inner">
+                {/* Front */}
+                <div className="use-case-card-front glass">
+                  <div style={{ fontSize: "32px", width: "50px", height: "50px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "12px", background: "rgba(255, 75, 114, 0.1)", color: "var(--accent-rose)", marginBottom: "4px" }}>🎟️</div>
+                  <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#fff", margin: 0 }}>Secret Date RSVPs</h3>
+                  <p style={{ fontSize: "12px", color: "var(--text-muted)", lineHeight: "1.5", margin: 0, textAlign: "center" }}>
+                    Craft an interactive date night proposal with custom RSVP ticket choices inside your envelope.
+                  </p>
+                </div>
+                {/* Back */}
+                <div className="use-case-card-back glass">
+                  <div style={{ fontSize: "28px", color: "var(--accent-rose)", marginBottom: "4px" }}>🌹</div>
+                  <h4 style={{ fontSize: "14px", fontWeight: 600, color: "#fff", margin: 0 }}>Interactive Proposals</h4>
+                  <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.75)", lineHeight: "1.6", margin: 0, textAlign: "center" }}>
+                    Plan your date night details directly within the letter. Add selectable RSVP cards (restaurant options, dates, or outfits) and get immediate tracking alerts on your dashboard the moment they accept.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        {/* FAQ SECTION */}
+        <section id="faq" style={{ marginBottom: "100px" }}>
           <div style={{ textAlign: "center", marginBottom: "40px" }}>
-            <h2 style={{ fontSize: "44px", fontWeight: "normal", fontFamily: "var(--font-cursive)" }}>How EverAfter Works</h2>
-            <p style={{ color: "var(--text-muted)", fontSize: "14px", marginTop: "8px" }}>Send your first letter in four simple steps</p>
+            <span style={{ fontSize: "14px", color: "var(--accent-rose)", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }}>Common Whispers</span>
+            <h2 style={{ fontSize: "44px", fontWeight: "normal", marginTop: "8px", marginBottom: "12px", fontFamily: "var(--font-cursive)" }}>Frequently Asked Questions</h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>Everything you need to know about crafting digital memories</p>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(220px, 100%), 1fr))", gap: "20px" }}>
-            
-            {/* Step 1 */}
-            <div className="step-card" style={{ padding: "24px", borderRadius: "16px", background: "rgba(255,255,255,0.01)", border: "1px solid rgba(255,255,255,0.04)" }}>
-              <div style={{ fontSize: "20px", fontWeight: 700, color: "var(--accent-rose)", marginBottom: "8px" }}>01</div>
-              <h4 style={{ fontSize: "15px", fontWeight: 600, color: "#fff", marginBottom: "8px" }}>Write & Personalize</h4>
-              <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: "1.5" }}>
-                Type your thoughts, pick a cursive font, customize margins, and pick the perfect stationery layout.
-              </p>
-            </div>
-
-            {/* Step 2 */}
-            <div className="step-card" style={{ padding: "24px", borderRadius: "16px", background: "rgba(255,255,255,0.01)", border: "1px solid rgba(255,255,255,0.04)" }}>
-              <div style={{ fontSize: "20px", fontWeight: 700, color: "var(--accent-purple)", marginBottom: "8px" }}>02</div>
-              <h4 style={{ fontSize: "15px", fontWeight: 600, color: "#fff", marginBottom: "8px" }}>Lock & Set Audio</h4>
-              <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: "1.5" }}>
-                Configure release countdowns, secret password gates, RSVP cards, and pick a loops track.
-              </p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="step-card" style={{ padding: "24px", borderRadius: "16px", background: "rgba(255,255,255,0.01)", border: "1px solid rgba(255,255,255,0.04)" }}>
-              <div style={{ fontSize: "20px", fontWeight: 700, color: "var(--accent-gold)", marginBottom: "8px" }}>03</div>
-              <h4 style={{ fontSize: "15px", fontWeight: 600, color: "#fff", marginBottom: "8px" }}>Seal & Share</h4>
-              <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: "1.5" }}>
-                Press down to stamp the realistic gold wax seal. Copy the custom secure link generated for you.
-              </p>
-            </div>
-
-            {/* Step 4 */}
-            <div className="step-card" style={{ padding: "24px", borderRadius: "16px", background: "rgba(255,255,255,0.01)", border: "1px solid rgba(255,255,255,0.04)" }}>
-              <div style={{ fontSize: "20px", fontWeight: 700, color: "var(--accent-rose)", marginBottom: "8px" }}>04</div>
-              <h4 style={{ fontSize: "15px", fontWeight: 600, color: "#fff", marginBottom: "8px" }}>Feel Connected</h4>
-              <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: "1.5" }}>
-                Get real-time read ticks on your dashboard when they read it, and track their RSVP date choices.
-              </p>
-            </div>
-
+          <div style={{ maxWidth: "800px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "16px" }}>
+            {[
+              {
+                q: "How does the time-lock release work?",
+                a: "When creating a letter, you can set a specific date and time for it to unlock. Your partner can open the link anytime, but they will be greeted with a beautiful countdown screen showing exactly when the seal can be broken."
+              },
+              {
+                q: "How secure and private are my letters?",
+                a: "Privacy is our utmost priority. Along with data encryption, you can add a Security Gate—a custom question (e.g., 'Where was our first vacation?') that only your partner knows the answer to."
+              },
+              {
+                q: "Can my partner reply to my letter?",
+                a: "Yes! Once they read your letter, they are presented with a 'Write Back' option. They can compose a response, choose a theme, and send it back, which appears on your dashboard under 'Received Writebacks'."
+              },
+              {
+                q: "Will I know when they read my letter?",
+                a: "Yes, EverAfter features real-time tracking. Your dashboard will immediately update to 'Read' with a green checkmark as soon as they break the digital wax seal."
+              },
+              {
+                q: "Is EverAfter free to use?",
+                a: "Creating, styling, and sending letters is completely free. We believe everyone deserves a beautiful space to express their deepest emotions without barriers."
+              },
+              {
+                q: "Can I add music and custom themes?",
+                a: "Absolutely. You can select from curated background scenes (like Cozy Cafe, Cherry Blossoms, or Starry Night) and attach ambient soundtrack loops to create a multi-sensory reading experience."
+              }
+            ].map((faq, index) => {
+              const isOpen = activeFaq === index;
+              return (
+                <div 
+                  key={index} 
+                  className="glass" 
+                  style={{ 
+                    borderRadius: "16px", 
+                    border: "1px solid var(--border-card)", 
+                    overflow: "hidden", 
+                    transition: "all 0.3s ease",
+                    background: isOpen ? "rgba(255, 75, 114, 0.03)" : "rgba(255, 255, 255, 0.01)",
+                    borderColor: isOpen ? "rgba(255, 75, 114, 0.3)" : "var(--border-card)"
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setActiveFaq(isOpen ? null : index)}
+                    style={{
+                      width: "100%",
+                      background: "none",
+                      border: "none",
+                      padding: "20px 24px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      color: "#fff",
+                      outline: "none"
+                    }}
+                  >
+                    <span style={{ fontSize: "16px", fontWeight: 600 }}>{faq.q}</span>
+                    <span style={{ 
+                      fontSize: "18px", 
+                      transition: "transform 0.3s ease", 
+                      transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+                      color: isOpen ? "var(--accent-rose)" : "var(--text-muted)"
+                    }}>
+                      ▼
+                    </span>
+                  </button>
+                  <div style={{
+                    maxHeight: isOpen ? "200px" : "0px",
+                    overflow: "hidden",
+                    transition: "max-height 0.3s cubic-bezier(0.25, 1, 0.5, 1)",
+                  }}>
+                    <p style={{ 
+                      padding: "0 24px 20px 24px", 
+                      margin: 0, 
+                      fontSize: "14px", 
+                      color: "var(--text-muted)", 
+                      lineHeight: "1.6" 
+                    }}>
+                      {faq.a}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-
         </section>
 
         {/* CONTACT US SECTION */}

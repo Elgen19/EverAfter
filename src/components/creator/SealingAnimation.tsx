@@ -13,6 +13,7 @@ interface SealingAnimationProps {
   greeting: string;
   farewell: string;
   onComplete: () => void;
+  isInline?: boolean;
 }
 
 export default function SealingAnimation({
@@ -25,7 +26,8 @@ export default function SealingAnimation({
   theme,
   greeting,
   farewell,
-  onComplete
+  onComplete,
+  isInline = false
 }: SealingAnimationProps) {
   const [stage, setStage] = useState(0);
   const [burstHearts, setBurstHearts] = useState<{ id: number; char: string; tx: string; ty: string; scale: number; rot: string }[]>([]);
@@ -149,6 +151,11 @@ export default function SealingAnimation({
     setBurstHearts(newBursts);
   };
 
+  const onCompleteRef = React.useRef(onComplete);
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
   // Slow, deliberate Timer Timeline (13.8 seconds total)
   useEffect(() => {
     const timers = [
@@ -167,7 +174,7 @@ export default function SealingAnimation({
         setStampHandleStage("press");
         setShowDetailedSeal(true);
         setShowFlash(true);
-        playStampSound();
+        if (!isInline) playStampSound();
         triggerHeartBurst();
       }, 10100),                            // 0.8s: Handle hits wax (sound, flash, hearts, detail reveals)
       setTimeout(() => {
@@ -175,20 +182,21 @@ export default function SealingAnimation({
       }, 10900),                            // 1.6s: Handle lifts back up and fades out (revealing finished seal)
 
       setTimeout(() => setStage(7), 11800), // Stage 7: Envelope swipes right (mailed away)
-      setTimeout(() => onComplete(), 13800) // Stage 8: Complete callback
+      setTimeout(() => onCompleteRef.current(), 13800) // Stage 8: Complete callback
     ];
 
     return () => timers.forEach(clearTimeout);
-  }, [onComplete]);
+  }, [isInline]);
 
   // Trigger audio effects on stage transitions
   useEffect(() => {
+    if (isInline) return;
     if (stage === 1 || stage === 2) {
       playFoldSound();
     } else if (stage === 7) {
       playMailSound();
     }
-  }, [stage]);
+  }, [stage, isInline]);
 
   const isVintageWhite = envelopeStyle === "vintage-white";
   const isCelestialBlue = envelopeStyle === "celestial-blue";
@@ -253,26 +261,36 @@ export default function SealingAnimation({
   const showStampHandle = stampHandleStage !== "hidden";
 
   return (
-    <div style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: "rgba(11, 7, 17, 0.96)",
-      zIndex: 9999,
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      backdropFilter: "blur(15px)",
-      WebkitBackdropFilter: "blur(15px)",
-      color: "#fff",
-      fontFamily: "var(--font-ui)",
-      animation: "fadeInStudioOverlay 0.5s ease forwards",
-      overflow: "hidden"
-    }}>
+    <div 
+      className={`sealing-animation-container ${isInline ? "sealing-animation-container-inline" : ""}`}
+      style={{
+        position: isInline ? "absolute" : "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: isInline ? "transparent" : "rgba(11, 7, 17, 0.96)",
+        zIndex: isInline ? 10 : 9999,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        backdropFilter: isInline ? "none" : "blur(15px)",
+        WebkitBackdropFilter: isInline ? "none" : "blur(15px)",
+        color: "#fff",
+        fontFamily: "var(--font-ui)",
+        animation: isInline ? "none" : "fadeInStudioOverlay 0.5s ease forwards",
+        overflow: "hidden",
+        transform: isInline ? "scale(0.55)" : "none",
+        transformOrigin: "center"
+      }}
+    >
       <style>{`
+        @media (max-width: 900px) {
+          .sealing-animation-container-inline {
+            transform: scale(0.42) !important;
+          }
+        }
         @keyframes fadeInStudioOverlay {
           from { opacity: 0; }
           to { opacity: 1; }
@@ -544,6 +562,10 @@ export default function SealingAnimation({
                               isVintageWhite ? "url(/white_envelope_open.png)" : "url(/vintage_envelope_open.png)",
             "--env-flap-image": isCelestialBlue ? "url(/celestial_envelope_flap.png)" :
                                 isVintageWhite ? "url(/white_envelope_flap.png)" : "url(/vintage_envelope_flap.png)",
+            "--env-bg-pos": isCelestialBlue ? "-81.7px -278px" :
+                            isVintageWhite ? "-81.7px -278px" : "-81.7px -277.3px",
+            "--env-flap-pos": isCelestialBlue ? "-81.7px -57.2px" :
+                              isVintageWhite ? "-81.7px -32.8px" : "-81.7px -211.9px",
           } as React.CSSProperties}
         >
           {/* Layer 1: Envelope Back */}
