@@ -1,6 +1,81 @@
 import type { Metadata } from "next";
+import { 
+  Inter, 
+  Playfair_Display, 
+  Sacramento, 
+  Great_Vibes, 
+  Allura, 
+  Cinzel_Decorative, 
+  Cormorant_Garamond, 
+  Dancing_Script, 
+  Geist, 
+  Geist_Mono, 
+  Libre_Baskerville 
+} from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter-google",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair-google",
+});
+
+const sacramento = Sacramento({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-sacramento-google",
+});
+
+const greatVibes = Great_Vibes({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-great-vibes-google",
+});
+
+const allura = Allura({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-allura-google",
+});
+
+const cinzelDec = Cinzel_Decorative({
+  weight: "700",
+  subsets: ["latin"],
+  variable: "--font-cinzel-dec-google",
+});
+
+const cormorant = Cormorant_Garamond({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-cormorant-google",
+});
+
+const dancingScript = Dancing_Script({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-dancing-script-google",
+});
+
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist-google",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono-google",
+});
+
+const libreBaskerville = Libre_Baskerville({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-libre-baskerville-google",
+});
 
 export const metadata: Metadata = {
   title: "EverAfter | Write & Send Interactive Wax-Sealed Letters",
@@ -23,12 +98,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Allura&family=Cinzel:wght@400;700&family=Dancing+Script:wght@400;700&family=Great+Vibes&family=Inter:wght@100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Sacramento&display=swap" rel="stylesheet" />
-      </head>
+    <html lang="en" className={`${inter.variable} ${playfair.variable} ${sacramento.variable} ${greatVibes.variable} ${allura.variable} ${cinzelDec.variable} ${cormorant.variable} ${dancingScript.variable} ${geist.variable} ${geistMono.variable} ${libreBaskerville.variable}`}>
       <body>
         <AuthProvider>
           {children}

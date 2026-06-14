@@ -1,17 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Allura&family=Cinzel+Decorative:wght@700&family=Cormorant+Garamond:wght@400;700&family=Dancing+Script:wght@400;700&family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&family=Great+Vibes&family=Inter:wght@100..900&family=Libre+Baskerville:wght@400;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Sacramento&display=swap');
-
 :root {
-  --font-geist-sans: 'Geist', sans-serif;
-  --font-font-mono: 'Geist Mono', monospace;
-  --font-inter: 'Inter', sans-serif;
-  --font-playfair: 'Playfair Display', serif;
-  --font-sacramento: 'Sacramento', cursive;
-  --font-great-vibes: 'Great Vibes', cursive;
-  --font-dancing-script: 'Dancing Script', cursive;
-  --font-cinzel-dec: 'Cinzel Decorative', serif;
-  --font-cormorant: 'Cormorant Garamond', serif;
-  --font-libre-baskerville: 'Libre Baskerville', serif;
-  --font-allura: 'Allura', cursive;
+  --font-geist-sans: var(--font-geist-google), sans-serif;
+  --font-font-mono: var(--font-geist-mono-google), monospace;
+  --font-inter: var(--font-inter-google), sans-serif;
+  --font-playfair: var(--font-playfair-google), serif;
+  --font-sacramento: var(--font-sacramento-google), cursive;
+  --font-great-vibes: var(--font-great-vibes-google), cursive;
+  --font-dancing-script: var(--font-dancing-script-google), cursive;
+  --font-cinzel-dec: var(--font-cinzel-dec-google), serif;
+  --font-cormorant: var(--font-cormorant-google), serif;
+  --font-libre-baskerville: var(--font-libre-baskerville-google), serif;
+  --font-allura: var(--font-allura-google), cursive;
 
   /* Creator Studio Color Palette (Dark Theme / Glassmorphism) */
   --bg-studio: #0b0711;
