@@ -8,9 +8,18 @@ const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === "true" || process.env.
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Maintenance Mode redirect
-  if (MAINTENANCE_MODE && pathname !== "/coming-soon") {
-    return NextResponse.redirect(new URL("/coming-soon", req.url));
+  // Maintenance Mode redirect for interactive features only
+  if (MAINTENANCE_MODE) {
+    const isInteractiveRoute = 
+      pathname.startsWith("/login") || 
+      pathname.startsWith("/create") || 
+      pathname.startsWith("/dashboard") || 
+      pathname.startsWith("/profile") || 
+      pathname.startsWith("/recipient-setup");
+      
+    if (isInteractiveRoute) {
+      return NextResponse.redirect(new URL("/coming-soon", req.url));
+    }
   }
 
   const isProtectedRoute = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
