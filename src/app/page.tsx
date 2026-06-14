@@ -93,7 +93,7 @@ export default function LandingPage() {
       flexDirection: "column",
       position: "relative", 
       overflow: "hidden",
-      backgroundImage: "linear-gradient(rgba(11, 7, 17, 0.55), rgba(11, 7, 17, 0.55)), url('/desk_bg.png')",
+      backgroundImage: "linear-gradient(rgba(11, 7, 17, 0.55), rgba(11, 7, 17, 0.55)), url('/desk_bg.jpg')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundAttachment: "fixed",
