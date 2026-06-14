@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/dashboard/", "/profile/", "/create/", "/recipient-setup/"],
     },
-    sitemap: "https://ever-after-puce.vercel.app/sitemap.xml", // Make sure to replace this with your custom domain if you connect one
+    sitemap: "https://everafterletters.xyz/sitemap.xml", // Make sure to replace this with your custom domain if you connect one
   };
 }

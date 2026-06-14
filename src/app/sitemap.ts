@@ -2,7 +2,7 @@ import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   // Replace this base URL with your custom domain (e.g. https://yourloveletter.com) once connected
-  const baseUrl = "https://ever-after-puce.vercel.app"; 
+  const baseUrl = "https://everafterletters.xyz"; 
 
   return [
     {
