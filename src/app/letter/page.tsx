@@ -17,6 +17,16 @@ import IntroStatement from "@/components/reader/IntroStatement";
 import ClosingStatement from "@/components/reader/ClosingStatement";
 import DateInvitation from "@/components/reader/DateInvitation";
 import SurveyFeedback from "@/components/reader/SurveyFeedback";
+import AudioMessage from "@/components/reader/AudioMessage";
+import ThankYou from "@/components/reader/ThankYou";
+
+const BACKDROP_IMAGES: Record<string, string> = {
+  campfire: "/campfire_letter.png",
+  ocean_sunset: "/ocean_sunset.png",
+  cozy_cafe: "/cozy_cafe.png",
+  cherry_blossoms: "/cherry_blossoms.png",
+  vintage_library: "/vintage_library.png",
+};
 
 function LetterReader() {
   const searchParams = useSearchParams();
@@ -30,7 +40,7 @@ function LetterReader() {
   }, [d]);
 
   const [dbData, setDbData] = useState<any>(null);
-  const [fetchingDb, setFetchingDb] = useState(false);
+  const [fetchingDb, setFetchingDb] = useState(!!id);
 
   useEffect(() => {
     const fetchFromDb = async () => {
@@ -93,18 +103,49 @@ function LetterReader() {
     markAsRead();
   }, [id, preview]);
 
+  // Prevent scroll on the recipient page to fit everything on one page
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      document.documentElement.style.overflow = "hidden";
+      document.documentElement.style.height = "100vh";
+      document.body.style.overflow = "hidden";
+      document.body.style.height = "100vh";
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        document.documentElement.style.overflow = "";
+        document.documentElement.style.height = "";
+        document.body.style.overflow = "";
+        document.body.style.height = "";
+      }
+    };
+  }, []);
+
   // Active steps calculation based on enabled modifications
   const activeSteps = useMemo<string[]>(() => {
     if (!data) return ["envelope"];
-    return (data.stepOrder || ["security", "intro", "envelope", "dateInvite", "closing", "survey"]).filter((stepId: string) => {
+    let rawOrder = data.stepOrder || ["security", "intro", "envelope", "audioMessage", "dateInvite", "closing", "survey"];
+    if (data.audioMessage?.enabled && !rawOrder.includes("audioMessage")) {
+      rawOrder = [...rawOrder];
+      const envIdx = rawOrder.indexOf("envelope");
+      if (envIdx !== -1) {
+        rawOrder.splice(envIdx + 1, 0, "audioMessage");
+      } else {
+        rawOrder.push("audioMessage");
+      }
+    }
+    const steps = rawOrder.filter((stepId: string) => {
       if (stepId === "envelope") return true;
       if (stepId === "security" && data.security?.enabled) return true;
       if (stepId === "intro" && data.intro?.enabled) return true;
+      if (stepId === "audioMessage" && data.audioMessage?.enabled) return true;
       if (stepId === "dateInvite" && data.dateInvite?.enabled) return true;
       if (stepId === "closing" && data.closing?.enabled) return true;
       if (stepId === "survey" && data.survey?.enabled) return true;
       return false;
     });
+    steps.push("thankYou");
+    return steps;
   }, [data]);
 
   // Wizard transitions and step tracking
@@ -117,7 +158,9 @@ function LetterReader() {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "80vh", flexDirection: "column", gap: "16px" }}>
         <div style={{ width: "40px", height: "40px", borderRadius: "50%", border: "3px solid rgba(255, 75, 114, 0.1)", borderTopColor: "var(--accent-rose)", animation: "spin 1s linear infinite" }} />
-        <div style={{ color: "var(--text-muted)", fontSize: "14px" }}>Loading letter...</div>
+        <div style={{ color: "var(--text-muted)", fontSize: "14px" }}>
+          {preview ? "Preparing your letter..." : "Loading letter..."}
+        </div>
       </div>
     );
   }
@@ -215,8 +258,44 @@ function LetterReader() {
     );
   }
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "85vh", padding: activeSteps.length > 1 ? "100px 20px 20px 20px" : "20px", position: "relative", zIndex: 10 }}>
+      // Determine backdrop image path
+      const backdropUrl = data.backdrop && data.backdrop !== "none"
+        ? BACKDROP_IMAGES[data.backdrop]
+        : (data.theme === "celestial" ? "/campfire_letter.png" : "");
+
+      return (
+        <div 
+          style={{ 
+            display: "flex", 
+            flexDirection: "column", 
+            alignItems: "center", 
+            justifyContent: "center", 
+            height: "100vh", 
+            width: "100%",
+            padding: activeSteps.length > 1 ? "var(--page-padding-top, 120px) 20px 20px 20px" : "20px", 
+            position: "relative", 
+            zIndex: 10,
+            overflow: "hidden"
+          }}
+        >
+          {/* Fixed Full Screen Page Backdrop to prevent any resizing/stretching distortion */}
+          {backdropUrl && (
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundImage: `url(${backdropUrl})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                zIndex: -1,
+                pointerEvents: "none"
+              }}
+            />
+          )}
       <FloatingHearts />
       
       {/* Background music is normally off, requiring recipient click to play */}
@@ -229,39 +308,45 @@ function LetterReader() {
       )}
 
       {/* Progress timeline navigation dots */}
-      {activeSteps.length > 1 && (
+      {activeSteps.filter(id => id !== "thankYou").length > 1 && currentStep !== "thankYou" && (
         <div 
           style={{ 
             position: "fixed", 
-            top: "24px", 
+            top: "20px", 
+            left: "50%",
+            transform: "translateX(-50%)",
             display: "flex", 
             alignItems: "center", 
             justifyContent: "center", 
-            width: "100%", 
-            maxWidth: "420px", 
-            margin: "0 auto",
+            width: "calc(100% - 40px)", 
+            maxWidth: "440px", 
             zIndex: 50,
-            padding: "0 20px"
+            padding: "14px 24px 22px 24px",
+            background: "transparent",
+            border: "none",
+            borderRadius: "32px",
+            boxShadow: "none"
           }}
         >
           {/* Timeline connecting line */}
           <div 
             style={{
               position: "absolute",
-              left: "40px",
-              right: "40px",
+              left: "41px",
+              right: "41px",
+              top: "30px",
               height: "2px",
               background: `linear-gradient(to right, 
-                var(--accent-purple) ${(currentStepIndex / (activeSteps.length - 1)) * 100}%, 
-                rgba(255, 255, 255, 0.1) ${(currentStepIndex / (activeSteps.length - 1)) * 100}%
+                var(--accent-purple) ${(currentStepIndex / (activeSteps.filter(id => id !== "thankYou").length - 1)) * 100}%, 
+                rgba(255, 255, 255, 0.3) ${(currentStepIndex / (activeSteps.filter(id => id !== "thankYou").length - 1)) * 100}%
               )`,
-              zIndex: -1,
+              zIndex: 1,
               transition: "all 0.5s ease"
             }}
           />
 
-          <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-            {activeSteps.map((stepId, idx) => {
+          <div style={{ display: "flex", justifyContent: "space-between", width: "100%", zIndex: 2 }}>
+            {activeSteps.filter(id => id !== "thankYou").map((stepId, idx) => {
               const isCompleted = idx < currentStepIndex;
               const isActive = idx === visibleStepIndex;
               const isClickable = idx <= currentStepIndex;
@@ -271,6 +356,7 @@ function LetterReader() {
               if (stepId === "security") { stepIcon = "🔒"; stepTitle = "Lock"; }
               else if (stepId === "intro") { stepIcon = "✨"; stepTitle = "Intro"; }
               else if (stepId === "envelope") { stepIcon = "✉"; stepTitle = "Letter"; }
+              else if (stepId === "audioMessage") { stepIcon = "🎤"; stepTitle = "Voice"; }
               else if (stepId === "dateInvite") { stepIcon = "🌹"; stepTitle = "Date"; }
               else if (stepId === "closing") { stepIcon = "✍"; stepTitle = "Closing"; }
               else if (stepId === "survey") { stepIcon = "📊"; stepTitle = "Survey"; }
@@ -325,17 +411,31 @@ function LetterReader() {
                   <span 
                     style={{ 
                       fontSize: "9px", 
-                      color: isActive 
-                        ? "var(--accent-rose)" 
-                        : isCompleted 
-                          ? "var(--accent-purple)" 
-                          : "var(--text-muted)",
-                      fontWeight: isActive ? "bold" : "500",
+                      color: "#fff",
+                      fontWeight: "bold",
                       marginTop: "6px",
                       position: "absolute",
-                      top: "36px",
+                      top: "38px",
+                      left: "50%",
+                      transform: "translateX(-50%)",
                       whiteSpace: "nowrap",
-                      opacity: isActive ? 1 : 0.65,
+                      padding: "2px 8px",
+                      borderRadius: "12px",
+                      backgroundColor: isActive 
+                        ? "rgba(255, 75, 114, 0.85)" 
+                        : isCompleted 
+                          ? "rgba(156, 108, 250, 0.5)" 
+                          : "rgba(11, 7, 17, 0.55)",
+                      border: isActive
+                        ? "1px solid rgba(255, 255, 255, 0.25)"
+                        : "1px solid rgba(255, 255, 255, 0.08)",
+                      boxShadow: isActive
+                        ? "0 2px 10px rgba(255, 75, 114, 0.4)"
+                        : "0 2px 6px rgba(0, 0, 0, 0.3)",
+                      backdropFilter: "blur(6px)",
+                      WebkitBackdropFilter: "blur(6px)",
+                      opacity: isActive ? 1 : isCompleted ? 0.9 : 0.65,
+                      textShadow: "0 1px 2px rgba(0, 0, 0, 0.8)",
                       transition: "all 0.4s ease"
                     }}
                   >
@@ -386,13 +486,25 @@ function LetterReader() {
             theme={data.theme}
             sealSymbol={data.sealSymbol}
             sealColor={data.sealColor}
+            envelopeStyle={data.envelopeStyle}
             greeting={data.greeting}
             farewell={data.farewell}
+            backdrop={data.backdrop}
+            isOnlyStep={activeSteps.length === 1}
             onClose={() => {
               setTimeout(() => {
                 handleNextStep();
               }, 2400); // 800ms close + 1500ms retract + buffer
             }}
+          />
+        )}
+
+        {/* Step: Audio Message */}
+        {currentStep === "audioMessage" && data.audioMessage && (
+          <AudioMessage
+            audioMessage={data.audioMessage}
+            theme={data.theme}
+            onComplete={handleNextStep}
           />
         )}
 
@@ -403,6 +515,9 @@ function LetterReader() {
             sender={data.sender}
             recipient={data.recipient}
             letterKey={d}
+            letterId={id}
+            senderEmail={dbData?.senderEmail || ""}
+            preview={preview}
             onComplete={handleNextStep}
           />
         )}
@@ -424,6 +539,28 @@ function LetterReader() {
             sender={data.sender}
             recipient={data.recipient}
             letterKey={d}
+            onComplete={handleNextStep}
+          />
+        )}
+
+        {/* Step: Thank You Screen (hidden step) */}
+        {currentStep === "thankYou" && (
+          <ThankYou
+            sender={data.sender}
+            recipient={data.recipient}
+            content={data.content}
+            theme={data.theme}
+            isWriteback={data.isWriteback || false}
+            parentLetterId={id}
+            recipientUid={dbData?.userId || ""}
+            onExit={() => {
+              if (typeof window !== "undefined") {
+                window.close();
+                setTimeout(() => {
+                  window.location.href = "/";
+                }, 150);
+              }
+            }}
           />
         )}
       </div>
@@ -435,7 +572,7 @@ function LetterReader() {
 
 export default function LetterPage() {
   return (
-    <div style={{ minHeight: "100vh", padding: "20px" }}>
+    <div style={{ height: "100vh", padding: "0px", overflow: "hidden" }}>
       <Suspense fallback={
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "80vh", flexDirection: "column", gap: "16px" }}>
           <div style={{ width: "40px", height: "40px", borderRadius: "50%", border: "3px solid rgba(255, 75, 114, 0.1)", borderTopColor: "var(--accent-rose)", animation: "spin 1s linear infinite" }} />

@@ -1,6 +1,13 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { 
+  getFirestore, 
+  initializeFirestore, 
+  persistentLocalCache, 
+  persistentMultipleTabManager,
+  Firestore
+} from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -13,8 +20,26 @@ const firebaseConfig = {
 
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
+
+// Initialize Firestore with client-side offline persistence
+let db: Firestore;
+if (typeof window !== "undefined") {
+  try {
+    db = initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager()
+      })
+    });
+  } catch (err) {
+    console.warn("Failed to initialize Firestore with persistent local cache:", err);
+    db = getFirestore(app);
+  }
+} else {
+  db = getFirestore(app);
+}
+
+const storage = getStorage(app);
 const googleProvider = new GoogleAuthProvider();
 
 export const IS_MOCK = false;
-export { auth, db, googleProvider };
+export { auth, db, googleProvider, storage };

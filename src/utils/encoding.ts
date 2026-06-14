@@ -11,6 +11,12 @@ export interface LetterData {
 
   // New optional customizations
   email?: string;
+  backdrop?: string;
+  audioMessage?: {
+    enabled: boolean;
+    audioUrl?: string;
+    customMessage?: string;
+  };
   musicType?: "synth" | "url";
   musicUrl?: string;
   sendLaterDate?: string;
@@ -50,6 +56,7 @@ export interface LetterData {
     email?: string;
   };
   stepOrder?: string[];
+  envelopeStyle?: string;
 }
 
 export function encodeLetterData(data: LetterData): string {

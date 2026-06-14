@@ -11,9 +11,10 @@ interface SurveyFeedbackProps {
   sender: string;
   recipient: string;
   letterKey: string;
+  onComplete?: () => void;
 }
 
-export default function SurveyFeedback({ survey, sender, recipient, letterKey }: SurveyFeedbackProps) {
+export default function SurveyFeedback({ survey, sender, recipient, letterKey, onComplete }: SurveyFeedbackProps) {
   const [actualSurveyType, setActualSurveyType] = useState<"emoji" | "text" | "both">(survey.type);
   const [surveyEmoji, setSurveyEmoji] = useState("");
   const [surveyText, setSurveyText] = useState("");
@@ -53,7 +54,7 @@ export default function SurveyFeedback({ survey, sender, recipient, letterKey }:
 
   return (
     <div 
-      className="glass animate-reveal"
+      className="animate-reveal hide-scrollbar"
       style={{
         width: "100%",
         maxWidth: "500px",
@@ -62,7 +63,13 @@ export default function SurveyFeedback({ survey, sender, recipient, letterKey }:
         display: "flex",
         flexDirection: "column",
         gap: "24px",
-        animation: "float-up-intro 0.6s ease"
+        animation: "float-up-intro 0.6s ease",
+        maxHeight: "calc(100vh - 160px)",
+        overflowY: "auto",
+        background: "rgba(25, 12, 22, 0.95)",
+        border: "1.5px solid var(--accent-gold)",
+        borderRadius: "20px",
+        boxShadow: "0 15px 40px rgba(0, 0, 0, 0.5)"
       }}
     >
       {surveySubmitted ? (
@@ -75,73 +82,101 @@ export default function SurveyFeedback({ survey, sender, recipient, letterKey }:
           >
             💖
           </div>
-          <h2 style={{ fontSize: "22px", fontWeight: 700 }}>Response Sealed!</h2>
+          <h2 
+            style={{ 
+              fontSize: "32px", 
+              fontWeight: "normal", 
+              fontFamily: "'Allura', 'Sacramento', 'Great Vibes', 'Dancing Script', cursive",
+              color: "var(--accent-rose)"
+            }}
+          >
+            Response Sealed!
+          </h2>
           <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6" }}>
             Your feelings have been captured and saved in my heart. Thank you for sharing this moment.
           </p>
           <div style={{ marginTop: "12px" }}>
-            <Link
-              href="/"
+            <button
+              onClick={() => {
+                if (onComplete) {
+                  onComplete();
+                } else if (typeof window !== "undefined") {
+                  window.close();
+                  setTimeout(() => {
+                    window.location.href = "/dashboard";
+                  }, 150);
+                }
+              }}
               style={{
                 display: "inline-block",
                 padding: "10px 24px",
                 borderRadius: "6px",
-                border: "1px solid var(--border-card)",
-                background: "rgba(255,255,255,0.03)",
-                color: "var(--text-muted)",
+                border: "1.5px solid var(--accent-rose)",
+                background: "var(--accent-rose)",
+                color: "#fff",
                 fontSize: "13px",
-                textDecoration: "none",
-                transition: "color 0.2s"
+                cursor: "pointer",
+                transition: "all 0.2s",
+                boxShadow: "0 4px 10px rgba(255, 75, 114, 0.2)"
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.03)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "none";
+              }}
             >
-              Back to Dashboard
-            </Link>
+              {onComplete ? "Continue 💖" : "Back to Dashboard"}
+            </button>
           </div>
         </div>
       ) : (
         <form onSubmit={submitSurvey} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          <div 
-            style={{ 
-              fontSize: "18px", 
-              fontWeight: 600,
-              color: "#fff",
-              marginBottom: "6px",
-              lineHeight: "1.5",
-              textAlign: "center"
-            }}
-          >
-            {survey.question}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+            <div style={{ fontSize: "56px", marginBottom: "4px", animation: "heartbeat-survey 1.5s infinite ease-in-out" }}>📊</div>
+            <div 
+              style={{ 
+                fontSize: "34px", 
+                fontWeight: "normal",
+                color: "#fff",
+                lineHeight: "1.4",
+                textAlign: "center",
+                fontFamily: "'Allura', 'Sacramento', 'Great Vibes', 'Dancing Script', cursive"
+              }}
+            >
+              {survey.question}
+            </div>
           </div>
 
           {/* Tab Selector Switches */}
-          <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginBottom: "8px" }}>
-            {[
-              { id: "emoji", name: "Emoji" },
-              { id: "text", name: "Text" },
-              { id: "both", name: "Both" }
-            ].map((opt) => (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => setActualSurveyType(opt.id as "emoji" | "text" | "both")}
-                style={{
-                  padding: "6px 14px",
-                  borderRadius: "15px",
-                  fontSize: "12px",
-                  fontWeight: "bold",
-                  backgroundColor: actualSurveyType === opt.id ? "var(--accent-rose)" : "rgba(255, 255, 255, 0.05)",
-                  border: "1px solid " + (actualSurveyType === opt.id ? "var(--accent-rose)" : "rgba(255, 255, 255, 0.1)"),
-                  color: "#fff",
-                  cursor: "pointer",
-                  transition: "all 0.2s"
-                }}
-              >
-                {opt.name}
-              </button>
-            ))}
-          </div>
+          {survey.type === "both" && (
+            <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginBottom: "8px" }}>
+              {[
+                { id: "emoji", name: "Emoji" },
+                { id: "text", name: "Text" },
+                { id: "both", name: "Both" }
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setActualSurveyType(opt.id as "emoji" | "text" | "both")}
+                  style={{
+                    padding: "6px 14px",
+                    borderRadius: "15px",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    backgroundColor: actualSurveyType === opt.id ? "var(--accent-rose)" : "rgba(255, 255, 255, 0.05)",
+                    border: "1px solid " + (actualSurveyType === opt.id ? "var(--accent-rose)" : "rgba(255, 255, 255, 0.1)"),
+                    color: "#fff",
+                    cursor: "pointer",
+                    transition: "all 0.2s"
+                  }}
+                >
+                  {opt.name}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Emoji selector */}
           {(actualSurveyType === "emoji" || actualSurveyType === "both") && (

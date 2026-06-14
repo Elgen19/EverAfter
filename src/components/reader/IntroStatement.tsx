@@ -74,7 +74,7 @@ export default function IntroStatement({ text, animation, onComplete }: IntroSta
     if (introStage === "exiting") {
       const timer = setTimeout(() => {
         onComplete();
-      }, 1000);
+      }, 2500);
       return () => clearTimeout(timer);
     }
   }, [introStage, onComplete]);
@@ -100,7 +100,7 @@ export default function IntroStatement({ text, animation, onComplete }: IntroSta
           justifyContent: "center",
           textAlign: "center",
           opacity: (introStage === "before" || introStage === "exiting") ? 0 : 1,
-          transition: "opacity 1.0s ease-in-out",
+          transition: "opacity 2.5s ease-in-out",
         }}
       >
         {animation === "typewriter" ? (

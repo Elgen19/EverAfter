@@ -83,9 +83,11 @@ export default function SecurityGate({ securityData, onSuccess }: SecurityGatePr
     }
   };
 
+  const isDarkBgType = securityData.type === "boolean" || securityData.type === "choice";
+
   return (
     <div 
-      className={`${shaking ? "shake-anim" : ""} animate-reveal`}
+      className={`${shaking ? "shake-anim" : ""} animate-reveal hide-scrollbar`}
       style={{
         width: "100%",
         maxWidth: "500px",
@@ -94,13 +96,21 @@ export default function SecurityGate({ securityData, onSuccess }: SecurityGatePr
         display: "flex",
         flexDirection: "column",
         gap: "12px",
-        animation: "float-up-intro 0.6s ease"
+        animation: "float-up-intro 0.6s ease",
+        maxHeight: "calc(100vh - 160px)",
+        overflowY: "auto",
+        background: isDarkBgType ? "rgba(25, 12, 22, 0.95)" : undefined,
+        border: isDarkBgType ? "1.5px solid var(--accent-gold)" : undefined,
+        borderRadius: isDarkBgType ? "20px" : undefined,
+        boxShadow: isDarkBgType ? "0 15px 40px rgba(0, 0, 0, 0.5)" : undefined,
+        backdropFilter: isDarkBgType ? "blur(12px)" : undefined,
+        WebkitBackdropFilter: isDarkBgType ? "blur(12px)" : undefined,
       }}
     >
       <style>{`
         @keyframes fadeInSecurityQuestion {
-          from { opacity: 0; transform: scale(0.98); filter: blur(2px); }
-          to { opacity: 1; transform: scale(1); filter: blur(0); }
+          from { transform: scale(0.98); filter: blur(2px); }
+          to { transform: scale(1); filter: blur(0); }
         }
         @keyframes fadeInSecurityInputs {
           from { opacity: 0; transform: translateY(8px); }
@@ -110,14 +120,14 @@ export default function SecurityGate({ securityData, onSuccess }: SecurityGatePr
 
       <div 
         style={{ 
-          opacity: 0,
+          opacity: 1,
           fontSize: "42px",
           fontFamily: "var(--font-cursive)",
           fontWeight: "normal",
           color: "#fff",
           lineHeight: "1.4",
           margin: "12px 0 0 0",
-          animation: "fadeInSecurityQuestion 2s ease-in-out 1s forwards"
+          animation: "fadeInSecurityQuestion 1.5s ease-in-out 0.2s forwards"
         }}
       >
         {securityData.question}

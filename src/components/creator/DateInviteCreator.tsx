@@ -98,6 +98,52 @@ export default function DateInviteCreator({
 }: DateInviteCreatorProps) {
   const [showMapsHelpModal, setShowMapsHelpModal] = useState(false);
   const [emailError, setEmailError] = useState("");
+  const [dateTimeError, setDateTimeError] = useState("");
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const localTodayStr = `${year}-${month}-${day}`;
+
+  const validateDateAndTime = (date: string, time: string) => {
+    if (!date) {
+      setDateTimeError("");
+      return true;
+    }
+
+    if (date < localTodayStr) {
+      setDateTimeError("The invitation date cannot be in the past.");
+      return false;
+    }
+
+    if (time) {
+      const selectedDateTime = new Date(`${date}T${time}`);
+      const minAllowedDateTime = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour from now
+
+      if (selectedDateTime < minAllowedDateTime) {
+        if (date === localTodayStr) {
+          setDateTimeError("The proposed time must be at least 1 hour in the future to allow ample preparation time.");
+        } else {
+          setDateTimeError("The proposed date and time must be at least 1 hour in the future.");
+        }
+        return false;
+      }
+    }
+
+    setDateTimeError("");
+    return true;
+  };
+
+  const handleDateChange = (val: string) => {
+    setDateInviteDate(val);
+    validateDateAndTime(val, dateInviteTime);
+  };
+
+  const handleTimeChange = (val: string) => {
+    setDateInviteTime(val);
+    validateDateAndTime(dateInviteDate, val);
+  };
 
   const handleEmailChange = (val: string) => {
     setDateInviteEmail(val);
@@ -161,7 +207,8 @@ export default function DateInviteCreator({
                 type="date"
                 disabled={dateInviteConfirmed}
                 value={dateInviteDate}
-                onChange={(e) => setDateInviteDate(e.target.value)}
+                min={localTodayStr}
+                onChange={(e) => handleDateChange(e.target.value)}
                 style={{
                   backgroundColor: "rgba(0,0,0,0.2)",
                   border: "1px solid var(--border-card)",
@@ -180,7 +227,7 @@ export default function DateInviteCreator({
                 type="time"
                 disabled={dateInviteConfirmed}
                 value={dateInviteTime}
-                onChange={(e) => setDateInviteTime(e.target.value)}
+                onChange={(e) => handleTimeChange(e.target.value)}
                 style={{
                   backgroundColor: "rgba(0,0,0,0.2)",
                   border: "1px solid var(--border-card)",
@@ -194,6 +241,12 @@ export default function DateInviteCreator({
               />
             </div>
           </div>
+
+          {dateTimeError && (
+            <div style={{ color: "var(--accent-rose)", fontSize: "11px", fontWeight: "bold" }}>
+              ⚠️ {dateTimeError}
+            </div>
+          )}
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <label style={{ fontSize: "11px", color: "var(--text-muted)" }}>Proposed Place / Location</label>
@@ -291,6 +344,9 @@ export default function DateInviteCreator({
                 opacity: dateInviteConfirmed ? 0.6 : 1
               }}
             />
+            <span style={{ fontSize: "10px", color: "var(--text-muted)", marginTop: "2px", lineHeight: "1.4" }}>
+              💡 Providing the recipient's email address sends them a copy of the RSVP and automatically sets up a Google Calendar reminder if they use Gmail.
+            </span>
             {emailError && (
               <span style={{ color: "var(--accent-rose)", fontSize: "11px", fontWeight: "bold" }}>
                 ⚠️ {emailError}
@@ -302,86 +358,127 @@ export default function DateInviteCreator({
           <div style={{ marginTop: "8px", borderTop: "1px solid rgba(255, 255, 255, 0.06)", paddingTop: "12px" }}>
             <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "bold" }}>INVITATION PREVIEW</span>
             <div 
-              style={{ 
+             style={{ 
                 display: "flex", 
                 flexDirection: "column", 
                 position: "relative",
-                backgroundColor: "rgba(255, 75, 114, 0.03)",
-                border: "1.5px solid rgba(226, 184, 87, 0.3)", // gold border
+                backgroundColor: "rgba(25, 12, 22, 0.95)",
+                border: "1.5px solid var(--accent-gold)", // gold border
                 borderRadius: "16px",
-                padding: "24px 20px",
-                boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+                padding: "16px 20px 20px 20px",
+                boxShadow: "0 15px 40px rgba(0,0,0,0.5)",
+                width: "100%",
+                height: "100%",
+                maxHeight: "530px",
+                minHeight: "450px",
+                justifyContent: "space-between",
+                overflow: "hidden",
                 marginTop: "8px"
               }}
             >
-              {/* Simulated punch hole cutouts on left and right edges */}
-              <div style={{ position: "absolute", left: "-10px", top: "45%", width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#140f1e", borderRight: "1.5px solid rgba(226, 184, 87, 0.3)", zIndex: 10 }} />
-              <div style={{ position: "absolute", right: "-10px", top: "45%", width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#140f1e", borderLeft: "1.5px solid rgba(226, 184, 87, 0.3)", zIndex: 10 }} />
+              {/* Top Section */}
+              <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", flex: "1 1 auto" }}>
+                {/* Ticket Header */}
+                <div style={{ borderBottom: "1px dashed rgba(255,255,255,0.1)", paddingBottom: "8px", textAlign: "center" }}>
+                  <span style={{ fontSize: "10px", color: "var(--accent-gold)", fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase" }}>
+                    🎫 Ticket Pass - Admit Two 🎫
+                  </span>
+                  <h2 style={{ 
+                    fontSize: "28px", 
+                    fontWeight: "normal", 
+                    color: "#fff", 
+                    marginTop: "2px", 
+                    lineHeight: "1.2",
+                    fontFamily: "'Allura', 'Sacramento', 'Great Vibes', 'Dancing Script', cursive"
+                  }}>
+                    Thank you for going on a date with me
+                  </h2>
+                </div>
 
-              {/* Ticket Header */}
-              <div style={{ borderBottom: "1px dashed rgba(255,255,255,0.1)", paddingBottom: "10px", marginBottom: "14px", textAlign: "center" }}>
-                <span style={{ fontSize: "10px", color: "var(--accent-gold)", fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase" }}>
-                  🎫 Ticket Pass - Admit Two 🎫
-                </span>
-                <h2 style={{ fontSize: "18px", fontWeight: "bold", color: "#fff", marginTop: "4px", lineHeight: "1.4" }}>
-                  Thank you for going out on a date with me
-                </h2>
+                {/* Ticket Body / Proposal Details */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px", textAlign: "left", fontSize: "13px", padding: "0 6px" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: "6px" }}>
+                    <div>
+                      <span style={{ color: "var(--text-muted)", fontSize: "10px", textTransform: "uppercase", display: "block" }}>Host</span>
+                      <strong style={{ color: "#fff" }}>{sender || "Sender Name"}</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: "var(--text-muted)", fontSize: "10px", textTransform: "uppercase", display: "block" }}>Guest</span>
+                      <strong style={{ color: "#fff" }}>{recipient || "Recipient Name"}</strong>
+                    </div>
+                  </div>
+
+                  <div style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: "6px" }}>
+                    <span style={{ color: "var(--text-muted)", fontSize: "10px", textTransform: "uppercase", display: "block", marginBottom: "2px" }}>Place / Location</span>
+                    <strong style={{ color: "var(--accent-gold)", fontSize: "13px", display: "inline-block" }}>
+                      📍 {dateInvitePlace || "Proposed Place"}
+                    </strong>
+                  </div>
+
+                  <div style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: "6px" }}>
+                    <span style={{ color: "var(--text-muted)", fontSize: "10px", textTransform: "uppercase", display: "block", marginBottom: "2px" }}>Proposed Date & Time</span>
+                    <strong style={{ color: "var(--accent-rose)", fontSize: "13px" }}>
+                      ⏰ {formatDateInvite(dateInviteDate, dateInviteTime) || "Proposed Date & Time"}
+                    </strong>
+                  </div>
+
+                  {dateInviteMapLink && (
+                    <div style={{ textAlign: "center", marginTop: "2px" }}>
+                      <span
+                        style={{
+                          display: "inline-block",
+                          padding: "6px 16px",
+                          borderRadius: "20px",
+                          backgroundColor: "rgba(226, 184, 87, 0.1)",
+                          border: "1px dashed var(--accent-gold)",
+                          color: "var(--accent-gold)",
+                          fontSize: "11px",
+                          fontWeight: "bold",
+                          textDecoration: "none",
+                          letterSpacing: "1px"
+                        }}
+                      >
+                        🗺️ VIEW PLACE
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Ticket Body / Proposal Details */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px", textAlign: "left", fontSize: "13px", padding: "0 6px" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: "8px" }}>
-                  <div>
-                    <span style={{ color: "var(--text-muted)", fontSize: "10px", textTransform: "uppercase", display: "block" }}>Host</span>
-                    <strong style={{ color: "#fff" }}>{sender || "Sender Name"}</strong>
-                  </div>
-                  <div>
-                    <span style={{ color: "var(--text-muted)", fontSize: "10px", textTransform: "uppercase", display: "block" }}>Guest</span>
-                    <strong style={{ color: "#fff" }}>{recipient || "Recipient Name"}</strong>
-                  </div>
-                </div>
-
-                <div style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: "8px" }}>
-                  <span style={{ color: "var(--text-muted)", fontSize: "10px", textTransform: "uppercase", display: "block", marginBottom: "2px" }}>Place / Location</span>
-                  <strong style={{ color: "var(--accent-gold)", fontSize: "14px", display: "inline-block" }}>
-                    📍 {dateInvitePlace || "Proposed Place"}
-                  </strong>
-                </div>
-
-                <div style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: "8px" }}>
-                  <span style={{ color: "var(--text-muted)", fontSize: "10px", textTransform: "uppercase", display: "block", marginBottom: "2px" }}>Proposed Date & Time</span>
-                  <strong style={{ color: "var(--accent-rose)", fontSize: "14px" }}>
-                    ⏰ {formatDateInvite(dateInviteDate, dateInviteTime) || "Proposed Date & Time"}
-                  </strong>
-                </div>
-
-                {dateInviteMapLink && (
-                  <div style={{ textAlign: "center", marginTop: "12px" }}>
-                    <span
-                      style={{
-                        display: "inline-block",
-                        padding: "8px 20px",
-                        borderRadius: "20px",
-                        backgroundColor: "rgba(226, 184, 87, 0.1)",
-                        border: "1px dashed var(--accent-gold)",
-                        color: "var(--accent-gold)",
-                        fontSize: "12px",
-                        fontWeight: "bold",
-                        textDecoration: "none",
-                        letterSpacing: "1px"
-                      }}
-                    >
-                      🗺️ VIEW PLACE
-                    </span>
-                  </div>
-                )}
+              {/* Perforation Line divider with punch holes */}
+              <div style={{ position: "relative", width: "100%", margin: "14px 0" }}>
+                {/* Left punch hole */}
+                <div style={{ 
+                  position: "absolute", 
+                  left: "-30px", 
+                  top: "50%", 
+                  transform: "translateY(-50%)", 
+                  width: "18px", 
+                  height: "18px", 
+                  borderRadius: "50%", 
+                  backgroundColor: "var(--bg-studio, #0b0711)", 
+                  borderRight: "1.5px solid var(--accent-gold)", 
+                  zIndex: 10 
+                }} />
+                {/* Right punch hole */}
+                <div style={{ 
+                  position: "absolute", 
+                  right: "-30px", 
+                  top: "50%", 
+                  transform: "translateY(-50%)", 
+                  width: "18px", 
+                  height: "18px", 
+                  borderRadius: "50%", 
+                  backgroundColor: "var(--bg-studio, #0b0711)", 
+                  borderLeft: "1.5px solid var(--accent-gold)", 
+                  zIndex: 10 
+                }} />
+                {/* Dashed line */}
+                <div style={{ borderTop: "2px dashed rgba(226, 184, 87, 0.7)" }} />
               </div>
-
-              {/* Perforation Line divider */}
-              <div style={{ borderTop: "2px dashed rgba(226, 184, 87, 0.3)", margin: "16px 0 12px 0" }} />
 
               {/* Bottom Ticket Stub: Notes & Action */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", flex: "0 0 auto" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px", textAlign: "left" }}>
                   <label style={{ fontSize: "10px", color: "var(--accent-gold)", textTransform: "uppercase", fontWeight: 700 }}>Add a ticket message...</label>
                   <textarea
@@ -392,12 +489,13 @@ export default function DateInviteCreator({
                       backgroundColor: "rgba(0,0,0,0.25)",
                       border: "1px solid var(--border-card)",
                       borderRadius: "8px",
-                      padding: "10px",
+                      padding: "8px 10px",
                       color: "#fff",
                       fontSize: "12px",
                       lineHeight: "1.4",
                       outline: "none",
                       resize: "none",
+                      height: "44px",
                       cursor: "not-allowed"
                     }}
                   />
@@ -408,7 +506,7 @@ export default function DateInviteCreator({
                   disabled
                   style={{
                     width: "100%",
-                    padding: "12px",
+                    padding: "10px",
                     borderRadius: "8px",
                     backgroundColor: "var(--accent-rose)",
                     backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)",
@@ -437,6 +535,49 @@ export default function DateInviteCreator({
                 }
                 return;
               }
+              if (!dateInviteDate) {
+                if (showAlert) {
+                  showAlert("Proposed Date Required", "Please specify a date for your invitation before confirming.");
+                } else {
+                  alert("Please select a proposed date.");
+                }
+                return;
+              }
+              if (!dateInviteTime) {
+                if (showAlert) {
+                  showAlert("Proposed Time Required", "Please specify a time for your invitation before confirming.");
+                } else {
+                  alert("Please select a proposed time.");
+                }
+                return;
+              }
+
+              // Re-run validation checks synchronously
+              const isDateTimeValid = validateDateAndTime(dateInviteDate, dateInviteTime);
+              if (!isDateTimeValid) {
+                let currentError = "";
+                if (dateInviteDate < localTodayStr) {
+                  currentError = "The invitation date cannot be in the past.";
+                } else {
+                  const selectedDateTime = new Date(`${dateInviteDate}T${dateInviteTime}`);
+                  const minAllowedDateTime = new Date(now.getTime() + 60 * 60 * 1000);
+                  if (selectedDateTime < minAllowedDateTime) {
+                    if (dateInviteDate === localTodayStr) {
+                      currentError = "The proposed time must be at least 1 hour in the future to allow ample preparation time.";
+                    } else {
+                      currentError = "The proposed date and time must be at least 1 hour in the future.";
+                    }
+                  }
+                }
+
+                if (showAlert) {
+                  showAlert("Invalid Date or Time", currentError || "Please verify your proposed date and time details.");
+                } else {
+                  alert(currentError || "Please verify your proposed date and time details.");
+                }
+                return;
+              }
+
               if (emailError) {
                 if (showAlert) {
                   showAlert("Valid Email Required", "Please resolve the recipient email address validation error before confirming your invitation.");

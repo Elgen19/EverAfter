@@ -81,7 +81,7 @@ export default function ClosingStatement({ text, animation, isLastStep, onComple
     if (closingStage === "exiting") {
       const timer = setTimeout(() => {
         onComplete();
-      }, 1000);
+      }, 2500);
       return () => clearTimeout(timer);
     }
   }, [closingStage, onComplete]);
@@ -107,7 +107,7 @@ export default function ClosingStatement({ text, animation, isLastStep, onComple
           justifyContent: "center",
           textAlign: "center",
           opacity: (closingStage === "before" || closingStage === "exiting") ? 0 : 1,
-          transition: "opacity 1.0s ease-in-out",
+          transition: "opacity 2.5s ease-in-out",
         }}
       >
         {animation === "typewriter" ? (
@@ -125,8 +125,15 @@ export default function ClosingStatement({ text, animation, isLastStep, onComple
 
       {isLastStep && closingStage === "completed" && (
         <div style={{ animation: "float-up-intro 0.6s ease" }}>
-          <Link
-            href="/"
+          <button
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                window.close();
+                setTimeout(() => {
+                  window.location.href = "/dashboard";
+                }, 150);
+              }
+            }}
             style={{
               display: "inline-block",
               padding: "12px 28px",
@@ -135,8 +142,8 @@ export default function ClosingStatement({ text, animation, isLastStep, onComple
               background: "rgba(255,255,255,0.03)",
               color: "var(--text-muted)",
               fontSize: "14px",
-              textDecoration: "none",
               fontWeight: 600,
+              cursor: "pointer",
               transition: "all 0.2s"
             }}
             onMouseEnter={(e) => {
@@ -151,7 +158,7 @@ export default function ClosingStatement({ text, animation, isLastStep, onComple
             }}
           >
             Back to Dashboard
-          </Link>
+          </button>
         </div>
       )}
     </div>

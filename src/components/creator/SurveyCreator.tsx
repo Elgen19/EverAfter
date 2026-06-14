@@ -114,7 +114,15 @@ export default function SurveyCreator({
               }}
             >
               <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "4px" }}>📊 Survey Preview</div>
-              <div style={{ fontSize: "13px", fontWeight: "bold", margin: "6px 0", color: "#fff" }}>
+              <div 
+                style={{ 
+                  fontSize: "20px", 
+                  fontWeight: "normal", 
+                  margin: "6px 0", 
+                  color: "#fff",
+                  fontFamily: "'Allura', 'Sacramento', 'Great Vibes', 'Dancing Script', cursive"
+                }}
+              >
                 {surveyQuestion || "How does this letter make you feel?"}
               </div>
               

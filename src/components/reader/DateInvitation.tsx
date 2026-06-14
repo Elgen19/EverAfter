@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { db } from "@/utils/firebase";
 
 interface DateInvitationProps {
   dateInvite: {
@@ -16,6 +17,9 @@ interface DateInvitationProps {
   sender: string;
   recipient: string;
   letterKey: string;
+  letterId?: string;
+  senderEmail?: string;
+  preview?: boolean;
   onComplete: () => void;
 }
 
@@ -70,14 +74,52 @@ export default function DateInvitation({
   sender,
   recipient,
   letterKey,
+  letterId,
+  senderEmail,
+  preview = false,
   onComplete
 }: DateInvitationProps) {
   const [dateRsvpSelected, setDateRsvpSelected] = useState<"yes" | null>(null);
   const [dateNotes, setDateNotes] = useState("");
   const [showRsvpSuccessModal, setShowRsvpSuccessModal] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [showDeclineFeedbackModal, setShowDeclineFeedbackModal] = useState(false);
   const [dateStatusMessage, setDateStatusMessage] = useState("");
   const [dateInviteHearts, setDateInviteHearts] = useState<{ id: number; char: string; tx: string; ty: string; scale: number; rot: string }[]>([]);
+  const [isSealing, setIsSealing] = useState(false);
+
+
+  const buildGoogleCalendarUrl = () => {
+    if (!dateInvite.date || !dateInvite.time) return "";
+    try {
+      const [yr, mo, dy] = dateInvite.date.split("-").map(Number);
+      const [hr, mn] = dateInvite.time.split(":").map(Number);
+      const startDate = new Date(yr, mo - 1, dy, hr, mn);
+      const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // 2 hours duration
+
+      const formatGCalDate = (d: Date) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const h = String(d.getHours()).padStart(2, '0');
+        const min = String(d.getMinutes()).padStart(2, '0');
+        const s = "00";
+        return `${y}${m}${day}T${h}${min}${s}`;
+      };
+
+      const datesParam = `${formatGCalDate(startDate)}/${formatGCalDate(endDate)}`;
+      const text = encodeURIComponent(`🌹 Date with ${sender || "my love"} 🌹`);
+      const dates = encodeURIComponent(datesParam);
+      const details = encodeURIComponent(
+        `Looking forward to our romantic date! 🥰\n\nNotes from RSVP: ${dateNotes.trim() || "None"}\n\nGenerated via Digital Love Letter.`
+      );
+      const locationParam = encodeURIComponent(dateInvite.place || "");
+      return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${dates}&details=${details}&location=${locationParam}`;
+    } catch (err) {
+      console.error("Error building GCal URL:", err);
+      return "";
+    }
+  };
 
   const handleDeclineConfirm = async () => {
     try {
@@ -94,7 +136,17 @@ export default function DateInvitation({
       };
       localStorage.setItem(`date_rsvp_${letterKey.slice(0, 10)}`, JSON.stringify(rsvpResult));
       
-      if (dateInvite.email) {
+      if (letterId && db) {
+        const { doc, updateDoc } = await import("firebase/firestore");
+        const docRef = doc(db, "letters", letterId);
+        await updateDoc(docRef, {
+          "dateInvite.rsvpStatus": "declined",
+          "dateInvite.rsvpNotes": "Recipient declined the date invitation.",
+          "dateInvite.rsvpTimestamp": timestamp
+        });
+      }
+
+      if (dateInvite.email && !preview) {
         await fetch("/api/send-rsvp", {
           method: "POST",
           headers: {
@@ -102,6 +154,7 @@ export default function DateInvitation({
           },
           body: JSON.stringify({
             recipientEmail: dateInvite.email,
+            senderEmail: senderEmail || null,
             senderName: sender,
             recipientName: recipient,
             date: dateInvite.date,
@@ -117,11 +170,13 @@ export default function DateInvitation({
       console.error("Failed to save or send RSVP decline:", err);
     }
     setShowDeclineModal(false);
-    onComplete();
+    setShowDeclineFeedbackModal(true);
   };
 
   const handleRsvpConfirm = async () => {
+    setIsSealing(true);
     try {
+      // eslint-disable-next-line react-hooks/purity
       const timestamp = Date.now();
       const rsvpResult = {
         recipient,
@@ -136,15 +191,26 @@ export default function DateInvitation({
       };
       localStorage.setItem(`date_rsvp_${letterKey.slice(0, 10)}`, JSON.stringify(rsvpResult));
 
-      if (dateInvite.email) {
+      if (letterId && db) {
+        const { doc, updateDoc } = await import("firebase/firestore");
+        const docRef = doc(db, "letters", letterId);
+        await updateDoc(docRef, {
+          "dateInvite.rsvpStatus": "accepted",
+          "dateInvite.rsvpNotes": dateNotes.trim(),
+          "dateInvite.rsvpTimestamp": timestamp
+        });
+      }
+
+      if (dateInvite.email && !preview) {
         setDateStatusMessage("Simulating email confirmation dispatch...");
-        await fetch("/api/send-rsvp", {
+        fetch("/api/send-rsvp", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
             recipientEmail: dateInvite.email,
+            senderEmail: senderEmail || null,
             senderName: sender,
             recipientName: recipient,
             date: dateInvite.date,
@@ -155,11 +221,22 @@ export default function DateInvitation({
             notes: dateNotes.trim()
           })
         }).catch(err => console.error("Simulated accept email send failed:", err));
+      } else if (preview) {
+        setDateStatusMessage("Preview mode: RSVP email dispatch bypassed.");
       }
     } catch (err) {
       console.error("Failed to save or send RSVP accept:", err);
     }
-    setShowRsvpSuccessModal(true);
+    
+    // Smooth peak duration for flash transition
+    setTimeout(() => {
+      triggerHeartsBurst();
+      setShowRsvpSuccessModal(true);
+    }, 250);
+
+    setTimeout(() => {
+      setIsSealing(false);
+    }, 800);
   };
 
   const triggerHeartsBurst = () => {
@@ -184,23 +261,32 @@ export default function DateInvitation({
     setDateRsvpSelected("yes");
   };
 
+  const isTicketView = dateRsvpSelected === "yes" && !showRsvpSuccessModal;
+
   return (
     <div 
-      className="glass animate-reveal"
+      className="animate-reveal hide-scrollbar"
       style={{
         width: "100%",
         maxWidth: "500px",
-        padding: "40px 30px",
+        padding: isTicketView ? "0" : "40px 30px",
         textAlign: "center",
         display: "flex",
         flexDirection: "column",
         gap: "24px",
         position: "relative",
-        animation: "float-up-intro 0.6s ease"
+        animation: "float-up-intro 0.6s ease",
+        maxHeight: isTicketView ? "calc(100vh - 120px)" : "calc(100vh - 160px)",
+        overflowY: isTicketView ? "hidden" : "auto",
+        border: isTicketView ? "none" : "1.5px solid var(--accent-gold)",
+        borderRadius: isTicketView ? undefined : "20px",
+        background: isTicketView ? "transparent" : "rgba(25, 12, 22, 0.95)",
+        boxShadow: isTicketView ? "none" : "0 15px 40px rgba(0, 0, 0, 0.5)",
+        marginTop: isTicketView ? "-55px" : undefined
       }}
     >
-      {/* Decline Confirmation Modal */}
-      {showDeclineModal && (
+      {/* Sealing transition flash overlay */}
+      {isSealing && (
         <div 
           style={{
             position: "absolute",
@@ -208,24 +294,206 @@ export default function DateInvitation({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(11, 7, 17, 0.95)",
-            backdropFilter: "blur(8px)",
-            borderRadius: "20px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "30px",
-            zIndex: 100,
-            animation: "float-up-intro 0.3s ease"
+            borderRadius: isTicketView ? "16px" : "20px",
+            zIndex: 200,
+            animation: "sealing-flash 0.8s ease-out forwards",
+            pointerEvents: "none"
           }}
+        />
+      )}
+      {/* Decline Confirmation Modal is handled inline below inside the conditional flow */}
+
+      {/* Romantic heart burst */}
+      {dateInviteHearts.map((h) => (
+        <span
+          key={h.id}
+          className="burst-heart"
+          style={{
+            "--tx": h.tx,
+            "--ty": h.ty,
+            "--scale": h.scale,
+            "--rot": h.rot,
+            position: "absolute",
+            color: "var(--accent-rose)",
+            fontSize: "24px",
+            pointerEvents: "none"
+          } as any}
         >
-          <div style={{ fontSize: "56px", marginBottom: "16px" }}>🥺</div>
-          <h3 style={{ fontSize: "20px", fontWeight: "bold", color: "#fff", marginBottom: "12px" }}>Decline Date Invitation?</h3>
-          <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6", marginBottom: "24px", maxWidth: "320px" }}>
-            Are you absolutely sure you want to decline this lovely date invitation from {sender}? 💔
+          {h.char}
+        </span>
+      ))}
+
+      {showRsvpSuccessModal ? (
+        // RSVP Success Confirmation (centered inside wrapper!)
+        <div 
+          className="animate-stamp"
+          style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "20px", padding: "10px 0" }}
+        >
+          <div style={{ fontSize: "56px", marginBottom: "8px", animation: "heartbeat-survey 1.5s infinite ease-in-out" }}>🎟️</div>
+          <h3 style={{ 
+            fontSize: "36px", 
+            fontWeight: "normal", 
+            fontFamily: "var(--font-allura), 'Allura', var(--font-sacramento), 'Sacramento', var(--font-great-vibes), 'Great Vibes', 'Dancing Script', cursive",
+            color: "var(--accent-rose)", 
+            margin: 0, 
+            textAlign: "center" 
+          }}>
+            RSVP Confirmed!
+          </h3>
+          <p style={{ 
+            fontSize: "14px", 
+            color: "var(--text-muted)", 
+            lineHeight: "1.6", 
+            margin: 0, 
+            maxWidth: "340px", 
+            textAlign: "center"
+          }}>
+            💖 A beautiful promise is sealed! You have confirmed a romantic date with <strong>{sender || "your partner"}</strong>. Let the anticipation of sweet memories warm your heart.
           </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", maxWidth: "240px" }}>
+          {dateInvite.email && (
+            <p style={{ fontSize: "11px", color: "var(--text-muted)", opacity: 0.8, margin: "-10px 0 0 0" }}>
+              A confirmation ticket copy has been sent to <strong>{dateInvite.email}</strong>.
+            </p>
+          )}
+
+          {buildGoogleCalendarUrl() && (
+            <a
+              href={buildGoogleCalendarUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                width: "100%",
+                maxWidth: "240px",
+                padding: "12px",
+                borderRadius: "8px",
+                border: "1.5px solid var(--accent-gold)",
+                backgroundColor: "rgba(226, 184, 87, 0.1)",
+                color: "var(--accent-gold)",
+                fontWeight: "bold",
+                fontSize: "14px",
+                textDecoration: "none",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                boxShadow: "0 4px 15px rgba(226, 184, 87, 0.15)"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "rgba(226, 184, 87, 0.25)";
+                e.currentTarget.style.boxShadow = "0 6px 20px rgba(226, 184, 87, 0.35)";
+                e.currentTarget.style.transform = "scale(1.02)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "rgba(226, 184, 87, 0.1)";
+                e.currentTarget.style.boxShadow = "0 4px 15px rgba(226, 184, 87, 0.15)";
+                e.currentTarget.style.transform = "none";
+              }}
+            >
+              📅 Add to Google Calendar
+            </a>
+          )}
+
+          <button
+            type="button"
+            onClick={() => {
+              setShowRsvpSuccessModal(false);
+              onComplete();
+            }}
+            style={{
+              width: "100%",
+              maxWidth: "200px",
+              padding: "12px",
+              borderRadius: "8px",
+              backgroundColor: "var(--accent-rose)",
+              backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)",
+              color: "#fff",
+              fontWeight: "bold",
+              fontSize: "14px",
+              border: "none",
+              cursor: "pointer",
+              boxShadow: "0 4px 15px rgba(255, 75, 114, 0.3)",
+              transition: "all 0.2s"
+            }}
+          >
+            Continue 💖
+          </button>
+        </div>
+      ) : showDeclineFeedbackModal ? (
+        // Decline Feedback Confirmation (centered inside glass card wrapper!)
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "20px", padding: "10px 0" }}>
+          <div style={{ fontSize: "56px", marginBottom: "8px", animation: "heartbeat-survey 1.5s infinite ease-in-out" }}>💖</div>
+          <h3 style={{ 
+            fontSize: "36px", 
+            fontWeight: "normal", 
+            fontFamily: "var(--font-allura), 'Allura', var(--font-sacramento), 'Sacramento', 'Dancing Script', cursive",
+            color: "#fff", 
+            margin: 0, 
+            textAlign: "center" 
+          }}>
+            I Understand...
+          </h3>
+          <p style={{ 
+            fontSize: "14px", 
+            color: "var(--text-muted)", 
+            lineHeight: "1.6", 
+            margin: 0, 
+            maxWidth: "340px", 
+            textAlign: "center"
+          }}>
+            No worries, darling. I hope we can make it happen someday soon! I completely understand. 💖
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setShowDeclineFeedbackModal(false);
+              onComplete();
+            }}
+            style={{
+              width: "100%",
+              maxWidth: "200px",
+              padding: "12px",
+              borderRadius: "8px",
+              backgroundColor: "var(--accent-rose)",
+              backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)",
+              color: "#fff",
+              fontWeight: "bold",
+              fontSize: "14px",
+              border: "none",
+              cursor: "pointer",
+              boxShadow: "0 4px 15px rgba(255, 75, 114, 0.3)",
+              transition: "all 0.2s"
+            }}
+          >
+            Continue 💖
+          </button>
+        </div>
+      ) : showDeclineModal ? (
+        // Decline Confirmation Modal (rendered in normal flow!)
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "20px", padding: "10px 0" }}>
+          <div style={{ fontSize: "56px", marginBottom: "8px", animation: "heartbeat-survey 1.5s infinite ease-in-out" }}>🥺</div>
+          <h3 style={{ 
+            fontSize: "36px", 
+            fontWeight: "normal", 
+            fontFamily: "var(--font-allura), 'Allura', var(--font-sacramento), 'Sacramento', 'Dancing Script', cursive",
+            color: "var(--accent-rose)", 
+            margin: 0, 
+            textAlign: "center" 
+          }}>
+            Decline Date Invitation?
+          </h3>
+          <p style={{ 
+            fontSize: "14px", 
+            color: "var(--text-muted)", 
+            lineHeight: "1.6", 
+            margin: 0, 
+            maxWidth: "340px", 
+            textAlign: "center" 
+          }}>
+            Are you absolutely sure you want to decline this lovely date invitation from <strong>{sender}</strong>? 💔
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", maxWidth: "240px", marginTop: "10px" }}>
             <button
               type="button"
               onClick={handleDeclineConfirm}
@@ -266,182 +534,143 @@ export default function DateInvitation({
             </button>
           </div>
         </div>
-      )}
-
-      {/* RSVP Success Modal */}
-      {showRsvpSuccessModal && (
-        <div 
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(11, 7, 17, 0.95)",
-            backdropFilter: "blur(8px)",
-            borderRadius: "20px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "30px",
-            zIndex: 100,
-            animation: "float-up-intro 0.3s ease"
-          }}
-        >
-          <div style={{ fontSize: "56px", marginBottom: "16px", animation: "heartbeat-survey 1.5s infinite ease-in-out" }}>🎟️</div>
-          <h3 style={{ fontSize: "20px", fontWeight: "bold", color: "#fff", marginBottom: "12px", textAlign: "center" }}>RSVP Confirmed!</h3>
-          <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6", marginBottom: "24px", maxWidth: "340px", textAlign: "center" }}>
-            Your RSVP details have been confirmed and sent to your email address: <strong>{dateInvite.email || "your email address"}</strong>! 💖
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              setShowRsvpSuccessModal(false);
-              onComplete();
-            }}
-            style={{
-              width: "100%",
-              maxWidth: "200px",
-              padding: "12px",
-              borderRadius: "8px",
-              backgroundColor: "var(--accent-rose)",
-              backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)",
-              color: "#fff",
-              fontWeight: "bold",
-              fontSize: "14px",
-              border: "none",
-              cursor: "pointer",
-              boxShadow: "0 4px 15px rgba(255, 75, 114, 0.3)",
-              transition: "all 0.2s"
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "scale(1.02)";
-              e.currentTarget.style.boxShadow = "0 6px 20px rgba(255, 75, 114, 0.45)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "scale(1)";
-              e.currentTarget.style.boxShadow = "0 4px 15px rgba(255, 75, 114, 0.3)";
-            }}
-          >
-            Continue 💖
-          </button>
-        </div>
-      )}
-
-      {/* Romantic heart burst */}
-      {dateInviteHearts.map((h) => (
-        <span
-          key={h.id}
-          className="burst-heart"
-          style={{
-            "--tx": h.tx,
-            "--ty": h.ty,
-            "--scale": h.scale,
-            "--rot": h.rot,
-            position: "absolute",
-            color: "var(--accent-rose)",
-            fontSize: "24px",
-            pointerEvents: "none"
-          } as any}
-        >
-          {h.char}
-        </span>
-      ))}
-
-      {dateRsvpSelected === "yes" ? (
+      ) : dateRsvpSelected === "yes" ? (
         // Ticket Pass
         <div 
           style={{ 
             display: "flex", 
             flexDirection: "column", 
             position: "relative",
-            backgroundColor: "rgba(255, 75, 114, 0.03)",
-            border: "1.5px solid rgba(226, 184, 87, 0.3)", // gold border
+            backgroundColor: "rgba(25, 12, 22, 0.95)",
+            border: "1.5px solid var(--accent-gold)", // gold border
             borderRadius: "16px",
-            padding: "24px 20px",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.25)"
+            padding: "16px 20px 20px 20px",
+            boxShadow: "0 15px 40px rgba(0,0,0,0.5)",
+            width: "100%",
+            height: "100%",
+            maxHeight: "530px",
+            minHeight: "450px",
+            justifyContent: "space-between",
+            overflow: "hidden"
           }}
         >
-          <div style={{ position: "absolute", left: "-10px", top: "45%", width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#140f1e", borderRight: "1.5px solid rgba(226, 184, 87, 0.3)", zIndex: 10 }} />
-          <div style={{ position: "absolute", right: "-10px", top: "45%", width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#140f1e", borderLeft: "1.5px solid rgba(226, 184, 87, 0.3)", zIndex: 10 }} />
-
-          {/* Header */}
-          <div style={{ borderBottom: "1px dashed rgba(255,255,255,0.1)", paddingBottom: "10px", marginBottom: "14px", textAlign: "center" }}>
-            <span style={{ fontSize: "10px", color: "var(--accent-gold)", fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase" }}>
-              🎫 Ticket Pass - Admit Two 🎫
-            </span>
-            <h2 style={{ fontSize: "18px", fontWeight: "bold", color: "#fff", marginTop: "4px", lineHeight: "1.4" }}>
-              Thank you for going out on a date with me
-            </h2>
-          </div>
-
-          {/* Details */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px", textAlign: "left", fontSize: "13px", padding: "0 6px" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: "8px" }}>
-              <div>
-                <span style={{ color: "var(--text-muted)", fontSize: "10px", textTransform: "uppercase", display: "block" }}>Host</span>
-                <strong style={{ color: "#fff" }}>{sender}</strong>
-              </div>
-              <div>
-                <span style={{ color: "var(--text-muted)", fontSize: "10px", textTransform: "uppercase", display: "block" }}>Guest</span>
-                <strong style={{ color: "#fff" }}>{recipient}</strong>
-              </div>
+          {/* Top Section */}
+          <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", flex: "1 1 auto" }}>
+            {/* Header */}
+            <div style={{ borderBottom: "1px dashed rgba(255,255,255,0.1)", paddingBottom: "8px", textAlign: "center" }}>
+              <span style={{ fontSize: "10px", color: "var(--accent-gold)", fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase" }}>
+                🎫 Ticket Pass - Admit Two 🎫
+              </span>
+              <h2 style={{ 
+                fontSize: "28px", 
+                fontWeight: "normal", 
+                color: "#fff", 
+                marginTop: "2px", 
+                lineHeight: "1.2",
+                fontFamily: "'Allura', 'Sacramento', 'Great Vibes', 'Dancing Script', cursive"
+              }}>
+                Thank you for going on a date with me
+              </h2>
             </div>
 
-            {dateInvite.place && (
-              <div style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: "8px" }}>
-                <span style={{ color: "var(--text-muted)", fontSize: "10px", textTransform: "uppercase", display: "block", marginBottom: "2px" }}>Place / Location</span>
-                <strong style={{ color: "var(--accent-gold)", fontSize: "14px", display: "inline-block" }}>📍 {dateInvite.place}</strong>
+            {/* Details */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", textAlign: "left", fontSize: "13px", padding: "0 6px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: "6px" }}>
+                <div>
+                  <span style={{ color: "var(--text-muted)", fontSize: "10px", textTransform: "uppercase", display: "block" }}>Host</span>
+                  <strong style={{ color: "#fff" }}>{sender}</strong>
+                </div>
+                <div>
+                  <span style={{ color: "var(--text-muted)", fontSize: "10px", textTransform: "uppercase", display: "block" }}>Guest</span>
+                  <strong style={{ color: "#fff" }}>{recipient}</strong>
+                </div>
               </div>
-            )}
 
-            {(dateInvite.date || dateInvite.time) && (
-              <div style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: "8px" }}>
-                <span style={{ color: "var(--text-muted)", fontSize: "10px", textTransform: "uppercase", display: "block", marginBottom: "2px" }}>Proposed Date & Time</span>
-                <strong style={{ color: "var(--accent-rose)", fontSize: "14px" }}>
-                  ⏰ {formatDateInvite(dateInvite.date, dateInvite.time)}
-                </strong>
-              </div>
-            )}
+              {dateInvite.place && (
+                <div style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: "6px" }}>
+                  <span style={{ color: "var(--text-muted)", fontSize: "10px", textTransform: "uppercase", display: "block", marginBottom: "2px" }}>Place / Location</span>
+                  <strong style={{ color: "var(--accent-gold)", fontSize: "13px", display: "inline-block" }}>📍 {dateInvite.place}</strong>
+                </div>
+              )}
 
-            {dateInvite.mapLink && (
-              <div style={{ textAlign: "center", marginTop: "12px" }}>
-                <a 
-                  href={dateInvite.mapLink} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "inline-block",
-                    padding: "8px 20px",
-                    borderRadius: "20px",
-                    backgroundColor: "rgba(226, 184, 87, 0.1)",
-                    border: "1px dashed var(--accent-gold)",
-                    color: "var(--accent-gold)",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    textDecoration: "none",
-                    letterSpacing: "1px",
-                    transition: "all 0.2s",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "rgba(226, 184, 87, 0.25)";
-                    e.currentTarget.style.boxShadow = "0 0 10px rgba(226, 184, 87, 0.3)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "rgba(226, 184, 87, 0.1)";
-                    e.currentTarget.style.boxShadow = "none";
-                  }}
-                >
-                  🗺️ VIEW PLACE
-                </a>
-              </div>
-            )}
+              {(dateInvite.date || dateInvite.time) && (
+                <div style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: "6px" }}>
+                  <span style={{ color: "var(--text-muted)", fontSize: "10px", textTransform: "uppercase", display: "block", marginBottom: "2px" }}>Proposed Date & Time</span>
+                  <strong style={{ color: "var(--accent-rose)", fontSize: "13px" }}>
+                    ⏰ {formatDateInvite(dateInvite.date, dateInvite.time)}
+                  </strong>
+                </div>
+              )}
+
+              {dateInvite.mapLink && (
+                <div style={{ textAlign: "center", marginTop: "2px" }}>
+                  <a 
+                    href={dateInvite.mapLink} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "inline-block",
+                      padding: "6px 16px",
+                      borderRadius: "20px",
+                      backgroundColor: "rgba(226, 184, 87, 0.1)",
+                      border: "1px dashed var(--accent-gold)",
+                      color: "var(--accent-gold)",
+                      fontSize: "11px",
+                      fontWeight: "bold",
+                      textDecoration: "none",
+                      letterSpacing: "1px",
+                      transition: "all 0.2s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "rgba(226, 184, 87, 0.25)";
+                      e.currentTarget.style.boxShadow = "0 0 10px rgba(226, 184, 87, 0.3)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "rgba(226, 184, 87, 0.1)";
+                      e.currentTarget.style.boxShadow = "none";
+                    }}
+                  >
+                    🗺️ VIEW PLACE
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div style={{ borderTop: "2px dashed rgba(226, 184, 87, 0.3)", margin: "16px 0 12px 0" }} />
+          {/* Perforation Line divider with punch holes */}
+          <div style={{ position: "relative", width: "100%", margin: "14px 0" }}>
+            {/* Left punch hole */}
+            <div style={{ 
+              position: "absolute", 
+              left: "-30px", 
+              top: "50%", 
+              transform: "translateY(-50%)", 
+              width: "18px", 
+              height: "18px", 
+              borderRadius: "50%", 
+              backgroundColor: "var(--bg-studio, #0b0711)", 
+              borderRight: "1.5px solid var(--accent-gold)", 
+              zIndex: 10 
+            }} />
+            {/* Right punch hole */}
+            <div style={{ 
+              position: "absolute", 
+              right: "-30px", 
+              top: "50%", 
+              transform: "translateY(-50%)", 
+              width: "18px", 
+              height: "18px", 
+              borderRadius: "50%", 
+              backgroundColor: "var(--bg-studio, #0b0711)", 
+              borderLeft: "1.5px solid var(--accent-gold)", 
+              zIndex: 10 
+            }} />
+            {/* Dashed line */}
+            <div style={{ borderTop: "2px dashed rgba(226, 184, 87, 0.7)" }} />
+          </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {/* Bottom Section */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", flex: "0 0 auto" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px", textAlign: "left" }}>
               <label style={{ fontSize: "10px", color: "var(--accent-gold)", textTransform: "uppercase", fontWeight: 700 }}>Add a ticket message...</label>
               <textarea
@@ -453,18 +682,19 @@ export default function DateInvitation({
                   backgroundColor: "rgba(0,0,0,0.25)",
                   border: "1px solid var(--border-card)",
                   borderRadius: "8px",
-                  padding: "10px",
+                  padding: "8px 10px",
                   color: "#fff",
                   fontSize: "12px",
                   lineHeight: "1.4",
                   outline: "none",
-                  resize: "none"
+                  resize: "none",
+                  height: "44px"
                 }}
               />
             </div>
 
             {dateStatusMessage && (
-              <p style={{ fontSize: "11px", color: "var(--accent-gold)", fontWeight: 600, animation: "float-up-intro 0.2s ease" }}>
+              <p style={{ fontSize: "11px", color: "var(--accent-gold)", fontWeight: 600, animation: "float-up-intro 0.2s ease", margin: 0 }}>
                 {dateStatusMessage}
               </p>
             )}
@@ -474,7 +704,7 @@ export default function DateInvitation({
               onClick={handleRsvpConfirm}
               style={{
                 width: "100%",
-                padding: "12px",
+                padding: "10px",
                 borderRadius: "8px",
                 backgroundColor: "var(--accent-rose)",
                 backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)",

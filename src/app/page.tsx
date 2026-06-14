@@ -356,14 +356,7 @@ export default function LandingPage() {
             >
               How It Works
             </a>
-            <a 
-              href="#about" 
-              style={{ fontSize: "14px", color: "var(--text-muted)", textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-main)")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
-            >
-              About
-            </a>
+
             <a 
               href="#contact" 
               style={{ fontSize: "14px", color: "var(--text-muted)", textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }}
@@ -380,7 +373,7 @@ export default function LandingPage() {
               user ? (
                 <>
                   <Link 
-                    href="/dashboard"
+                    href="/coming-soon"
                     style={{
                       fontSize: "14px",
                       color: "var(--text-main)",
@@ -398,7 +391,7 @@ export default function LandingPage() {
                     Go to Dashboard 💖
                   </Link>
                   <Link
-                    href="/profile"
+                    href="/coming-soon"
                     style={{
                       width: "36px",
                       height: "36px",
@@ -420,7 +413,7 @@ export default function LandingPage() {
                 </>
               ) : (
                 <Link 
-                  href="/login"
+                  href="/coming-soon"
                   style={{
                     fontSize: "14px",
                     color: "var(--text-main)",
@@ -538,7 +531,7 @@ export default function LandingPage() {
             {/* Call to Actions */}
             <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "12px" }}>
               <Link
-                href={mounted && user ? "/dashboard" : "/login"}
+                href="/coming-soon"
                 className="cta-button"
                 style={{
                   display: "inline-flex",
@@ -803,51 +796,6 @@ export default function LandingPage() {
 
         </section>
 
-        {/* ABOUT SECTION */}
-        <section id="about" style={{ marginBottom: "100px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "40px", alignItems: "center" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-            <div style={{ 
-              display: "inline-flex", 
-              alignItems: "center", 
-              gap: "6px", 
-              backgroundColor: "rgba(255, 75, 114, 0.1)", 
-              color: "var(--accent-rose)", 
-              padding: "6px 16px", 
-              borderRadius: "20px", 
-              fontSize: "12px", 
-              fontWeight: 600, 
-              letterSpacing: "0.5px",
-              width: "fit-content",
-              textTransform: "uppercase",
-              border: "1px solid rgba(255, 75, 114, 0.15)"
-            }}>
-              <span>💝</span> Dedicated to Faith
-            </div>
-            <h2 style={{ fontSize: "46px", fontWeight: "normal", fontFamily: "var(--font-cursive)", color: "#fff", lineHeight: "1.2" }}>
-              A Love Story in Every Byte
-            </h2>
-            <p style={{ fontSize: "15px", color: "var(--text-muted)", lineHeight: "1.8" }}>
-              EverAfter is more than an application; it is a digital sanctuary for devotion. Dedicated entirely to Faith, this space was created to make words timeless—capturing emotions in a form that stands resolutely beyond the test of time.
-            </p>
-            <p style={{ fontSize: "15px", color: "var(--text-muted)", lineHeight: "1.8" }}>
-              In a fleeting world, we believe that the act of writing letters is one of the purest expressions of love. Every seal stamped, every music track chosen, and every password key configured is a testament to the belief that love, when written down, lives forever.
-            </p>
-          </div>
-          <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
-            <div className="glass" style={{ padding: "40px 30px", width: "100%", maxWidth: "380px", textAlign: "center", border: "1.5px solid rgba(255, 75, 114, 0.2)", position: "relative", zIndex: 5 }}>
-              <span style={{ fontSize: "48px", display: "block", marginBottom: "16px", animation: "pulse-glowing 2s infinite" }}>❤</span>
-              <p style={{ fontFamily: "var(--font-cursive)", fontSize: "28px", color: "var(--accent-rose)", marginBottom: "8px" }}>Dedicated to Faith</p>
-              <p style={{ fontSize: "13px", color: "var(--text-muted)", fontStyle: "italic", lineHeight: "1.6" }}>
-                "To the one who inspired these words, and the one whose laughter makes time stand still. This space is yours, today and for all the ever afters."
-              </p>
-              <p style={{ fontSize: "16px", color: "var(--accent-rose)", marginTop: "12px", textAlign: "right", fontFamily: "var(--font-cursive)" }}>
-                — Elgen
-              </p>
-            </div>
-            <div style={{ position: "absolute", width: "200px", height: "200px", borderRadius: "50%", background: "radial-gradient(circle, var(--accent-rose-glow) 0%, transparent 70%)", top: "10%", left: "10%", zIndex: 1, filter: "blur(20px)" }} />
-            <div style={{ position: "absolute", width: "150px", height: "150px", borderRadius: "50%", background: "radial-gradient(circle, rgba(156, 108, 250, 0.2) 0%, transparent 70%)", bottom: "10%", right: "10%", zIndex: 1, filter: "blur(20px)" }} />
-          </div>
-        </section>
 
         {/* CONTACT US SECTION */}
         <section id="contact" style={{ marginBottom: "100px" }}>
@@ -1032,7 +980,7 @@ export default function LandingPage() {
             Create an EverAfter account to write and manage your love letters today.
           </p>
           <Link
-            href={mounted && user ? "/dashboard" : "/login"}
+            href="/coming-soon"
             className="cta-button"
             style={{
               display: "inline-flex",

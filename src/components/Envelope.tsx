@@ -13,42 +13,16 @@ interface EnvelopeProps {
   recipient: string;
   sender: string;
   content: string;
-  theme: string; // "classic" | "rose" | "lavender" | "celestial"
+  theme: string; // "royal" | "scroll" | "blush" | "lavender" | "celestial"
   sealSymbol?: string; // "heart" | "rose" | "star" | "ring"
   sealColor?: string; // hex code
+  envelopeStyle?: string;
   greeting?: string;
   farewell?: string;
+  backdrop?: string;
+  isOnlyStep?: boolean;
   onOpen?: () => void;
   onClose?: () => void;
-}
-
-function getWaxTones(hex: string) {
-  let cleanHex = hex.replace("#", "");
-  if (cleanHex.length === 3) {
-    cleanHex = cleanHex.split("").map(c => c + c).join("");
-  }
-  
-  const r = parseInt(cleanHex.substring(0, 2), 16) || 0;
-  const g = parseInt(cleanHex.substring(2, 4), 16) || 0;
-  const b = parseInt(cleanHex.substring(4, 6), 16) || 0;
-  
-  // blend 45% white
-  const lr = Math.min(255, Math.round(r + (255 - r) * 0.45));
-  const lg = Math.min(255, Math.round(g + (255 - g) * 0.45));
-  const lb = Math.min(255, Math.round(b + (255 - b) * 0.45));
-  const lightHex = `#${lr.toString(16).padStart(2, "0")}${lg.toString(16).padStart(2, "0")}${lb.toString(16).padStart(2, "0")}`;
-  
-  // blend 45% black
-  const dr = Math.round(r * 0.55);
-  const dg = Math.round(g * 0.55);
-  const db = Math.round(b * 0.55);
-  const darkHex = `#${dr.toString(16).padStart(2, "0")}${dg.toString(16).padStart(2, "0")}${db.toString(16).padStart(2, "0")}`;
-  
-  return {
-    main: hex,
-    light: lightHex,
-    dark: darkHex
-  };
 }
 
 export default function Envelope({
@@ -58,14 +32,18 @@ export default function Envelope({
   theme,
   sealSymbol = "heart",
   sealColor = "#bd1a3d",
+  envelopeStyle = "vintage-rose",
   greeting,
   farewell,
+  backdrop = "none",
+  isOnlyStep = false,
   onOpen,
   onClose,
 }: EnvelopeProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isFullView, setIsFullView] = useState(false);
   const [isSealBroken, setIsSealBroken] = useState(false);
+  const [isBreaking, setIsBreaking] = useState(false);
   const [burstHearts, setBurstHearts] = useState<{ id: number; char: string; tx: string; ty: string; scale: number; rot: string }[]>([]);
 
   // Trigger full page letter overlay after slide-out animation finishes
@@ -84,31 +62,37 @@ export default function Envelope({
   }, [isOpen]);
 
   const handleOpen = () => {
-    if (isOpen) return;
-    setIsOpen(true);
-    setIsSealBroken(true);
+    if (isOpen || isBreaking) return;
+    setIsBreaking(true);
 
-    // Generate romantic heart burst particles!
-    const heartsList = ["❤️", "💖", "💝", "💕", "✨", "🌸"];
-    const newBursts = [];
-    for (let i = 0; i < 22; i++) {
-      const char = heartsList[Math.floor(Math.random() * heartsList.length)];
-      const tx = `${(Math.random() - 0.5) * 360}px`;
-      const ty = `${-150 - Math.random() * 220}px`; // shoots upwards
-      const scale = Math.random() * 0.9 + 0.6;
-      const rot = `${(Math.random() - 0.5) * 180}deg`;
-      newBursts.push({
-        id: i,
-        char,
-        tx,
-        ty,
-        scale,
-        rot
-      });
-    }
-    setBurstHearts(newBursts);
+    // Crack and shake for 2.2s (slower breaking)
+    setTimeout(() => {
+      setIsOpen(true);
+      setIsSealBroken(true);
+      setIsBreaking(false);
 
-    if (onOpen) onOpen();
+      // Generate romantic heart burst particles!
+      const heartsList = ["❤️", "💖", "💝", "💕", "✨", "🌸"];
+      const newBursts = [];
+      for (let i = 0; i < 22; i++) {
+        const char = heartsList[Math.floor(Math.random() * heartsList.length)];
+        const tx = `${(Math.random() - 0.5) * 360}px`;
+        const ty = `${-150 - Math.random() * 220}px`; // shoots upwards
+        const scale = Math.random() * 0.9 + 0.6;
+        const rot = `${(Math.random() - 0.5) * 180}deg`;
+        newBursts.push({
+          id: i,
+          char,
+          tx,
+          ty,
+          scale,
+          rot
+        });
+      }
+      setBurstHearts(newBursts);
+
+      if (onOpen) onOpen();
+    }, 2200);
   };
 
   const handleClose = (e: React.MouseEvent) => {
@@ -121,34 +105,71 @@ export default function Envelope({
     }, 800); // Slower retracting delay
   };
 
-  // Get theme display class name
-  const themeClass = `theme-${theme || "classic"}`;
+  const hasBackdrop = (backdrop && backdrop !== "none") || theme === "celestial";
 
-  // Get symbol character
-  const getSymbolChar = (symbol: string) => {
-    switch (symbol) {
-      case "rose": return "🌹";
-      case "star": return "⭐";
-      case "ring": return "💍";
-      case "heart":
+  const getGlassyBg = () => {
+    if (!hasBackdrop) return "var(--stationery-bg)";
+    switch (theme) {
+      case "royal": return "rgba(247, 241, 227, 0.55)";
+      case "scroll": return "rgba(237, 220, 185, 0.55)";
+      case "blush": return "rgba(255, 253, 247, 0.5)";
+      case "lavender": return "rgba(247, 244, 252, 0.5)";
+      case "celestial":
       default:
-        return "❤";
+        return "rgba(9, 14, 36, 0.45)";
     }
   };
+
+  const getGlassyBorder = () => {
+    if (!hasBackdrop) return "var(--stationery-border)";
+    switch (theme) {
+      case "royal": return "rgba(201, 162, 39, 0.5)";
+      case "scroll": return "rgba(92, 56, 31, 0.5)";
+      case "blush": return "rgba(183, 110, 121, 0.5)";
+      case "lavender": return "rgba(232, 219, 248, 0.45)";
+      case "celestial":
+      default:
+        return "rgba(226, 184, 87, 0.25)";
+    }
+  };
+  const getSolidBg = () => {
+    switch (theme) {
+      case "royal": return "#F7F1E3";
+      case "scroll": return "#eddcb9";
+      case "blush": return "#FFFDF7";
+      case "lavender": return "#f7f4fc";
+      case "celestial":
+      default:
+        return "#090e24";
+    }
+  };
+  const solidBg = getSolidBg();
+
+  // Get theme display class name
+  const themeClass = `theme-${theme || "scroll"}`;
+
+  const showIdleAnim = !isOpen && !isSealBroken && !isBreaking;
+  const isVintageWhite = envelopeStyle === "vintage-white";
+  const isCelestialBlue = envelopeStyle === "celestial-blue";
+  const isVintageRose = !isVintageWhite && !isCelestialBlue;
+  const labelColor = isVintageWhite ? "rgba(47, 42, 36, 0.5)" : "rgba(244, 230, 206, 0.55)";
+  const textColor = isVintageWhite ? "rgba(47, 42, 36, 0.65)" : "rgba(244, 230, 206, 0.85)";
+  const nameColor = isVintageWhite ? "#9c1c2e" : "#e2b857";
 
   return (
     <div 
       style={{
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         minHeight: "500px",
         position: "relative",
+        gap: "24px",
       }}
     >
-      {/* 3D Envelope container */}
       <div 
-        className={`envelope-wrapper ${themeClass}`}
+        className={`envelope-wrapper ${themeClass} vintage-rose-style ${showIdleAnim ? "envelope-idle" : ""}`}
         onClick={handleOpen}
         style={{
           transform: isFullView 
@@ -157,97 +178,83 @@ export default function Envelope({
               ? "translateY(110px) scale(0.95)" 
               : "scale(1)",
           opacity: isFullView ? 0 : 1,
-          transition: "transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease",
+          visibility: isFullView ? "hidden" : "visible",
+          transition: `transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease, visibility 0s linear ${isFullView ? "0.4s" : "0s"}`,
           pointerEvents: isFullView ? "none" : "auto",
         }}
       >
-        <div className={`envelope ${isOpen ? "open" : ""}`}>
-          {/* Top Flap with rounded corners using SVG path */}
-          <svg 
-            className="envelope-flap" 
-            viewBox="0 0 550 175"
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "175px",
-              pointerEvents: "none"
-            }}
-          >
-            <path d="M 12,0 A 12,12 0 0 0 0,12 L 275,175 L 550,12 A 12,12 0 0 0 538,0 Z" fill="#f6f5ee" />
-          </svg>
+        <div 
+          className={`envelope ${isOpen ? "open" : ""} vintage-rose-style`}
+          style={{
+            "--env-bg-image": isCelestialBlue ? "url(/celestial_envelope_open.png)" :
+                              isVintageWhite ? "url(/white_envelope_open.png)" : "url(/vintage_envelope_open.png)",
+            "--env-flap-image": isCelestialBlue ? "url(/celestial_envelope_flap.png)" :
+                                isVintageWhite ? "url(/white_envelope_flap.png)" : "url(/vintage_envelope_flap.png)",
+          } as React.CSSProperties}
+        >
+          <>
+            {/* Layer 1: Envelope Back */}
+            <div className={`vintage-envelope-back ${isOpen ? "open" : ""}`} />
 
-          {/* Gold lining */}
-          <div className="envelope-gold-lining" />
+            {/* Layer 2: Envelope Front Pocket */}
+            <div className={`vintage-envelope-front-pocket ${isOpen ? "open" : ""}`}>
+              {/* Sender Address */}
+              <div 
+                className="envelope-sender-address" 
+                style={{ 
+                  position: "absolute",
+                  bottom: "25px",
+                  left: "35px",
+                  fontFamily: "var(--font-ui)",
+                  fontSize: "13px",
+                  color: textColor,
+                  textAlign: "left",
+                  lineHeight: "1.2",
+                  zIndex: 7,
+                  pointerEvents: "none",
+                  maxWidth: "220px",
+                }}
+              >
+                <div style={{ fontSize: "8px", fontFamily: "var(--font-ui)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "2px", color: labelColor }}>From:</div>
+                <div style={{ fontWeight: "bold", fontSize: "16px", color: nameColor }}>{sender || "Yours Truly"}</div>
+                <div>123 Romance Avenue</div>
+                <div>Hearts Desires, LV 14314</div>
+              </div>
 
-          {/* Elegant Corner Filigrees */}
-          <div className="envelope-corner top-left" style={{ zIndex: isOpen ? 2 : 7 }} />
-          <div className="envelope-corner top-right" style={{ zIndex: isOpen ? 2 : 7 }} />
-          <div className="envelope-corner bottom-left" style={{ zIndex: isOpen ? 2 : 7 }} />
-          <div className="envelope-corner bottom-right" style={{ zIndex: isOpen ? 2 : 7 }} />
-
-          {/* Postage Stamp */}
-          <div className="envelope-stamp" style={{ zIndex: isOpen ? 2 : 7 }}>
-            <div className="envelope-stamp-inner">
-              <span className="envelope-stamp-heart">❤</span>
-              <span className="envelope-stamp-value">1st Class</span>
+              {/* Mock Delivery Address */}
+              <div 
+                className="envelope-mock-address" 
+                style={{ 
+                  position: "absolute",
+                  bottom: "25px",
+                  right: "35px",
+                  fontFamily: "var(--font-ui)",
+                  fontSize: "13px",
+                  color: textColor,
+                  textAlign: "left",
+                  lineHeight: "1.2",
+                  zIndex: 7,
+                  pointerEvents: "none",
+                  maxWidth: "220px",
+                }}
+              >
+                <div style={{ fontSize: "8px", fontFamily: "var(--font-ui)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "2px", color: labelColor }}>Deliver To:</div>
+                <div style={{ fontWeight: "bold", fontSize: "16px", color: nameColor }}>{recipient || "My Beloved"}</div>
+                <div>777 Sweetheart Lane</div>
+                <div>Garden of Eden, LV 14314</div>
+              </div>
             </div>
-          </div>
-
-          {/* Postmark cancellation waves */}
-          <svg className="envelope-postmark" viewBox="0 0 100 100" style={{ zIndex: isOpen ? 2 : 7 }}>
-            <circle cx="50" cy="50" r="30" fill="none" stroke="rgba(0,0,0,0.12)" strokeWidth="1" strokeDasharray="3 3" />
-            <path d="M 0,40 Q 25,30 50,40 T 100,40" fill="none" stroke="rgba(0,0,0,0.12)" strokeWidth="1" />
-            <path d="M 0,50 Q 25,40 50,50 T 100,50" fill="none" stroke="rgba(0,0,0,0.12)" strokeWidth="1" />
-            <path d="M 0,60 Q 25,50 50,60 T 100,60" fill="none" stroke="rgba(0,0,0,0.12)" strokeWidth="1" />
-          </svg>
-
-          {/* Sender Address (From on bottom-left corner) */}
-          <div 
-            className="envelope-sender-address" 
-            style={{ 
-              position: "absolute",
-              bottom: "25px",
-              left: "35px",
-              fontFamily: "var(--font-ui)",
-              fontSize: "13px",
-              color: "rgba(47, 42, 36, 0.65)",
-              textAlign: "left",
-              lineHeight: "1.2",
-              zIndex: isOpen ? 2 : 7,
-              pointerEvents: "none",
-              maxWidth: "220px",
-            }}
-          >
-            <div style={{ fontSize: "8px", fontFamily: "var(--font-ui)", letterSpacing: "1px", textTransform: "uppercase", opacity: 0.5, marginBottom: "2px" }}>From:</div>
-            <div style={{ fontWeight: "bold", fontSize: "16px", color: "rgba(47, 42, 36, 0.85)" }}>{sender || "Yours Truly"}</div>
-            <div>123 Romance Avenue</div>
-            <div>Hearts Desires, LV 14314</div>
-          </div>
-
-          {/* Mock Delivery Address (Recipient on bottom-right corner) */}
-          <div 
-            className="envelope-mock-address" 
-            style={{ 
-              position: "absolute",
-              bottom: "25px",
-              right: "35px",
-              fontFamily: "var(--font-ui)",
-              fontSize: "13px",
-              color: "rgba(47, 42, 36, 0.75)",
-              textAlign: "left",
-              lineHeight: "1.2",
-              zIndex: isOpen ? 2 : 7,
-              pointerEvents: "none",
-              maxWidth: "220px",
-            }}
-          >
-            <div style={{ fontSize: "8px", fontFamily: "var(--font-ui)", letterSpacing: "1px", textTransform: "uppercase", opacity: 0.5, marginBottom: "2px" }}>Deliver To:</div>
-            <div style={{ fontWeight: "bold", fontSize: "16px", color: "var(--stationery-accent, #9c2d2a)" }}>{recipient || "My Beloved"}</div>
-            <div>777 Sweetheart Lane</div>
-            <div>Garden of Eden, LV 14314</div>
-          </div>
+            
+            {/* Layer 3: Rotating/Folding Flap */}
+            <div 
+              className={`vintage-envelope-flap-part ${isOpen ? "open" : ""}`} 
+              style={
+                isVintageWhite ? { backgroundPosition: "-81.7px -32.8px" } :
+                isCelestialBlue ? { backgroundPosition: "-81.7px -57.2px" } :
+                undefined
+              }
+            />
+          </>
 
           {/* Heart fountain burst */}
           {burstHearts.map((h) => (
@@ -265,62 +272,50 @@ export default function Envelope({
             </span>
           ))}
 
-          {/* Left/Right folding structures */}
-          <div className="envelope-left-side" />
-          <div className="envelope-pocket" />
-
-          {/* Wax Seal Drips */}
-          {!isOpen && !isSealBroken && (
-            <>
-              <div 
-                style={{
-                  position: "absolute",
-                  top: "198px",
-                  left: "calc(50% - 24px)",
-                  width: "12px",
-                  height: "12px",
-                  borderRadius: "50%",
-                  background: `radial-gradient(circle, ${getWaxTones(sealColor).light}, ${getWaxTones(sealColor).main})`,
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.25), inset 0 1px 2px rgba(255,255,255,0.2)",
-                  zIndex: 8,
-                  pointerEvents: "none"
-                }}
-              />
-              <div 
-                style={{
-                  position: "absolute",
-                  top: "148px",
-                  left: "calc(50% + 32px)",
-                  width: "8px",
-                  height: "8px",
-                  borderRadius: "50%",
-                  background: `radial-gradient(circle, ${getWaxTones(sealColor).light}, ${getWaxTones(sealColor).main})`,
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.25), inset 0 1px 2px rgba(255,255,255,0.2)",
-                  zIndex: 8,
-                  pointerEvents: "none"
-                }}
-              />
-            </>
-          )}
-
           {/* Wax Seal */}
           <button 
-            className="wax-seal" 
+            className={`wax-seal vintage-rose-style ${isBreaking ? "breaking" : ""}`}
             style={{
-              "--seal-color-main": getWaxTones(sealColor).main,
-              "--seal-color-light": getWaxTones(sealColor).light,
-              "--seal-color-dark": getWaxTones(sealColor).dark,
+              "--seal-color-main": isVintageRose ? "#b38f36" : isCelestialBlue ? "#b76e79" : "#9c1c2e",
+              "--seal-color-light": isVintageRose ? "#ffd670" : isCelestialBlue ? "#e8b4b8" : "#e2b857",
+              "--seal-color-dark": isVintageRose ? "#7a5c18" : isCelestialBlue ? "#5c2f45" : "#5c0a18",
+              "--seal-bg-image": isCelestialBlue ? "url(/vintage_heart_seal.jpg)" :
+                                 isVintageWhite ? "url(/vintage_red_seal.png)" : "url(/vintage_rose_seal.png)",
               display: isSealBroken && !isOpen ? "none" : undefined,
+              ...(isVintageWhite ? {
+                width: "112px",
+                height: "112px",
+                left: "calc(50% - 56px)",
+                top: "164px"
+              } : {}),
+              ...(isCelestialBlue ? {
+                width: "106px",
+                height: "106px",
+                left: "calc(50% - 53px)",
+                top: "167px"
+              } : {})
             } as React.CSSProperties}
+            onClick={handleOpen}
             aria-label="Open Letter"
           >
-            <span style={{ fontSize: "28px" }}>
-              {getSymbolChar(sealSymbol)}
-            </span>
+            <div className="wax-seal-quarter top-left" />
+            <div className="wax-seal-quarter top-right" />
+            <div className="wax-seal-quarter bottom-left" />
+            <div className="wax-seal-quarter bottom-right" />
           </button>
 
           {/* Tiny preview letter sheet inside */}
-          <div className="envelope-letter">
+          <div 
+            className="envelope-letter"
+            style={{
+              background: theme === "royal" ? "#F7F1E3" :
+                          theme === "scroll" ? "#eddcb9" :
+                          theme === "blush" ? "#FFFDF7" :
+                          theme === "lavender" ? "#f7f4fc" :
+                          theme === "celestial" ? "#090e24" :
+                          "var(--stationery-bg)"
+            }}
+          >
             <div style={{ fontSize: "10px", lineHeight: "1.3", opacity: 0.8, overflow: "hidden" }}>
               {content || "Loading your sweet words..."}
             </div>
@@ -330,7 +325,6 @@ export default function Envelope({
 
       {/* Expanded Full Screen Stationery Sheet (Fade-in portal style) */}
       <div
-        className={themeClass}
         style={{
           position: "fixed",
           top: 0,
@@ -340,13 +334,14 @@ export default function Envelope({
           zIndex: 90,
           background: "transparent",
           backdropFilter: "none",
+          WebkitBackdropFilter: "none",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           opacity: isFullView ? 1 : 0,
           pointerEvents: isFullView ? "auto" : "none",
           transition: "opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-          padding: "80px 20px 20px 20px",
+          padding: "20px",
         }}
       >
         <style>{`
@@ -358,20 +353,25 @@ export default function Envelope({
             display: none;  /* Chrome, Safari and Opera */
           }
         `}</style>
-        {/* Twinkling Starry Celestial Background */}
-        <div className="celestial-stars" />
-        <div className="celestial-nebula" />
+
 
         {/* The beautiful letter paper page */}
         <div
+          className={`stationery-sheet ${themeClass} ${hasBackdrop ? "has-backdrop" : ""}`}
           style={{
             position: "relative",
             width: "100%",
             maxWidth: "680px",
-            maxHeight: "70vh",
-            backgroundColor: "var(--stationery-bg)",
-            backgroundImage: "var(--bg-image)",
-            border: "1px solid var(--stationery-border)",
+            height: "80vh",
+            maxHeight: "calc(100vh - 160px)",
+            backgroundColor: getGlassyBg(),
+            backgroundImage: hasBackdrop ? "none" : "var(--bg-image)",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            backdropFilter: hasBackdrop ? "blur(16px)" : "none",
+            WebkitBackdropFilter: hasBackdrop ? "blur(16px)" : "none",
+            border: `1px solid ${getGlassyBorder()}`,
             borderRadius: "16px",
             boxShadow: "0 25px 60px -15px rgba(0,0,0,0.6)",
             color: "var(--stationery-text)",
@@ -383,64 +383,122 @@ export default function Envelope({
             overflow: "hidden",
           }}
         >
-          {/* Top header border/design */}
-          <div 
-            style={{
-              height: "12px",
-              background: `repeating-linear-gradient(45deg, 
-                var(--stationery-accent), 
-                var(--stationery-accent) 15px, 
-                var(--stationery-bg) 15px, 
-                var(--stationery-bg) 30px, 
-                #ff4b72 30px, 
-                #ff4b72 45px, 
-                var(--stationery-bg) 45px, 
-                var(--stationery-bg) 60px
-              )`,
-              borderBottom: "1px solid var(--stationery-border)"
-            }}
-          />
+          {theme === "blush" && (
+            <>
+              {/* Delicate corner floral SVGs */}
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", zIndex: 5 }}>
+                <svg width="100%" height="100%" style={{ position: "absolute", top: 0, left: 0 }}>
+                  <defs>
+                    <g id="blush-corner-reader">
+                      <path d="M 10,10 C 22,10 26,14 26,26 C 26,20 22,20 22,10" fill="none" stroke="#B76E79" strokeWidth="1" />
+                      <path d="M 10,10 C 10,22 14,26 26,26" fill="none" stroke="#B76E79" strokeWidth="1" />
+                      <path d="M 14,20 Q 18,18 20,14" fill="none" stroke="#B76E79" strokeWidth="0.75" />
+                      <path d="M 20,14 C 24,16 26,20 22,22 C 18,20 18,16 20,14 Z" fill="#E8B4B8" opacity="0.35" />
+                    </g>
+                  </defs>
+                  <use href="#blush-corner-reader" x="0" y="0" />
+                  <use href="#blush-corner-reader" x="0" y="0" transform="translate(100%, 0) scale(-1, 1)" style={{ transformOrigin: "right top" }} />
+                  <use href="#blush-corner-reader" x="0" y="0" transform="translate(0, 100%) scale(1, -1)" style={{ transformOrigin: "left bottom" }} />
+                  <use href="#blush-corner-reader" x="0" y="0" transform="translate(100%, 100%) scale(-1, -1)" style={{ transformOrigin: "right bottom" }} />
+                </svg>
+              </div>
+
+              {/* Light watercolor rose in bottom-left corner */}
+              <div style={{
+                position: "absolute",
+                bottom: "35px",
+                left: "35px",
+                fontSize: "72px",
+                filter: "saturate(35%) opacity(0.22)",
+                pointerEvents: "none",
+                zIndex: 4
+              }}>
+                🌹
+              </div>
+            </>
+          )}
+
+          {theme === "royal" && (
+            <>
+              <div style={{ position: "absolute", top: "10px", left: "10px", fontSize: "18px", pointerEvents: "none", zIndex: 5 }}>⚜️</div>
+              <div style={{ position: "absolute", top: "10px", right: "10px", fontSize: "18px", pointerEvents: "none", zIndex: 5 }}>⚜️</div>
+              <div style={{ position: "absolute", bottom: "10px", left: "10px", fontSize: "18px", pointerEvents: "none", zIndex: 5 }}>⚜️</div>
+              <div style={{ position: "absolute", bottom: "10px", right: "10px", fontSize: "18px", pointerEvents: "none", zIndex: 5 }}>⚜️</div>
+              <div style={{ position: "absolute", left: "4px", top: "50%", transform: "translateY(-50%) rotate(90deg)", fontSize: "14px", opacity: 0.7, pointerEvents: "none", zIndex: 5 }}>🌿</div>
+              <div style={{ position: "absolute", right: "4px", top: "50%", transform: "translateY(-50%) rotate(-90deg)", fontSize: "14px", opacity: 0.7, pointerEvents: "none", zIndex: 5 }}>🌿</div>
+              <div style={{ position: "absolute", top: "12px", left: "50%", transform: "translateX(-50%)", color: "#C9A227", zIndex: 10, pointerEvents: "none" }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z" fill="currentColor" fillOpacity="0.15" />
+                  <path d="M3 20h18" strokeWidth="2" />
+                  <circle cx="12" cy="3" r="1.5" fill="currentColor" />
+                  <circle cx="2" cy="3" r="1.5" fill="currentColor" />
+                  <circle cx="22" cy="3" r="1.5" fill="currentColor" />
+                </svg>
+              </div>
+            </>
+          )}
 
           {/* Letter Body Scroll Container */}
           <div
             className="hide-scrollbar"
             style={{
-              padding: "48px 48px 36px 48px",
+              padding: theme === "royal" ? "40px 24px 28px 24px" : "48px 48px 36px 48px",
               overflowY: "auto",
               flex: 1,
               display: "flex",
               flexDirection: "column",
               gap: "24px",
+              zIndex: 6,
             }}
           >
             {/* Header: To */}
             <div 
               style={{
-                fontSize: "20px",
-                fontStyle: "italic",
-                borderBottom: "1px solid rgba(0,0,0,0.05)",
+                fontSize: theme === "blush" ? "28px" : theme === "royal" ? "28px" : "26px",
+                fontWeight: theme === "blush" ? "600" : theme === "royal" ? "bold" : "normal",
+                fontFamily: theme === "blush" ? "var(--font-playfair)" : theme === "royal" ? "var(--font-cinzel-dec)" : "var(--font-cursive)",
+                borderBottom: theme === "blush" || theme === "royal" ? "none" : "1px solid rgba(0,0,0,0.05)",
+                textAlign: theme === "blush" ? "center" : "left",
                 paddingBottom: "8px",
-                color: "var(--stationery-accent)",
+                color: theme === "blush" ? "var(--stationery-text)" : "var(--stationery-accent)",
               }}
             >
               {greeting ? `${greeting} ` : ""}{recipient || "My Loved One"},
             </div>
 
+            {theme === "blush" && (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", margin: "-10px 0 0px 0" }}>
+                <div style={{ height: "1px", width: "40px", backgroundColor: "#B76E79", opacity: 0.4 }} />
+                <span style={{ color: "#E8B4B8", fontSize: "12px" }}>❤</span>
+                <div style={{ height: "1px", width: "40px", backgroundColor: "#B76E79", opacity: 0.4 }} />
+              </div>
+            )}
 
+            {theme === "royal" && (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", margin: "-10px 0 0px 0" }}>
+                <div style={{ height: "1px", flex: 1, backgroundColor: "#C9A227", opacity: 0.5 }} />
+                <span style={{ color: "#7B1E1E", fontSize: "14px" }}>⚜️</span>
+                <div style={{ height: "1px", flex: 1, backgroundColor: "#C9A227", opacity: 0.5 }} />
+              </div>
+            )}
 
-            {/* Letter Content (Splits newlines into paragraphs) */}
             <div
+              className="letter-body"
               style={{
-                fontSize: theme === "rose" ? "32px" : "18px",
+                fontSize: "18px",
                 lineHeight: "1.8",
                 whiteSpace: "pre-wrap",
                 color: "var(--stationery-text)",
+                fontFamily: "var(--stationery-font)",
+                letterSpacing: "0.3px",
                 flex: 1,
                 paddingBottom: "24px"
               }}
             >
               {content}
             </div>
+
+
 
             {/* Footer: From */}
             <div
@@ -452,20 +510,93 @@ export default function Envelope({
               }}
             >
               {farewell && (
-                <div style={{ fontSize: "16px", fontStyle: "italic", opacity: 0.7, marginBottom: "4px" }}>
+                <div style={{ fontSize: "20px", fontFamily: "var(--font-cursive)", opacity: 0.75, marginBottom: "4px" }}>
                   {farewell}
                 </div>
               )}
               <div
                 style={{
-                  fontSize: "24px",
-                  fontWeight: 600,
-                  color: "var(--stationery-accent)",
+                  fontSize: "30px",
+                  fontFamily: theme === "blush" ? "var(--font-allura)" : theme === "royal" ? "var(--font-great-vibes)" : "var(--font-cursive)",
+                  color: theme === "blush" ? "#B76E79" : "var(--stationery-accent)",
                   marginTop: "6px",
                 }}
               >
                 {sender || "Yours Truly"}
               </div>
+
+              {theme === "blush" && (
+                <div style={{ 
+                  width: "120px", 
+                  height: "1px", 
+                  background: "linear-gradient(to right, transparent, #B76E79, transparent)", 
+                  marginTop: "4px", 
+                  marginLeft: "auto" 
+                }} />
+              )}
+
+              {theme === "royal" && (
+                <div style={{ display: "flex", justifyContent: "center", marginTop: "24px" }}>
+                  <div style={{
+                    width: "56px",
+                    height: "56px",
+                    borderRadius: "50%",
+                    background: "radial-gradient(circle, #a83232 0%, #7B1E1E 60%, #4d0f0f 100%)",
+                    boxShadow: "0 4px 10px rgba(0,0,0,0.3), inset 0 2px 3px rgba(255,255,255,0.25)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    position: "relative",
+                    border: "1px solid rgba(123,30,30,0.5)"
+                  }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C9A227" strokeWidth="1.5" style={{ opacity: 0.85, filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.3))" }}>
+                      <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z" fill="#C9A227" fillOpacity="0.2" />
+                      <path d="M3 20h18" />
+                    </svg>
+                    <div style={{
+                      position: "absolute",
+                      top: "-3px",
+                      left: "-3px",
+                      right: "-3px",
+                      bottom: "-3px",
+                      borderRadius: "50%",
+                      border: "2px solid #7B1E1E",
+                      opacity: 0.35
+                    }} />
+                  </div>
+                </div>
+              )}
+              {isOnlyStep && (
+                <div style={{ display: "flex", justifyContent: "center", marginTop: "40px", paddingBottom: "20px" }}>
+                  <button
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        window.close();
+                        setTimeout(() => {
+                          window.location.href = "/dashboard";
+                        }, 150);
+                      }
+                    }}
+                    style={{
+                      padding: "10px 24px",
+                      borderRadius: "8px",
+                      backgroundColor: theme === "blush" ? "#B76E79" : "var(--accent-rose)",
+                      backgroundImage: theme === "blush" ? "none" : "linear-gradient(135deg, #ff4b72, #d9264c)",
+                      border: "none",
+                      color: "#fff",
+                      fontWeight: 600,
+                      fontSize: "13px",
+                      cursor: "pointer",
+                      boxShadow: "0 4px 12px rgba(255, 75, 114, 0.2)",
+                      transition: "all 0.2s"
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-1px)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
+                  >
+                    Close & Exit 💌
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -488,6 +619,7 @@ export default function Envelope({
               color: "var(--stationery-text)",
               opacity: 0.6,
               transition: "opacity 0.2s, background-color 0.2s",
+              zIndex: 20,
             }}
             title="Fold Back into Envelope"
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.1)")}
@@ -501,6 +633,42 @@ export default function Envelope({
           </button>
         </div>
       </div>
+      {isOnlyStep && isSealBroken && !isOpen && !isFullView && !isBreaking && (
+        <button
+          onClick={() => {
+            if (typeof window !== "undefined") {
+              window.close();
+              setTimeout(() => {
+                window.location.href = "/dashboard";
+              }, 150);
+            }
+          }}
+          className="animate-reveal"
+          style={{
+            padding: "10px 24px",
+            borderRadius: "8px",
+            backgroundColor: "rgba(255, 255, 255, 0.08)",
+            border: "1px solid rgba(255, 255, 255, 0.15)",
+            color: "var(--text-main)",
+            fontWeight: 600,
+            fontSize: "13px",
+            cursor: "pointer",
+            backdropFilter: "blur(8px)",
+            transition: "all 0.2s",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)"
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.15)";
+            e.currentTarget.style.transform = "translateY(-1px)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.08)";
+            e.currentTarget.style.transform = "none";
+          }}
+        >
+          Back to Dashboard 🏠
+        </button>
+      )}
     </div>
   );
 }
