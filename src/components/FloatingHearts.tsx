@@ -27,6 +27,7 @@ export default function FloatingHearts() {
     if (!ctx) return;
 
     let animationFrameId: number;
+    let startTimeoutId: NodeJS.Timeout;
     const hearts: Heart[] = [];
 
     // Resize canvas
@@ -99,8 +100,11 @@ export default function FloatingHearts() {
         ctx.rotate(heart.rotation);
         ctx.beginPath();
         ctx.fillStyle = heart.color;
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = heart.color;
+        
+        if (window.innerWidth >= 768) {
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = heart.color;
+        }
         
         // Center drawing around translated coords
         drawHeartShape(ctx, -heart.size / 2, -heart.size / 2, heart.size);
@@ -112,7 +116,14 @@ export default function FloatingHearts() {
       animationFrameId = requestAnimationFrame(animate);
     };
 
-    animate();
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      startTimeoutId = setTimeout(() => {
+        animate();
+      }, 1500);
+    } else {
+      animate();
+    }
 
     // Spawn hearts on click
     const handleClick = (e: MouseEvent) => {
@@ -126,6 +137,7 @@ export default function FloatingHearts() {
     return () => {
       window.removeEventListener("resize", resizeCanvas);
       window.removeEventListener("click", handleClick);
+      if (startTimeoutId) clearTimeout(startTimeoutId);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);

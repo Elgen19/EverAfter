@@ -5,8 +5,6 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import dynamic from "next/dynamic";
 const FloatingHearts = dynamic(() => import("@/components/FloatingHearts"), { ssr: false });
-import { db } from "@/utils/firebase";
-import { collection, addDoc } from "firebase/firestore";
 
 const starsList = [
   { top: "12%", left: "15%", size: "2px", duration: "3s", delay: "0s" },
@@ -958,12 +956,16 @@ export default function LandingPage() {
                   e.preventDefault();
                   if (contactName.trim() && contactEmail.trim() && contactMessage.trim()) {
                     try {
-                      await addDoc(collection(db, "contacts"), {
-                        name: contactName.trim(),
-                        email: contactEmail.trim(),
-                        message: contactMessage.trim(),
-                        timestamp: Date.now()
+                      const res = await fetch("/api/contact", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          name: contactName.trim(),
+                          email: contactEmail.trim(),
+                          message: contactMessage.trim()
+                        })
                       });
+                      if (!res.ok) throw new Error("API call failed");
                       setContactSubmitted(true);
                     } catch (err) {
                       console.error("Failed to save contact message to Firestore:", err);

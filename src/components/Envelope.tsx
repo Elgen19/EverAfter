@@ -1,6 +1,61 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { 
+  Playfair_Display, 
+  Allura, 
+  Cinzel_Decorative, 
+  Cormorant_Garamond, 
+  Geist, 
+  Geist_Mono, 
+  Libre_Baskerville 
+} from "next/font/google";
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair-google",
+  display: "swap",
+});
+
+const allura = Allura({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-allura-google",
+  display: "swap",
+});
+
+const cinzelDec = Cinzel_Decorative({
+  weight: "700",
+  subsets: ["latin"],
+  variable: "--font-cinzel-dec-google",
+  display: "swap",
+});
+
+const cormorant = Cormorant_Garamond({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-cormorant-google",
+  display: "swap",
+});
+
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist-google",
+  display: "swap",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono-google",
+  display: "swap",
+});
+
+const libreBaskerville = Libre_Baskerville({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-libre-baskerville-google",
+  display: "swap",
+});
 
 interface CustomCSSProperties extends React.CSSProperties {
   "--tx"?: string;
@@ -158,6 +213,7 @@ export default function Envelope({
 
   return (
     <div 
+      className={`${playfair.variable} ${allura.variable} ${cinzelDec.variable} ${cormorant.variable} ${geist.variable} ${geistMono.variable} ${libreBaskerville.variable}`}
       style={{
         display: "flex",
         flexDirection: "column",
