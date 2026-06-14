@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import FloatingHearts from "@/components/FloatingHearts";
 import { db, storage } from "@/utils/firebase";
-import { collection, query, where, orderBy, getDocs, deleteDoc, onSnapshot, doc, getDoc } from "firebase/firestore";
+import { collection, query, where, orderBy, getDocs, deleteDoc, onSnapshot, doc, getDoc, updateDoc } from "firebase/firestore";
 
 interface SavedLetter {
   id?: string;
@@ -27,6 +27,8 @@ interface SavedLetter {
     rsvpNotes?: string;
     rsvpTimestamp?: number;
   } | null;
+  email?: string | null;
+  emailSent?: boolean;
 }
 
 export default function DashboardPage() {
@@ -41,6 +43,76 @@ export default function DashboardPage() {
   useEffect(() => {
     setSelectedLinks([]);
   }, [activeTab]);
+
+  // Send Email Modal states
+  const [sendModalOpen, setSendModalOpen] = useState(false);
+  const [sendLetterTarget, setSendLetterTarget] = useState<SavedLetter | null>(null);
+  const [sendEmailInput, setSendEmailInput] = useState("");
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [sendEmailStatus, setSendEmailStatus] = useState("");
+
+  const openSendEmailModal = (letter: SavedLetter) => {
+    setSendLetterTarget(letter);
+    setSendEmailInput(letter.email || "");
+    setSendEmailStatus("");
+    setSendModalOpen(true);
+  };
+
+  const handleSendEmailFromDashboard = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sendLetterTarget || !sendEmailInput.trim()) return;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(sendEmailInput.trim())) {
+      setSendEmailStatus("Please enter a valid email address.");
+      return;
+    }
+
+    setSendingEmail(true);
+    setSendEmailStatus("Sending letter...");
+
+    try {
+      const res = await fetch("/api/send-letter", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          recipientEmail: sendEmailInput.trim(),
+          letterLink: sendLetterTarget.link,
+          senderName: sendLetterTarget.sender || "Yours Truly",
+          recipientName: sendLetterTarget.recipient || "My Love",
+          title: sendLetterTarget.title || "A Love Letter"
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setSendEmailStatus("✓ Email sent successfully!");
+        
+        // Update Firebase to mark emailSent = true
+        if (sendLetterTarget.id) {
+          const docRef = doc(db, "letters", sendLetterTarget.id);
+          await updateDoc(docRef, { 
+            email: sendEmailInput.trim(),
+            emailSent: true 
+          });
+        }
+        
+        setTimeout(() => {
+          setSendModalOpen(false);
+          setSendLetterTarget(null);
+        }, 1500);
+      } else {
+        setSendEmailStatus("Failed to send email. Please try again.");
+      }
+    } catch (err) {
+      console.error("Failed to send email from dashboard:", err);
+      setSendEmailStatus("Failed to send email. Please try again.");
+    } finally {
+      setSendingEmail(false);
+    }
+  };
 
   // Romantic Alert Modal state
   const [alertOpen, setAlertOpen] = useState(false);
@@ -127,7 +199,9 @@ export default function DashboardPage() {
             sendLaterDate: data.sendLaterDate || null,
             envelopeStyle: data.envelopeStyle || "vintage-rose",
             isWriteback: data.isWriteback || false,
-            dateInvite: data.dateInvite || null
+            dateInvite: data.dateInvite || null,
+            email: data.email || null,
+            emailSent: data.emailSent || false
           });
         });
         fetchedList.sort((a, b) => b.timestamp - a.timestamp);
@@ -315,6 +389,7 @@ export default function DashboardPage() {
         }}
       >
         <div 
+          className="header-nav-container"
           style={{ 
             maxWidth: "1200px", 
             margin: "0 auto", 
@@ -363,6 +438,7 @@ export default function DashboardPage() {
 
           {/* Top Center: Receiver Name & Small Personalized Subtitle */}
           <div 
+            className="header-center-info"
             style={{ 
               display: "flex",
               flexDirection: "column",
@@ -443,7 +519,7 @@ export default function DashboardPage() {
         
         {/* Main Dashboard Hero Section (Glassmorphic Overlay Card) */}
         <section 
-          className="glass"
+          className="glass dashboard-hero"
           style={{ 
             textAlign: "center", 
             display: "flex", 
@@ -465,6 +541,7 @@ export default function DashboardPage() {
 
           {/* Big Question Statement (Cursive Font & Explicit Fallback list) */}
           <h1 
+            className="dashboard-hero-title"
             style={{
               fontSize: "52px",
               fontWeight: "bold",
@@ -744,6 +821,7 @@ export default function DashboardPage() {
                 return (
                   <div 
                     key={letter.timestamp + "-" + idx}
+                    className="dashboard-history-item"
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
@@ -874,41 +952,62 @@ export default function DashboardPage() {
                               ✍️ Reply
                             </span>
                           ) : (
-                            letter.read ? (
-                              <span 
-                                style={{ 
-                                  fontSize: "10px", 
-                                  fontWeight: "bold",
-                                  textTransform: "uppercase", 
-                                  backgroundColor: "rgba(16, 185, 129, 0.15)",
-                                  color: "#10b981",
-                                  padding: "2px 8px", 
-                                  borderRadius: "10px",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: "4px"
-                                }}
-                                title={`Opened on ${letter.readAt ? formatDate(letter.readAt) : "unknown date"}`}
-                              >
-                                ✓✓ Read
-                              </span>
+                            letter.emailSent ? (
+                              letter.read ? (
+                                <span 
+                                  style={{ 
+                                    fontSize: "10px", 
+                                    fontWeight: "bold",
+                                    textTransform: "uppercase", 
+                                    backgroundColor: "rgba(16, 185, 129, 0.15)",
+                                    color: "#10b981",
+                                    padding: "2px 8px", 
+                                    borderRadius: "10px",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "4px"
+                                  }}
+                                  title={`Opened on ${letter.readAt ? formatDate(letter.readAt) : "unknown date"}`}
+                                >
+                                  ✓✓ Read
+                                </span>
+                              ) : (
+                                <span 
+                                  style={{ 
+                                    fontSize: "10px", 
+                                    fontWeight: "bold",
+                                    textTransform: "uppercase", 
+                                    backgroundColor: "rgba(156, 163, 175, 0.15)",
+                                    color: "#9ca3af",
+                                    padding: "2px 8px", 
+                                    borderRadius: "10px",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "4px"
+                                  }}
+                                  title="Not opened yet"
+                                >
+                                  ✓ Sent
+                                </span>
+                              )
                             ) : (
                               <span 
                                 style={{ 
                                   fontSize: "10px", 
                                   fontWeight: "bold",
                                   textTransform: "uppercase", 
-                                  backgroundColor: "rgba(156, 163, 175, 0.15)",
-                                  color: "#9ca3af",
+                                  backgroundColor: "rgba(245, 158, 11, 0.12)",
+                                  color: "#f59e0b",
                                   padding: "2px 8px", 
                                   borderRadius: "10px",
                                   display: "inline-flex",
                                   alignItems: "center",
-                                  gap: "4px"
+                                  gap: "4px",
+                                  border: "1px solid rgba(245, 158, 11, 0.25)"
                                 }}
-                                title="Not opened yet"
+                                title="Not emailed to recipient yet"
                               >
-                                ✓ Sent
+                                ✉️ Unsent
                               </span>
                             )
                           )}
@@ -968,7 +1067,35 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Actions */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div className="dashboard-history-actions" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      {!letter.isWriteback && !letter.emailSent && (
+                        <button
+                          onClick={() => openSendEmailModal(letter)}
+                          style={{
+                            padding: "8px 16px",
+                            borderRadius: "6px",
+                            backgroundColor: "var(--accent-rose)",
+                            backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)",
+                            border: "none",
+                            color: "#fff",
+                            fontSize: "12px",
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            transition: "all 0.2s",
+                            boxShadow: "0 4px 12px rgba(255, 75, 114, 0.2)"
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = "translateY(-1px)";
+                            e.currentTarget.style.boxShadow = "0 6px 16px rgba(255, 75, 114, 0.35)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "none";
+                            e.currentTarget.style.boxShadow = "0 4px 12px rgba(255, 75, 114, 0.2)";
+                          }}
+                        >
+                          Send ✉️
+                        </button>
+                      )}
                       {!letter.isWriteback && (
                         <Link 
                           href={`/create?edit=${letter.id}`}
@@ -1317,6 +1444,145 @@ export default function DashboardPage() {
               Opening Creator Studio...
             </div>
           </div>
+        </div>
+      )}
+
+      {sendModalOpen && sendLetterTarget && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 2000,
+            backgroundColor: "rgba(11, 7, 17, 0.75)",
+            backdropFilter: "blur(12px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+        >
+          <form
+            onSubmit={handleSendEmailFromDashboard}
+            className="glass animate-reveal"
+            style={{
+              width: "100%",
+              maxWidth: "460px",
+              padding: "40px 30px",
+              textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "20px",
+              boxShadow: "0 20px 50px rgba(0, 0, 0, 0.5)",
+              borderRadius: "16px"
+            }}
+          >
+            <span style={{ fontSize: "40px" }}>✉️</span>
+            <div>
+              <h3 
+                style={{ 
+                  fontSize: "22px", 
+                  fontWeight: "normal", 
+                  fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive",
+                  color: "var(--accent-rose)",
+                  marginBottom: "10px"
+                }}
+              >
+                Send Love Letter
+              </h3>
+              <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6" }}>
+                Send this love letter directly to your partner's email address.
+              </p>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%", textAlign: "left" }}>
+              <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>
+                Recipient's Email Address
+              </label>
+              <input 
+                type="email" 
+                value={sendEmailInput}
+                onChange={(e) => setSendEmailInput(e.target.value)}
+                placeholder="partner@example.com"
+                required
+                style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.03)",
+                  border: "1px solid var(--border-card)",
+                  borderRadius: "8px",
+                  padding: "12px",
+                  color: "#fff",
+                  fontSize: "14px",
+                  outline: "none",
+                  width: "100%"
+                }}
+              />
+            </div>
+
+            {sendEmailStatus && (
+              <p 
+                style={{ 
+                  fontSize: "12px", 
+                  color: sendEmailStatus.includes("successfully") ? "#10b981" : "var(--accent-rose)",
+                  fontWeight: 500,
+                  margin: 0
+                }}
+              >
+                {sendEmailStatus}
+              </p>
+            )}
+
+            <div style={{ display: "flex", gap: "12px", width: "100%", justifyContent: "center" }}>
+              <button
+                type="submit"
+                disabled={sendingEmail || !sendEmailInput.trim()}
+                style={{
+                  padding: "10px 24px",
+                  borderRadius: "8px",
+                  backgroundColor: "var(--accent-rose)",
+                  backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)",
+                  border: "none",
+                  color: "#fff",
+                  fontWeight: 600,
+                  fontSize: "13px",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 12px rgba(255, 75, 114, 0.2)",
+                  transition: "all 0.2s",
+                  opacity: (sendingEmail || !sendEmailInput.trim()) ? 0.6 : 1
+                }}
+                onMouseEnter={(e) => {
+                  if (!sendingEmail && sendEmailInput.trim()) e.currentTarget.style.transform = "translateY(-1px)";
+                }}
+                onMouseLeave={(e) => {
+                  if (!sendingEmail && sendEmailInput.trim()) e.currentTarget.style.transform = "none";
+                }}
+              >
+                {sendingEmail ? "Sending..." : "Send Letter 💌"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSendModalOpen(false)}
+                disabled={sendingEmail}
+                style={{
+                  padding: "10px 24px",
+                  borderRadius: "8px",
+                  backgroundColor: "rgba(255,255,255,0.06)",
+                  border: "1px solid var(--border-card)",
+                  color: "var(--text-main)",
+                  fontWeight: 600,
+                  fontSize: "13px",
+                  cursor: "pointer",
+                  transition: "all 0.2s"
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.12)")}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.06)")}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>

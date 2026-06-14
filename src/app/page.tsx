@@ -104,13 +104,175 @@ export default function LandingPage() {
 
       {/* Inline styles for custom animations and hover effects */}
       <style>{`
-        html {
+        html, body {
           scroll-behavior: smooth;
+          scrollbar-gutter: stable;
+          overflow-y: scroll;
+          overflow-x: hidden;
+          width: 100%;
+        }
+
+        .landing-hero {
+          display: grid;
+          grid-template-columns: calc(55% - 20px) calc(45% - 20px);
+          gap: 40px;
+          align-items: center;
+          min-height: 500px;
+          margin-bottom: 80px;
+        }
+
+        .landing-hero-content {
+          min-width: 0;
+        }
+
+        .landing-hero > div {
+          min-width: 0;
+        }
+
+        .features-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+          gap: 24px;
+        }
+
+        .feature-card {
+          padding: 36px 30px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          border-radius: 20px;
+          border: 1px solid var(--border-card);
+          background: rgba(20, 15, 30, 0.5);
+          transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .feature-card:hover {
+          transform: translateY(-5px);
+          border-color: rgba(255, 75, 114, 0.3) !important;
+          background: linear-gradient(135deg, rgba(30, 20, 45, 0.8) 0%, rgba(255, 75, 114, 0.05) 100%) !important;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        .feature-icon {
+          font-size: 32px;
+          width: 50px;
+          height: 50px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 12px;
+        }
+
+        .feature-title {
+          font-size: 18px;
+          font-weight: 600;
+          color: #fff;
+          margin: 0;
+        }
+
+        .feature-desc {
+          font-size: 14px;
+          color: var(--text-muted);
+          line-height: 1.6;
+          margin: 0;
         }
 
         @media (max-width: 860px) {
           .header-nav {
             display: none !important;
+          }
+          .header-dashboard-btn {
+            display: none !important;
+          }
+          .landing-hero {
+            grid-template-columns: 1fr !important;
+            gap: 20px !important;
+            text-align: center !important;
+            min-height: auto !important;
+            margin-bottom: 40px !important;
+          }
+          .landing-hero-content {
+            align-items: center !important;
+            text-align: center !important;
+            min-width: 0;
+            gap: 16px !important;
+          }
+          .landing-hero-content > div {
+            justify-content: center !important;
+          }
+          .landing-hero-title {
+            font-size: 48px !important;
+            min-height: 130px !important;
+            margin-bottom: 8px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+          }
+          .hero-subtext {
+            font-size: 15px !important;
+          }
+          .hero-envelope-column {
+            display: none !important;
+          }
+          .features-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 16px !important;
+          }
+          .feature-card {
+            padding: 24px 20px !important;
+            gap: 12px !important;
+            border-radius: 16px !important;
+          }
+          .feature-icon {
+            font-size: 24px !important;
+            width: 44px !important;
+            height: 44px !important;
+            border-radius: 10px !important;
+          }
+          .feature-title {
+            font-size: 16px !important;
+          }
+          .feature-desc {
+            font-size: 13px !important;
+            line-height: 1.5 !important;
+          }
+        }
+
+        @media (max-width: 600px) {
+          .landing-hero-title {
+            font-size: 44px !important;
+            min-height: 110px !important;
+            margin-bottom: 6px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+          }
+          .hero-subtext {
+            font-size: 14px !important;
+          }
+          .landing-main {
+            margin-top: 100px !important;
+            padding: 0 16px !important;
+          }
+          .features-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
+          }
+          .feature-card {
+            padding: 16px 12px !important;
+            gap: 10px !important;
+            border-radius: 12px !important;
+          }
+          .feature-icon {
+            font-size: 20px !important;
+            width: 38px !important;
+            height: 38px !important;
+            border-radius: 8px !important;
+          }
+          .feature-title {
+            font-size: 14px !important;
+          }
+          .feature-desc {
+            font-size: 12px !important;
+            line-height: 1.4 !important;
           }
         }
 
@@ -149,15 +311,8 @@ export default function LandingPage() {
           box-shadow: 0 15px 30px rgba(255, 75, 114, 0.6) !important;
         }
 
-        .feature-card {
-          transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-
-        .feature-card:hover {
-          transform: translateY(-5px);
-          border-color: rgba(255, 75, 114, 0.3) !important;
-          background: linear-gradient(135deg, rgba(30, 20, 45, 0.8) 0%, rgba(255, 75, 114, 0.05) 100%) !important;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
+        .feature-card-hover-placeholder {
+          /* keep a placeholder here or just remove */
         }
 
         /* 3D Envelope Demo styling */
@@ -269,6 +424,26 @@ export default function LandingPage() {
           transform: translateY(-2px);
           background: rgba(255, 255, 255, 0.04) !important;
         }
+
+        @media (max-width: 400px) {
+          .demo-envelope-container {
+            transform: scale(0.8) !important;
+            margin: 10px auto !important;
+            height: 160px !important;
+          }
+        }
+
+        .contact-form-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
+
+        @media (max-width: 500px) {
+          .contact-form-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
       `}</style>
 
       {/* Top Header Navigation */}
@@ -357,6 +532,7 @@ export default function LandingPage() {
               How It Works
             </a>
 
+
             <a 
               href="#contact" 
               style={{ fontSize: "14px", color: "var(--text-muted)", textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }}
@@ -373,7 +549,8 @@ export default function LandingPage() {
               user ? (
                 <>
                   <Link 
-                    href="/coming-soon"
+                    href="/dashboard"
+                    className="header-dashboard-btn"
                     style={{
                       fontSize: "14px",
                       color: "var(--text-main)",
@@ -391,7 +568,7 @@ export default function LandingPage() {
                     Go to Dashboard 💖
                   </Link>
                   <Link
-                    href="/coming-soon"
+                    href="/profile"
                     style={{
                       width: "36px",
                       height: "36px",
@@ -413,7 +590,7 @@ export default function LandingPage() {
                 </>
               ) : (
                 <Link 
-                  href="/coming-soon"
+                  href="/login"
                   style={{
                     fontSize: "14px",
                     color: "var(--text-main)",
@@ -461,12 +638,12 @@ export default function LandingPage() {
       </header>
 
       {/* Main Container */}
-      <main style={{ maxWidth: "1200px", margin: "140px auto 0 auto", padding: "0 24px", flexGrow: 1 }}>
+      <main className="landing-main" style={{ maxWidth: "1200px", margin: "140px auto 0 auto", padding: "0 24px", flexGrow: 1 }}>
         
         {/* HERO SECTION */}
-        <section style={{ display: "grid", gridTemplateColumns: "1.1fr 0.9fr", gap: "40px", alignItems: "center", minHeight: "500px", marginBottom: "80px" }}>
+        <section className="landing-hero" style={{ gap: "40px", alignItems: "center", minHeight: "500px", marginBottom: "80px" }}>
           
-          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          <div className="landing-hero-content" style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
             {/* Romantic Highlight Label */}
             <div style={{ 
               display: "inline-flex", 
@@ -487,19 +664,18 @@ export default function LandingPage() {
             </div>
 
             {/* Main Headline */}
-            <h1 style={{ 
-              fontSize: "64px", 
+            <h1 className="landing-hero-title" style={{ 
+              fontSize: "48px", 
               fontWeight: "normal", 
               lineHeight: "1.3", 
               color: "#ffffff",
               fontFamily: "var(--font-cursive)",
               letterSpacing: "0.5px",
-              minHeight: "170px",
-              paddingLeft: "12px",
-              paddingRight: "12px",
-              marginLeft: "-12px",
-              marginRight: "-12px",
-              overflow: "visible"
+              minHeight: "130px",
+              width: "100%",
+              boxSizing: "border-box",
+              overflow: "visible",
+              margin: "0"
             }}>
               {mounted ? (
                 <>
@@ -519,11 +695,12 @@ export default function LandingPage() {
             </h1>
 
             {/* Subtext */}
-            <p style={{ 
+            <p className="hero-subtext" style={{ 
               fontSize: "18px", 
               color: "var(--text-muted)", 
               lineHeight: "1.6",
-              maxWidth: "540px"
+              maxWidth: "540px",
+              margin: "0"
             }}>
               Capture your deepest feelings in modern, media-rich love letters. Seal your words in digital wax, set time locks for anniversaries, embed ambient soundtracks, and secure them behind private gates.
             </p>
@@ -531,7 +708,7 @@ export default function LandingPage() {
             {/* Call to Actions */}
             <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "12px" }}>
               <Link
-                href="/coming-soon"
+                href={mounted && user ? "/dashboard" : "/login"}
                 className="cta-button"
                 style={{
                   display: "inline-flex",
@@ -558,7 +735,7 @@ export default function LandingPage() {
           </div>
 
           {/* Interactive Envelope Preview */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <div className="hero-envelope-column" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
             <div className="demo-envelope-container">
               <div className="demo-envelope">
                 <div className="demo-flap"></div>
@@ -596,148 +773,82 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "24px" }}>
+          <div className="features-grid">
             
             {/* Feature 1 */}
-            <div 
-              className="glass feature-card"
-              style={{
-                padding: "36px 30px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "16px",
-                borderRadius: "20px",
-                border: "1px solid var(--border-card)",
-                background: "rgba(20, 15, 30, 0.5)",
-              }}
-            >
-              <div style={{ fontSize: "32px", width: "50px", height: "50px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "12px", backgroundColor: "rgba(255, 75, 114, 0.1)", color: "var(--accent-rose)" }}>
+            <div className="glass feature-card">
+              <div className="feature-icon" style={{ backgroundColor: "rgba(255, 75, 114, 0.1)", color: "var(--accent-rose)" }}>
                 ✉️
               </div>
-              <h3 style={{ fontSize: "18px", fontWeight: 600, color: "#fff" }}>
+              <h3 className="feature-title">
                 Wax Seals & Stationery
               </h3>
-              <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6" }}>
+              <p className="feature-desc">
                 Choose between beautiful background themes like Classic Parchment, Celestial Midnight, or Rose Petals. Seal them with a realistic, satisfying wax stamp.
               </p>
             </div>
 
             {/* Feature 2 */}
-            <div 
-              className="glass feature-card"
-              style={{
-                padding: "36px 30px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "16px",
-                borderRadius: "20px",
-                border: "1px solid var(--border-card)",
-                background: "rgba(20, 15, 30, 0.5)",
-              }}
-            >
-              <div style={{ fontSize: "32px", width: "50px", height: "50px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "12px", backgroundColor: "rgba(156, 108, 250, 0.1)", color: "var(--accent-purple)" }}>
+            <div className="glass feature-card">
+              <div className="feature-icon" style={{ backgroundColor: "rgba(156, 108, 250, 0.1)", color: "var(--accent-purple)" }}>
                 ⏳
               </div>
-              <h3 style={{ fontSize: "18px", fontWeight: 600, color: "#fff" }}>
+              <h3 className="feature-title">
                 Timed Release Locks
               </h3>
-              <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6" }}>
+              <p className="feature-desc">
                 Deliver letters ahead of time but lock them behind a live countdown timer. Perfect for anniversaries, birthdays, or special midnight surprises.
               </p>
             </div>
 
             {/* Feature 3 */}
-            <div 
-              className="glass feature-card"
-              style={{
-                padding: "36px 30px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "16px",
-                borderRadius: "20px",
-                border: "1px solid var(--border-card)",
-                background: "rgba(20, 15, 30, 0.5)",
-              }}
-            >
-              <div style={{ fontSize: "32px", width: "50px", height: "50px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "12px", backgroundColor: "rgba(226, 184, 87, 0.1)", color: "var(--accent-gold)" }}>
+            <div className="glass feature-card">
+              <div className="feature-icon" style={{ backgroundColor: "rgba(226, 184, 87, 0.1)", color: "var(--accent-gold)" }}>
                 🔑
               </div>
-              <h3 style={{ fontSize: "18px", fontWeight: 600, color: "#fff" }}>
+              <h3 className="feature-title">
                 Private Security Gates
               </h3>
-              <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6" }}>
+              <p className="feature-desc">
                 Ensure your letter is only read by the right eyes. Secure your letter with a private question that only your partner knows the answer to.
               </p>
             </div>
 
             {/* Feature 4 */}
-            <div 
-              className="glass feature-card"
-              style={{
-                padding: "36px 30px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "16px",
-                borderRadius: "20px",
-                border: "1px solid var(--border-card)",
-                background: "rgba(20, 15, 30, 0.5)",
-              }}
-            >
-              <div style={{ fontSize: "32px", width: "50px", height: "50px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "12px", backgroundColor: "rgba(255, 75, 114, 0.1)", color: "var(--accent-rose)" }}>
+            <div className="glass feature-card">
+              <div className="feature-icon" style={{ backgroundColor: "rgba(255, 75, 114, 0.1)", color: "var(--accent-rose)" }}>
                 🎵
               </div>
-              <h3 style={{ fontSize: "18px", fontWeight: 600, color: "#fff" }}>
+              <h3 className="feature-title">
                 Ambient Lo-fi Tracks
               </h3>
-              <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6" }}>
+              <p className="feature-desc">
                 Accompany your letter with romantic backing tracks or peaceful lo-fi background noise. The audio automatically loops when they open the letter.
               </p>
             </div>
 
             {/* Feature 5 */}
-            <div 
-              className="glass feature-card"
-              style={{
-                padding: "36px 30px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "16px",
-                borderRadius: "20px",
-                border: "1px solid var(--border-card)",
-                background: "rgba(20, 15, 30, 0.5)",
-              }}
-            >
-              <div style={{ fontSize: "32px", width: "50px", height: "50px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "12px", backgroundColor: "rgba(156, 108, 250, 0.1)", color: "var(--accent-purple)" }}>
+            <div className="glass feature-card">
+              <div className="feature-icon" style={{ backgroundColor: "rgba(156, 108, 250, 0.1)", color: "var(--accent-purple)" }}>
                 🎟️
               </div>
-              <h3 style={{ fontSize: "18px", fontWeight: 600, color: "#fff" }}>
+              <h3 className="feature-title">
                 Date RSVP Ticketing
               </h3>
-              <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6" }}>
+              <p className="feature-desc">
                 Plan your next date night within the envelope. Embed ticket cards asking for a date RSVP with options, confirmation, and custom survey details.
               </p>
             </div>
 
             {/* Feature 6 */}
-            <div 
-              className="glass feature-card"
-              style={{
-                padding: "36px 30px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "16px",
-                borderRadius: "20px",
-                border: "1px solid var(--border-card)",
-                background: "rgba(20, 15, 30, 0.5)",
-              }}
-            >
-              <div style={{ fontSize: "32px", width: "50px", height: "50px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "12px", backgroundColor: "rgba(226, 184, 87, 0.1)", color: "var(--accent-gold)" }}>
+            <div className="glass feature-card">
+              <div className="feature-icon" style={{ backgroundColor: "rgba(226, 184, 87, 0.1)", color: "var(--accent-gold)" }}>
                 🟢
               </div>
-              <h3 style={{ fontSize: "18px", fontWeight: 600, color: "#fff" }}>
+              <h3 className="feature-title">
                 Real-Time Read Receipts
               </h3>
-              <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6" }}>
+              <p className="feature-desc">
                 Know when your feelings reach them. Receive immediate, real-time read notifications on your dashboard when they break the wax seal.
               </p>
             </div>
@@ -754,7 +865,7 @@ export default function LandingPage() {
             <p style={{ color: "var(--text-muted)", fontSize: "14px", marginTop: "8px" }}>Send your first letter in four simple steps</p>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(220px, 100%), 1fr))", gap: "20px" }}>
             
             {/* Step 1 */}
             <div className="step-card" style={{ padding: "24px", borderRadius: "16px", background: "rgba(255,255,255,0.01)", border: "1px solid rgba(255,255,255,0.04)" }}>
@@ -795,7 +906,6 @@ export default function LandingPage() {
           </div>
 
         </section>
-
 
         {/* CONTACT US SECTION */}
         <section id="contact" style={{ marginBottom: "100px" }}>
@@ -857,7 +967,7 @@ export default function LandingPage() {
                 }}
                 style={{ display: "flex", flexDirection: "column", gap: "20px" }}
               >
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                <div className="contact-form-grid" style={{ gap: "16px" }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                     <label style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Your Name</label>
                     <input 
@@ -980,7 +1090,7 @@ export default function LandingPage() {
             Create an EverAfter account to write and manage your love letters today.
           </p>
           <Link
-            href="/coming-soon"
+            href={mounted && user ? "/dashboard" : "/login"}
             className="cta-button"
             style={{
               display: "inline-flex",

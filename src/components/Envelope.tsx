@@ -168,8 +168,9 @@ export default function Envelope({
         gap: "24px",
       }}
     >
-      <div 
-        className={`envelope-wrapper ${themeClass} vintage-rose-style ${showIdleAnim ? "envelope-idle" : ""}`}
+      <div className="envelope-container">
+        <div 
+          className={`envelope-wrapper ${themeClass} vintage-rose-style ${showIdleAnim ? "envelope-idle" : ""}`}
         onClick={handleOpen}
         style={{
           transform: isFullView 
@@ -322,6 +323,7 @@ export default function Envelope({
           </div>
         </div>
       </div>
+      </div>
 
       {/* Expanded Full Screen Stationery Sheet (Fade-in portal style) */}
       <div
@@ -440,9 +442,8 @@ export default function Envelope({
 
           {/* Letter Body Scroll Container */}
           <div
-            className="hide-scrollbar"
+            className="hide-scrollbar stationery-scroll-container"
             style={{
-              padding: theme === "royal" ? "40px 24px 28px 24px" : "48px 48px 36px 48px",
               overflowY: "auto",
               flex: 1,
               display: "flex",
@@ -600,14 +601,14 @@ export default function Envelope({
             </div>
           </div>
 
-          {/* Floating Close Action */}
+          {/* Floating Close Action inside the letter sheet */}
           <button
             onClick={handleClose}
             style={{
               position: "absolute",
-              top: "24px",
-              right: "24px",
-              background: "rgba(0, 0, 0, 0.05)",
+              top: "20px",
+              right: "20px",
+              background: theme === "celestial" ? "rgba(255, 255, 255, 0.15)" : "rgba(0, 0, 0, 0.05)",
               border: "none",
               borderRadius: "50%",
               width: "36px",
@@ -619,11 +620,11 @@ export default function Envelope({
               color: "var(--stationery-text)",
               opacity: 0.6,
               transition: "opacity 0.2s, background-color 0.2s",
-              zIndex: 20,
+              zIndex: 100,
             }}
             title="Fold Back into Envelope"
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.1)")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.05)")}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}
           >
             {/* SVG X icon */}
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

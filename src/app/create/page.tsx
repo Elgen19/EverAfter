@@ -82,6 +82,7 @@ function CreateLetterStudio() {
   const [emailToSend, setEmailToSend] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailStatus, setEmailStatus] = useState("");
+  const [sendViaEmail, setSendViaEmail] = useState(false);
 
   // Core Form state
   const [recipient, setRecipient] = useState("");
@@ -539,6 +540,11 @@ function CreateLetterStudio() {
       }
     }
 
+    if (sendViaEmail && !email.trim()) {
+      showRomanticAlert("Email Required", "Please enter your recipient's email address to send the letter automatically.");
+      return;
+    }
+
     // Validate Date Invitation Email
     if (dateInviteEnabled && dateInviteEmail.trim()) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -818,7 +824,21 @@ function CreateLetterStudio() {
       });
       const data = await res.json();
       if (data.success) {
-        setEmailStatus("✓ Email sent successfully! (Simulated)");
+        setEmailStatus("✓ Email sent successfully!");
+        
+        let letterId = null;
+        if (shareUrl && shareUrl.includes("&id=")) {
+          letterId = shareUrl.split("&id=")[1]?.split("&")[0];
+        }
+        
+        if (db && letterId) {
+          const docRef = doc(db, "letters", letterId);
+          await updateDoc(docRef, { 
+            email: emailToSend.trim(),
+            emailSent: true 
+          });
+        }
+        
         setEmailToSend("");
       } else {
         setEmailStatus("Failed to send email. Please try again.");
@@ -896,7 +916,7 @@ function CreateLetterStudio() {
       
       <main className="studio-main" style={{ maxWidth: "1200px", margin: "0 auto", position: "relative", zIndex: 10 }}>
         
-        <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px" }}>
+        <header className="studio-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px" }}>
           <Link 
             href="/dashboard"
             style={{
@@ -929,14 +949,14 @@ function CreateLetterStudio() {
           >
             EverAfter Studio
           </h1>
-          <div style={{ width: "80px" }}></div>
+          <div className="studio-header-spacer" style={{ width: "80px" }}></div>
         </header>
 
         <div 
           className="studio-grid"
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(450px, 100%), 1fr))",
             gap: "40px",
             alignItems: "start"
           }}
@@ -1438,6 +1458,70 @@ function CreateLetterStudio() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Delivery Options */}
+            <div style={{ borderTop: "1px solid var(--border-card)", paddingTop: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+              <h3 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-main)" }}>
+                Delivery Options
+              </h3>
+              <div 
+                style={{ 
+                  display: "flex", 
+                  flexDirection: "column",
+                  gap: "12px",
+                  background: "rgba(255, 255, 255, 0.02)", 
+                  border: "1px solid var(--border-card)", 
+                  borderRadius: "10px", 
+                  padding: "16px" 
+                }}
+              >
+                <label style={{ display: "flex", alignItems: "flex-start", gap: "12px", cursor: "pointer" }}>
+                  <input 
+                    type="checkbox" 
+                    checked={sendViaEmail} 
+                    onChange={(e) => setSendViaEmail(e.target.checked)}
+                    style={{ marginTop: "3px", width: "16px", height: "16px", accentColor: "var(--accent-rose)" }}
+                  />
+                  <div>
+                    <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", display: "block" }}>
+                      Send letter via email automatically on seal ✉️
+                    </span>
+                    <span style={{ fontSize: "11px", color: "var(--text-muted)", display: "block", marginTop: "2px" }}>
+                      We will automatically email the secure letter link to the recipient once you seal it.
+                    </span>
+                  </div>
+                </label>
+
+                {sendViaEmail && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "4px" }}>
+                    <label style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 500 }}>
+                      Recipient's Email Address
+                    </label>
+                    <input 
+                      type="email" 
+                      value={email}
+                      onChange={(e) => handleEmailChange(e.target.value)}
+                      placeholder="e.g. partner@example.com"
+                      required={sendViaEmail}
+                      style={{
+                        backgroundColor: "rgba(0,0,0,0.2)",
+                        border: emailError ? "1.5px solid var(--accent-rose)" : "1px solid var(--border-card)",
+                        borderRadius: "8px",
+                        padding: "10px 12px",
+                        color: "#fff",
+                        fontSize: "13px",
+                        outline: "none"
+                      }}
+                    />
+                    {emailError && (
+                      <span style={{ color: "var(--accent-rose)", fontSize: "11px", fontWeight: "bold" }}>
+                        ⚠️ {emailError}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -2217,10 +2301,55 @@ function CreateLetterStudio() {
           greeting={greeting}
           farewell={farewell}
           onComplete={async () => {
+            if (email.trim()) {
+              setEmailToSend(email.trim());
+            }
             if (savePromise) {
               try {
                 const finalLink = await savePromise;
                 setShareUrl(finalLink);
+
+                // If sendViaEmail is true, automatically dispatch the letter via email
+                if (sendViaEmail && email.trim()) {
+                  setSendingEmail(true);
+                  setEmailStatus("Sending letter invitation...");
+                  try {
+                    const res = await fetch("/api/send-letter", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json"
+                      },
+                      body: JSON.stringify({
+                        recipientEmail: email.trim(),
+                        letterLink: finalLink,
+                        senderName: sender.trim() || "Yours Truly",
+                        recipientName: recipient.trim() || "My Love",
+                        title: title.trim() || "A Love Letter"
+                      })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                      setEmailStatus("✓ Email sent successfully!");
+                      
+                      let letterId = null;
+                      if (finalLink && finalLink.includes("&id=")) {
+                        letterId = finalLink.split("&id=")[1]?.split("&")[0];
+                      }
+                      
+                      if (db && letterId) {
+                        const docRef = doc(db, "letters", letterId);
+                        await updateDoc(docRef, { emailSent: true });
+                      }
+                    } else {
+                      setEmailStatus("Failed to send email automatically. You can try sending manually below.");
+                    }
+                  } catch (err) {
+                    console.error("Automatic email dispatch failed:", err);
+                    setEmailStatus("Failed to send email automatically. You can try sending manually below.");
+                  } finally {
+                    setSendingEmail(false);
+                  }
+                }
               } catch (err) {
                 console.error("Background save failed:", err);
               }

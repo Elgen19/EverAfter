@@ -73,10 +73,11 @@ export async function POST(request: Request) {
 
     // HTML Version (Receiver Copy)
     const htmlContent = `
+      <link href="https://fonts.googleapis.com/css2?family=Sacramento&display=swap" rel="stylesheet">
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f0913; color: #f3f1f6; padding: 40px 20px; border-radius: 16px; max-width: 600px; margin: 0 auto; border: 1.5px solid #bd9b62; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
         <div style="text-align: center; border-bottom: 1px dashed rgba(226,184,87,0.3); padding-bottom: 20px; margin-bottom: 24px;">
           <span style="font-size: 24px;">🎫</span>
-          <h1 style="color: #bd9b62; font-family: Georgia, serif; font-size: 28px; margin: 8px 0 0 0; font-weight: normal;">EverAfter</h1>
+          <h1 style="color: #bd9b62; font-family: 'Sacramento', 'Dancing Script', 'Great Vibes', 'Brush Script MT', cursive, Georgia, serif; font-size: 38px; margin: 8px 0 0 0; font-weight: normal; letter-spacing: 1px;">EverAfter</h1>
           <p style="font-size: 10px; color: #a18aa6; text-transform: uppercase; letter-spacing: 2px; margin: 4px 0 0 0;">Admit Two</p>
         </div>
         
@@ -132,7 +133,7 @@ export async function POST(request: Request) {
         </div>
         
         <div style="text-align: center; margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px; font-size: 12px; color: #bd9b62;">
-          <strong>EverAfter</strong><br/>
+          <strong style="font-family: 'Sacramento', 'Dancing Script', 'Great Vibes', 'Brush Script MT', cursive, Georgia, serif; font-size: 22px; font-weight: normal;">EverAfter</strong><br/>
           <span style="font-size: 11px; color: #a18aa6; display: block; margin-top: 4px;">Made with love by Elgen for Faith</span>
         </div>
       </div>
@@ -163,10 +164,11 @@ export async function POST(request: Request) {
         senderPlainText += `\nEverAfter\nMade with love by Elgen for Faith\n`;
 
         const senderHtmlContent = `
+          <link href="https://fonts.googleapis.com/css2?family=Sacramento&display=swap" rel="stylesheet">
           <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f0913; color: #f3f1f6; padding: 40px 20px; border-radius: 16px; max-width: 600px; margin: 0 auto; border: 1.5px solid #bd9b62; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
             <div style="text-align: center; border-bottom: 1px dashed rgba(226,184,87,0.3); padding-bottom: 20px; margin-bottom: 24px;">
               <span style="font-size: 24px;">💖</span>
-              <h1 style="color: #bd9b62; font-family: Georgia, serif; font-size: 28px; margin: 8px 0 0 0; font-weight: normal;">EverAfter</h1>
+              <h1 style="color: #bd9b62; font-family: 'Sacramento', 'Dancing Script', 'Great Vibes', 'Brush Script MT', cursive, Georgia, serif; font-size: 38px; margin: 8px 0 0 0; font-weight: normal; letter-spacing: 1px;">EverAfter</h1>
               <p style="font-size: 10px; color: #a18aa6; text-transform: uppercase; letter-spacing: 2px; margin: 4px 0 0 0;">Date Accepted</p>
             </div>
             
@@ -205,7 +207,7 @@ export async function POST(request: Request) {
             </div>
 
             <div style="text-align: center; margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px; font-size: 12px; color: #bd9b62;">
-              <strong>EverAfter</strong><br/>
+              <strong style="font-family: 'Sacramento', 'Dancing Script', 'Great Vibes', 'Brush Script MT', cursive, Georgia, serif; font-size: 22px; font-weight: normal;">EverAfter</strong><br/>
               <span style="font-size: 11px; color: #a18aa6; display: block; margin-top: 4px;">Made with love by Elgen for Faith</span>
             </div>
           </div>
