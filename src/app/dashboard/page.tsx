@@ -213,12 +213,12 @@ export default function DashboardPage() {
       {/* Nav */}
       <header className="glass" style={{ position: "fixed", top: 0, left: 0, right: 0, width: "100%", zIndex: 100, borderRadius: "0px", borderLeft: "none", borderRight: "none", borderTop: "none", borderBottom: "1px solid var(--border-card)", background: "rgba(11, 7, 17, 0.75)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}>
         <div className="header-nav-container" style={{ maxWidth: "1200px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 48px" }}>
-          <Link href="/dashboard" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none", transition: "transform 0.2s ease" }}
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none", transition: "transform 0.2s ease" }}
             onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
             onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
           >
-            <img src="/logo.png" alt="EverAfter Logo" style={{ width: "40px", height: "40px", borderRadius: "8px", objectFit: "cover", boxShadow: "0 0 10px rgba(255, 75, 114, 0.3)", border: "1.5px solid rgba(255, 255, 255, 0.1)" }} />
-            <span style={{ fontSize: "36px", fontWeight: "normal", fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive", background: "linear-gradient(to right, #ff4b72, #9c6cfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>EverAfter</span>
+            <img src="/logo.png" alt="EverAfter Logo" style={{ width: "32px", height: "32px", borderRadius: "8px", objectFit: "cover", boxShadow: "0 0 10px rgba(255, 75, 114, 0.3)", border: "1.5px solid rgba(255, 255, 255, 0.1)" }} />
+            <span style={{ fontSize: "26px", fontWeight: "normal", fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive", background: "linear-gradient(to right, #ff4b72, #9c6cfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>EverAfter</span>
           </Link>
           <div className="header-center-info" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
             <div style={{ fontSize: "28px", fontWeight: 700, color: "var(--accent-rose)", display: "flex", alignItems: "center", gap: "6px", textTransform: "capitalize", fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive" }}>
@@ -229,7 +229,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <Link href="/profile" style={{ width: "50px", height: "50px", borderRadius: "50%", background: "linear-gradient(135deg, #ff4b72, #9c6cfa)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: "bold", fontSize: "20px", textDecoration: "none", boxShadow: "0 4px 12px rgba(255, 75, 114, 0.25)", transition: "all 0.2s ease-in-out", border: "2px solid rgba(255, 255, 255, 0.2)" }}
+            <Link href="/profile" style={{ width: "36px", height: "36px", borderRadius: "50%", background: "linear-gradient(135deg, #ff4b72, #9c6cfa)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: "bold", fontSize: "14px", textDecoration: "none", boxShadow: "0 4px 12px rgba(255, 75, 114, 0.25)", transition: "all 0.2s ease-in-out", border: "2px solid rgba(255, 255, 255, 0.2)" }}
               onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.08)"; e.currentTarget.style.boxShadow = "0 6px 16px rgba(255, 75, 114, 0.4)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(255, 75, 114, 0.25)"; }}
               title="Profile Settings"

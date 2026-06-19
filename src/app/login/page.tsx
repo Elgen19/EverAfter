@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import FloatingHearts from "@/components/FloatingHearts";
 
@@ -301,6 +302,14 @@ export default function LoginPage() {
           Sign in with Google
         </button>
 
+        <div style={{ display: "flex", justifyContent: "center", marginTop: "8px" }}>
+          <Link href="/" style={{ fontSize: "12px", color: "var(--text-muted)", textDecoration: "none", transition: "color 0.2s" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent-rose)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
+          >
+            ← Back to Home
+          </Link>
+        </div>
 
       </main>
     </div>

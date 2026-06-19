@@ -138,9 +138,9 @@ export default function ProfilePage() {
           <span style={{ fontSize: "11px", fontWeight: "bold", textTransform: "uppercase", color: "var(--accent-purple)", letterSpacing: "0.5px" }}>
             Sender Profile (You)
           </span>
-          <div style={{ fontSize: "14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ color: "var(--text-muted)" }}>Registered Email:</span>
-            <strong style={{ color: "#fff" }}>{user.email}</strong>
+          <div style={{ fontSize: "14px", display: "flex", flexDirection: "column", gap: "2px" }}>
+            <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>Registered Email</span>
+            <strong style={{ color: "#fff", wordBreak: "break-all" }}>{user.email}</strong>
           </div>
         </div>
 
@@ -183,7 +183,7 @@ export default function ProfilePage() {
             </div>
           )}
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <label style={{ fontSize: "11px", color: "var(--text-muted)" }}>First Name</label>
               <input
