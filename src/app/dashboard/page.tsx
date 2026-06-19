@@ -207,7 +207,7 @@ export default function DashboardPage() {
   const currentTabLetters = activeTab === "sent" ? sentLetters : receivedLetters;
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", position: "relative", paddingTop: "140px" }}>
+    <div className="dashboard-page-container" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", position: "relative" }}>
       <FloatingHearts />
 
       {/* Nav */}
@@ -263,7 +263,7 @@ export default function DashboardPage() {
         </section>
 
         {/* Letter history section */}
-        <section className="glass" style={{ padding: "30px", marginTop: "20px", marginBottom: "80px", display: "flex", flexDirection: "column", gap: "20px" }}>
+        <section className="glass dashboard-history-section" style={{ padding: "30px", marginTop: "20px", marginBottom: "80px", display: "flex", flexDirection: "column", gap: "20px" }}>
           {/* Tab headers */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1.5px solid var(--border-card)", paddingBottom: "2px" }}>
             <div style={{ display: "flex", gap: "10px" }}>
@@ -272,7 +272,7 @@ export default function DashboardPage() {
                 const count = tab === "sent" ? sentLetters.length : receivedLetters.length;
                 const label = tab === "sent" ? "Sent Letters" : "Received Writebacks";
                 return (
-                  <button key={tab} onClick={() => setActiveTab(tab)}
+                  <button key={tab} onClick={() => setActiveTab(tab)} className="dashboard-tab-btn"
                     style={{ background: "none", border: "none", fontSize: "15px", fontWeight: 600, color: isActive ? "var(--accent-rose)" : "var(--text-muted)", cursor: "pointer", padding: "8px 16px 14px 16px", position: "relative", transition: "all 0.2s", display: "flex", alignItems: "center", gap: "6px" }}
                   >
                     <span>{label}</span>
@@ -286,7 +286,7 @@ export default function DashboardPage() {
 
           {/* Selection/action bar */}
           {mounted && currentTabLetters.length > 0 && (
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 16px", borderRadius: "8px", backgroundColor: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--border-card)", marginTop: "10px", flexWrap: "wrap", gap: "12px" }}>
+            <div className="dashboard-action-bar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 16px", borderRadius: "8px", backgroundColor: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--border-card)", marginTop: "10px", flexWrap: "wrap", gap: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13px", color: "var(--text-muted)", userSelect: "none" }}>
                   <input type="checkbox" checked={currentTabLetters.length > 0 && currentTabLetters.every((l) => selectedLinks.includes(l.link))} onChange={handleSelectAll}

@@ -89,7 +89,7 @@ export default function DashboardModals({
               <h3 style={titleStyle}>{confirmTitle}</h3>
               <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6" }}>{confirmMessage}</p>
             </div>
-            <div style={{ display: "flex", gap: "12px", width: "100%", justifyContent: "center" }}>
+            <div className="dashboard-modal-actions" style={{ display: "flex", gap: "12px", width: "100%", justifyContent: "center" }}>
               <button onClick={onConfirm} style={primaryBtnStyle}
                 onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-1px)")}
                 onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
@@ -123,7 +123,7 @@ export default function DashboardModals({
                 {sendEmailStatus}
               </p>
             )}
-            <div style={{ display: "flex", gap: "12px", width: "100%", justifyContent: "center" }}>
+            <div className="dashboard-modal-actions" style={{ display: "flex", gap: "12px", width: "100%", justifyContent: "center" }}>
               <button type="submit" disabled={sendingEmail || !sendEmailInput.trim()}
                 style={{ ...primaryBtnStyle, opacity: (sendingEmail || !sendEmailInput.trim()) ? 0.6 : 1 }}
                 onMouseEnter={(e) => { if (!sendingEmail && sendEmailInput.trim()) e.currentTarget.style.transform = "translateY(-1px)"; }}

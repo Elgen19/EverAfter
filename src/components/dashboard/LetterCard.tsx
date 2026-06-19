@@ -84,8 +84,8 @@ export default function LetterCard({
             {letter.isWriteback ? `From: ${letter.sender}` : `To: ${letter.recipient}`}
           </span>
 
-          {/* Badges — single non-wrapping row */}
-          <div style={{ display: "flex", alignItems: "center", gap: "5px", overflow: "hidden", flexWrap: "nowrap", minWidth: 0 }}>
+          {/* Badges — single wrapping row */}
+          <div style={{ display: "flex", alignItems: "center", gap: "6px 4px", flexWrap: "wrap", minWidth: 0 }}>
             {/* Theme */}
             <span style={{ fontSize: "9px", fontWeight: "bold", textTransform: "uppercase", backgroundColor: badge.bg, color: badge.text, padding: "2px 6px", borderRadius: "8px", whiteSpace: "nowrap", flexShrink: 0 }}>
               {letter.theme}
