@@ -300,47 +300,25 @@ export default function LandingPage() {
           <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
             {mounted && !loading ? (
               user ? (
-                <>
-                  <Link 
-                    href="/dashboard"
-                    className="header-dashboard-btn"
-                    style={{
-                      fontSize: "14px",
-                      color: "var(--text-main)",
-                      textDecoration: "none",
-                      fontWeight: 600,
-                      backgroundColor: "rgba(255,255,255,0.06)",
-                      padding: "8px 16px",
-                      borderRadius: "20px",
-                      border: "1px solid var(--border-card)",
-                      transition: "all 0.2s"
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.12)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.06)")}
-                  >
-                    Go to Dashboard 💖
-                  </Link>
-                  <Link
-                    href="/profile"
-                    style={{
-                      width: "36px",
-                      height: "36px",
-                      borderRadius: "50%",
-                      background: "linear-gradient(135deg, #ff4b72, #9c6cfa)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#fff",
-                      fontWeight: "bold",
-                      fontSize: "14px",
-                      textDecoration: "none",
-                      border: "1.5px solid rgba(255, 255, 255, 0.2)"
-                    }}
-                    title="Profile Settings"
-                  >
-                    {user.email ? user.email[0].toUpperCase() : "👤"}
-                  </Link>
-                </>
+                <Link 
+                  href="/dashboard"
+                  className="header-dashboard-btn"
+                  style={{
+                    fontSize: "14px",
+                    color: "var(--text-main)",
+                    textDecoration: "none",
+                    fontWeight: 600,
+                    backgroundColor: "rgba(255,255,255,0.06)",
+                    padding: "8px 16px",
+                    borderRadius: "20px",
+                    border: "1px solid var(--border-card)",
+                    transition: "all 0.2s"
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.12)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.06)")}
+                >
+                  Go to Dashboard 💖
+                </Link>
               ) : (
                 <Link 
                   href="/login"

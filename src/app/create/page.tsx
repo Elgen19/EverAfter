@@ -571,7 +571,7 @@ function CreateLetterStudio() {
                   >{mode === "letter" ? "📄 Stationery View" : "✉️ Envelope & Seal"}</button>
                 ))}
               </div>
-              <span style={{ fontSize: "11px", backgroundColor: "rgba(156, 108, 250, 0.15)", color: "var(--accent-purple)", padding: "3px 8px", borderRadius: "12px", border: "1px solid rgba(156, 108, 250, 0.25)" }}>Live Editor</span>
+              <span className="hidden-mobile" style={{ fontSize: "11px", backgroundColor: "rgba(156, 108, 250, 0.15)", color: "var(--accent-purple)", padding: "3px 8px", borderRadius: "12px", border: "1px solid rgba(156, 108, 250, 0.25)" }}>Live Editor</span>
             </div>
 
             {form.previewMode === "envelope" ? (

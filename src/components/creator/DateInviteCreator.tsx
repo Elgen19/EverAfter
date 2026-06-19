@@ -271,7 +271,7 @@ export default function DateInviteCreator({
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <label style={{ fontSize: "11px", color: "var(--text-muted)" }}>Google Maps Link</label>
-            <div style={{ display: "flex", gap: "8px" }}>
+            <div className="maps-input-container" style={{ display: "flex", gap: "8px" }}>
               <input 
                 type="url"
                 disabled={dateInviteConfirmed}

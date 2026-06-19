@@ -206,7 +206,8 @@ function LetterReader() {
         width: "100vw",
         flexDirection: "column", 
         gap: "24px",
-        background: "radial-gradient(circle at 50% 50%, #ffffff 0%, #fffcf5 35%, #ffdca8 65%, #100907 100%)",
+        background: "#100907",
+        backgroundImage: "radial-gradient(circle at 50% 30%, rgba(226, 184, 87, 0.08) 0%, transparent 65%)",
         position: "fixed",
         inset: 0,
         zIndex: 99999
@@ -232,11 +233,11 @@ function LetterReader() {
           <span style={{ fontSize: "36px", zIndex: 2, filter: "drop-shadow(0 0 8px rgba(226, 184, 87, 0.65))" }}>💖</span>
         </div>
         <div style={{ 
-          color: "#7a5c18", 
+          color: "var(--accent-gold)", 
           fontSize: "18px", 
           fontWeight: 600,
           fontFamily: "var(--font-cursive)",
-          textShadow: "0 1px 2px rgba(255,255,255,0.85)"
+          textShadow: "0 2px 10px rgba(226, 184, 87, 0.3)"
         }}>
           {preview ? "Preparing your letter..." : "Decrypting letter..."}
         </div>
@@ -533,7 +534,10 @@ function LetterReader() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          transition: "opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)"
+          opacity: triggerFlash ? 0 : 1,
+          transform: triggerFlash ? "scale(0.98) translateY(10px)" : "scale(1) translateY(0)",
+          transition: "opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+          pointerEvents: triggerFlash ? "none" : "auto"
         }}
       >
         {/* Step: Security Lock Gate */}
@@ -666,7 +670,8 @@ export default function LetterPage() {
           width: "100vw",
           flexDirection: "column", 
           gap: "24px",
-          background: "radial-gradient(circle at 50% 50%, #ffffff 0%, #fffcf5 35%, #ffdca8 65%, #100907 100%)",
+          background: "#100907",
+          backgroundImage: "radial-gradient(circle at 50% 30%, rgba(226, 184, 87, 0.08) 0%, transparent 65%)",
           position: "fixed",
           inset: 0,
           zIndex: 99999
@@ -691,11 +696,11 @@ export default function LetterPage() {
             <span style={{ fontSize: "36px", zIndex: 2, filter: "drop-shadow(0 0 8px rgba(226, 184, 87, 0.65))" }}>💖</span>
           </div>
           <div style={{ 
-            color: "#7a5c18", 
+            color: "var(--accent-gold)", 
             fontSize: "18px", 
             fontWeight: 600,
             fontFamily: "var(--font-cursive)",
-            textShadow: "0 1px 2px rgba(255,255,255,0.85)"
+            textShadow: "0 2px 10px rgba(226, 184, 87, 0.3)"
           }}>
             Decrypting letter...
           </div>

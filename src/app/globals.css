@@ -827,8 +827,8 @@ body {
 /* Blinding Flash Overlay */
 @keyframes blinding-flash-key {
   0% { opacity: 0; }
-  25% { opacity: 1; background-color: #ffffff; box-shadow: 0 0 100px 100px #ffffff; }
-  30% { opacity: 1; background-color: #fffafa; }
+  25% { opacity: 0.75; background-color: #fff9eb; box-shadow: 0 0 80px 40px #fff9eb; }
+  45% { opacity: 0.5; background-color: #ffebd1; }
   100% { opacity: 0; pointer-events: none; }
 }
 
@@ -839,7 +839,7 @@ body {
   right: 0;
   bottom: 0;
   z-index: 9999;
-  background-color: #ffffff;
+  background-color: #fff9eb;
   pointer-events: none;
   animation: blinding-flash-key 2.0s ease-out forwards;
 }
@@ -1612,7 +1612,67 @@ button:hover .quiz-option-badge {
     padding: 12px 10px 14px 10px !important;
     min-height: auto !important;
   }
+
 }
+
+/* Greeting, Farewell, and Signature responsive sizing */
+.letter-greeting {
+  font-size: 26px;
+}
+.theme-blush .letter-greeting,
+.theme-royal .letter-greeting {
+  font-size: 28px;
+}
+.letter-farewell {
+  font-size: 20px;
+}
+.letter-signature {
+  font-size: 30px;
+}
+
+@media (max-width: 600px) {
+  .letter-greeting {
+    font-size: 18px !important;
+  }
+  .theme-blush .letter-greeting,
+  .theme-royal .letter-greeting {
+    font-size: 20px !important;
+  }
+  .letter-farewell {
+    font-size: 14px !important;
+  }
+  .letter-signature {
+    font-size: 22px !important;
+  }
+}
+
+/* Responsive Google Maps Link Assistant Input & Button Wrapper */
+@media (max-width: 480px) {
+  .maps-input-container {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .maps-input-container button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
+
+/* Glowing Mailbox Button on Thank You Screen */
+@keyframes pulse-glowing-btn-key {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(255, 75, 114, 0.6), 0 0 25px rgba(156, 108, 250, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(255, 75, 114, 0.95), 0 0 35px rgba(156, 108, 250, 0.7);
+    transform: scale(1.02);
+  }
+}
+.glowing-mailbox-btn {
+  animation: pulse-glowing-btn-key 2s infinite ease-in-out;
+}
+
 
 
 

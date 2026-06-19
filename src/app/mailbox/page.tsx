@@ -452,7 +452,7 @@ function MailboxContent() {
             style={{
               position: "absolute",
               inset: 0,
-              background: "radial-gradient(circle at 50% 50%, #ffffff 0%, #fffcf5 35%, #ffdca8 65%, #100907 100%)",
+              background: "radial-gradient(circle at 50% 50%, rgba(255, 253, 240, 0.95) 0%, rgba(255, 240, 210, 0.8) 35%, rgba(226, 184, 87, 0.4) 65%, #100907 100%)",
               animation: "dramatic-bright-flash 1.6s cubic-bezier(0.25, 1, 0.3, 1) forwards",
             }}
           />
@@ -468,6 +468,50 @@ function MailboxContent() {
               animation: "supernova-shockwave 1.6s cubic-bezier(0.1, 0.8, 0.1, 1) forwards",
             }}
           />
+          
+          {/* Preparing your letter screen inside transition overlay */}
+          <div style={{
+            position: "absolute",
+            zIndex: 1000,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            animation: "fade-in-btn 0.6s ease-out forwards",
+            animationDelay: "0.4s",
+            opacity: 0,
+            transform: "translateY(10px)"
+          }}>
+            <div style={{
+              position: "relative",
+              width: "80px",
+              height: "80px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: "16px"
+            }}>
+              <div style={{
+                position: "absolute",
+                width: "100%",
+                height: "100%",
+                borderRadius: "50%",
+                border: "2px solid rgba(226, 184, 87, 0.4)",
+                boxShadow: "0 0 20px rgba(226, 184, 87, 0.3)",
+                animation: "pulse-keyhole 2.5s ease-in-out infinite"
+              }} />
+              <span style={{ fontSize: "28px", zIndex: 2, animation: "heartbeat-survey 1.5s infinite ease-in-out" }}>💖</span>
+            </div>
+            <div style={{
+              fontFamily: "var(--font-cursive)",
+              fontSize: "26px",
+              color: "var(--accent-gold)",
+              textShadow: "0 2px 10px rgba(226, 184, 87, 0.4)",
+              textAlign: "center"
+            }}>
+              Preparing your letter...
+            </div>
+          </div>
           {/* Bursting Sparkling Hearts & Gold Dust Particles */}
           <div style={{ position: "absolute", width: "100%", height: "100%", overflow: "hidden", pointerEvents: "none" }}>
             {[...Array(30)].map((_, i) => {
@@ -606,16 +650,16 @@ function MailboxContent() {
         }
         @keyframes dramatic-bright-flash {
           0% {
-            transform: scale(0.3);
+            transform: scale(0.6);
             opacity: 0;
-            filter: blur(10px);
+            filter: blur(8px);
           }
-          15% {
-            opacity: 1;
-            filter: blur(0);
+          30% {
+            opacity: 0.85;
+            filter: blur(2px);
           }
           75% {
-            opacity: 1;
+            opacity: 0.95;
             transform: scale(1);
           }
           100% {

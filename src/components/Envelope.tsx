@@ -514,8 +514,8 @@ export default function Envelope({
           >
             {/* Header: To */}
             <div 
+              className="letter-greeting"
               style={{
-                fontSize: theme === "blush" ? "28px" : theme === "royal" ? "28px" : "26px",
                 fontWeight: theme === "blush" ? "600" : theme === "royal" ? "bold" : "normal",
                 fontFamily: theme === "blush" ? "var(--font-playfair)" : theme === "royal" ? "var(--font-cinzel-dec)" : "var(--font-cursive)",
                 borderBottom: theme === "blush" || theme === "royal" ? "none" : "1px solid rgba(0,0,0,0.05)",
@@ -571,13 +571,13 @@ export default function Envelope({
               }}
             >
               {farewell && (
-                <div style={{ fontSize: "20px", fontFamily: "var(--font-cursive)", opacity: 0.75, marginBottom: "4px" }}>
+                <div className="letter-farewell" style={{ fontFamily: "var(--font-cursive)", opacity: 0.75, marginBottom: "4px" }}>
                   {farewell}
                 </div>
               )}
               <div
+                className="letter-signature"
                 style={{
-                  fontSize: "30px",
                   fontFamily: theme === "blush" ? "var(--font-allura)" : theme === "royal" ? "var(--font-great-vibes)" : "var(--font-cursive)",
                   color: theme === "blush" ? "#B76E79" : "var(--stationery-accent)",
                   marginTop: "6px",

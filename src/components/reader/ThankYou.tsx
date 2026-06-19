@@ -266,35 +266,33 @@ export default function ThankYou({
             >Original Letter ↩</button>
           )}
         </div>
-        {showMailboxButton && mailboxLink && (
-          <button onClick={() => { window.location.href = mailboxLink; }}
-            style={{ 
-              width: "100%", 
-              padding: "12px", 
-              borderRadius: "8px", 
-              background: "linear-gradient(135deg, #9c6cfa, #ff4b72)", 
-              border: "none", 
-              color: "#fff", 
-              fontWeight: 600, 
-              fontSize: "13px", 
-              cursor: "pointer", 
-              transition: "transform 0.2s, box-shadow 0.2s", 
-              display: "flex", 
-              alignItems: "center", 
-              justifyContent: "center", 
-              gap: "6px", 
-              boxShadow: "0 4px 12px rgba(156, 108, 250, 0.4)",
-              marginTop: "4px" 
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
-            onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
-          >📬 Open My Letterbox</button>
-        )}
-        <button onClick={handleClose}
-          style={{ width: "100%", padding: "12px", borderRadius: "8px", backgroundColor: "transparent", border: "1px solid rgba(255, 255, 255, 0.1)", color: "var(--text-muted)", fontWeight: 500, fontSize: "13px", cursor: "pointer", transition: "all 0.2s", marginTop: "6px" }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.1)"; }}
-        >Close & Exit 🚪</button>
+        <button 
+          onClick={() => {
+            const targetLink = mailboxLink || `/mailbox?ref=${parentLetterId}`;
+            window.location.href = targetLink;
+          }}
+          className="glowing-mailbox-btn"
+          style={{ 
+            width: "100%", 
+            padding: "12px", 
+            borderRadius: "8px", 
+            background: "linear-gradient(135deg, #ff4b72, #9c6cfa)", 
+            border: "1px solid rgba(255, 255, 255, 0.2)", 
+            color: "#fff", 
+            fontWeight: "bold", 
+            fontSize: "14px", 
+            cursor: "pointer", 
+            marginTop: "6px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "6px",
+            boxShadow: "0 0 15px rgba(255, 75, 114, 0.6), 0 0 25px rgba(156, 108, 250, 0.4)",
+            transition: "all 0.3s ease"
+          }}
+        >
+          📬 View Mailbox
+        </button>
       </div>
       {PdfHiddenTarget}
     </>
