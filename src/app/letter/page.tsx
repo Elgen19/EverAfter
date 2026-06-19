@@ -8,7 +8,7 @@ import AudioPlayer from "@/components/AudioPlayer";
 import Envelope from "@/components/Envelope";
 import Link from "next/link";
 import { db } from "@/utils/firebase";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { doc, updateDoc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 
 // Import modular reader components
 import CountdownLock from "@/components/reader/CountdownLock";
@@ -78,6 +78,38 @@ function LetterReader() {
       }
     }
   }, [data]);
+
+  const [showMailboxButton, setShowMailboxButton] = useState(false);
+
+  useEffect(() => {
+    if (!id || !dbData) return;
+    
+    // Set unlock in sessionStorage if no security gate is enabled
+    if (!dbData.security?.enabled) {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(`unlocked_${id}`, "true");
+      }
+    }
+
+    const checkMailbox = async () => {
+      try {
+        if (db && dbData.userId && dbData.email) {
+          const q = query(
+            collection(db, "letters"),
+            where("userId", "==", dbData.userId),
+            where("email", "==", dbData.email)
+          );
+          const snap = await getDocs(q);
+          if (snap.size > 1) {
+            setShowMailboxButton(true);
+          }
+        }
+      } catch (err) {
+        console.error("Error checking mailbox size:", err);
+      }
+    };
+    checkMailbox();
+  }, [id, dbData]);
 
   // Mark the letter as read when opened (ignoring preview links)
   useEffect(() => {
@@ -165,7 +197,7 @@ function LetterReader() {
     );
   }
 
-  if (!d) {
+  if (!d && !id) {
     return (
       <div className="glass" style={{ maxWidth: "480px", padding: "40px 30px", textAlign: "center", margin: "100px auto", position: "relative", zIndex: 10 }}>
         <div style={{ fontSize: "48px", marginBottom: "20px" }}>✉</div>
@@ -464,7 +496,12 @@ function LetterReader() {
         {currentStep === "security" && data.security && (
           <SecurityGate 
             securityData={data.security} 
-            onSuccess={handleNextStep} 
+            onSuccess={() => {
+              if (typeof window !== "undefined") {
+                sessionStorage.setItem(`unlocked_${id}`, "true");
+              }
+              handleNextStep();
+            }} 
           />
         )}
 
@@ -553,6 +590,8 @@ function LetterReader() {
             isWriteback={data.isWriteback || false}
             parentLetterId={id}
             recipientUid={dbData?.userId || ""}
+            showMailboxButton={showMailboxButton}
+            mailboxLink={`/mailbox?ref=${id}`}
             onExit={() => {
               if (typeof window !== "undefined") {
                 window.close();

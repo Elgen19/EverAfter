@@ -19,6 +19,8 @@ interface ThankYouProps {
   isWriteback?: boolean;
   parentLetterId?: string;
   recipientUid?: string;
+  showMailboxButton?: boolean;
+  mailboxLink?: string;
 }
 
 const STYLE_OPTIONS = [
@@ -48,7 +50,9 @@ export default function ThankYou({
   onExit,
   isWriteback = false,
   parentLetterId = "",
-  recipientUid = ""
+  recipientUid = "",
+  showMailboxButton = false,
+  mailboxLink = ""
 }: ThankYouProps) {
   const [showStylePicker, setShowStylePicker] = useState(false);
   const [selectedStyle, setSelectedStyle] = useState<LetterStyle>("vintage");
@@ -252,6 +256,30 @@ export default function ThankYou({
             >✍️ Write Back</button>
           )}
         </div>
+        {showMailboxButton && mailboxLink && (
+          <button onClick={() => { window.location.href = mailboxLink; }}
+            style={{ 
+              width: "100%", 
+              padding: "12px", 
+              borderRadius: "8px", 
+              background: "linear-gradient(135deg, #9c6cfa, #ff4b72)", 
+              border: "none", 
+              color: "#fff", 
+              fontWeight: 600, 
+              fontSize: "13px", 
+              cursor: "pointer", 
+              transition: "transform 0.2s, box-shadow 0.2s", 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center", 
+              gap: "6px", 
+              boxShadow: "0 4px 12px rgba(156, 108, 250, 0.4)",
+              marginTop: "4px" 
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
+            onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
+          >📬 Open My Letterbox</button>
+        )}
         <button onClick={handleClose}
           style={{ width: "100%", padding: "12px", borderRadius: "8px", backgroundColor: "transparent", border: "1px solid rgba(255, 255, 255, 0.1)", color: "var(--text-muted)", fontWeight: 500, fontSize: "13px", cursor: "pointer", transition: "all 0.2s", marginTop: "6px" }}
           onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)"; }}

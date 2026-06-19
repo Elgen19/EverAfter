@@ -5,7 +5,7 @@ const PROTECTED_ROUTES: string[] = [];
 const PROTECTED_API_ROUTES = ["/api/protected"];
 const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === "true" || process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true";
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Maintenance Mode redirect for interactive features only
