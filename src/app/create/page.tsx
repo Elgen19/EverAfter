@@ -335,7 +335,7 @@ function CreateLetterStudio() {
               </div>
 
               {/* Mobile Design tab step buttons */}
-              <div className="mobile-only" style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "16px" }}>
+              <div className="mobile-flex-only" style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "16px" }}>
                 <button
                   type="button"
                   onClick={() => setActiveTab("write")}
@@ -405,7 +405,7 @@ function CreateLetterStudio() {
               </div>
 
               {/* Mobile Add-ons tab step buttons */}
-              <div className="mobile-only" style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "16px" }}>
+              <div className="mobile-flex-only" style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "16px" }}>
                 <button
                   type="button"
                   onClick={() => setActiveTab("design")}
@@ -485,7 +485,7 @@ function CreateLetterStudio() {
               </div>
 
               {/* Mobile Flow tab step buttons */}
-              <div className="mobile-only" style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "16px" }}>
+              <div className="mobile-flex-only" style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "16px" }}>
                 <button
                   type="button"
                   onClick={() => setActiveTab("addons")}
@@ -697,6 +697,90 @@ function CreateLetterStudio() {
             <h3 style={{ fontSize: "18px", fontWeight: "bold", color: "#fff", borderBottom: "1px solid var(--border-card)", paddingBottom: "10px" }}>
               Confirm {pendingSelection.type === "theme" ? "Stationery Style" : pendingSelection.type === "backdrop" ? "Backdrop" : "Envelope Style"}
             </h3>
+            
+            {/* Visual Preview Container */}
+            <div style={{ width: "100%", marginTop: "4px" }}>
+              {pendingSelection.type === "theme" && (() => {
+                const isLavender = pendingSelection.id === "lavender";
+                const isCelestial = pendingSelection.id === "celestial";
+                const isRoyal = pendingSelection.id === "royal";
+                const isScroll = pendingSelection.id === "scroll";
+
+                const cardStyle: React.CSSProperties = {
+                  width: "100%",
+                  height: "140px",
+                  backgroundColor: isCelestial ? "#070a1c" : "var(--stationery-bg, #F7F1E3)",
+                  backgroundImage: isCelestial 
+                    ? "radial-gradient(circle at center, #151a3a, #070a1c)" 
+                    : isLavender 
+                      ? "linear-gradient(rgba(123, 44, 191, 0.08) 1px, transparent 1px)" 
+                      : "none",
+                  backgroundSize: isLavender ? "100% 16px" : "auto",
+                  border: isRoyal 
+                    ? "4px double var(--stationery-border, #C9A227)" 
+                    : isScroll 
+                      ? "2px solid #5c381f" 
+                      : "1.5px solid var(--stationery-border, #C9A227)",
+                  borderRadius: isScroll ? "4px" : "8px",
+                  padding: "16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  color: "var(--stationery-text, #3A2618)",
+                  fontFamily: "var(--stationery-font, serif)",
+                  boxShadow: "inset 0 0 15px rgba(0,0,0,0.05)",
+                  position: "relative",
+                  boxSizing: "border-box"
+                };
+
+                return (
+                  <div className={`theme-${pendingSelection.id}`} style={cardStyle}>
+                    {isScroll && (
+                      <>
+                        <div style={{ position: "absolute", top: "-5px", left: "0", right: "0", height: "5px", backgroundColor: "#8b5a2b", borderRadius: "1px" }} />
+                        <div style={{ position: "absolute", bottom: "-5px", left: "0", right: "0", height: "5px", backgroundColor: "#8b5a2b", borderRadius: "1px" }} />
+                      </>
+                    )}
+                    <div style={{ fontSize: "11px", fontWeight: "bold", opacity: 0.8 }}>Dearest {form.recipient || "Beloved"},</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", margin: "6px 0" }}>
+                      <div style={{ height: "1px", background: "var(--stationery-text, #3A2618)", opacity: 0.15, width: "90%" }} />
+                      <div style={{ height: "1px", background: "var(--stationery-text, #3A2618)", opacity: 0.15, width: "80%" }} />
+                      <div style={{ height: "1px", background: "var(--stationery-text, #3A2618)", opacity: 0.15, width: "85%" }} />
+                    </div>
+                    <div style={{ fontSize: "11px", textAlign: "right", fontStyle: "italic", opacity: 0.8, color: "var(--stationery-accent, #7B1E1E)" }}>
+                      With love, {form.sender || "Sender"} ❤️
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {pendingSelection.type === "backdrop" && (
+                pendingSelection.id === "none" ? (
+                  <div style={{ width: "100%", height: "140px", borderRadius: "8px", border: "1px dashed var(--border-card)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px", background: "rgba(255,255,255,0.02)", color: "var(--text-muted)" }}>
+                    <span style={{ fontSize: "20px" }}>✨</span>
+                    <span style={{ fontSize: "12px" }}>No Backdrop (Solid background)</span>
+                  </div>
+                ) : (
+                  <div style={{ position: "relative", width: "100%", height: "140px", borderRadius: "8px", overflow: "hidden", border: "1px solid var(--border-card)" }}>
+                    <img src={BACKDROP_PREVIEWS[pendingSelection.id]} alt={pendingSelection.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </div>
+                )
+              )}
+
+              {pendingSelection.type === "envelope" && (() => {
+                const envelopeImages: Record<string, string> = {
+                  "vintage-rose": "/vintage_envelope_open.png",
+                  "vintage-white": "/white_envelope_open.png",
+                  "celestial-blue": "/celestial_envelope_open.png"
+                };
+                return (
+                  <div style={{ position: "relative", width: "100%", height: "140px", borderRadius: "8px", overflow: "hidden", border: "1px solid var(--border-card)", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.02)" }}>
+                    <img src={envelopeImages[pendingSelection.id] || "/vintage_envelope_open.png"} alt={pendingSelection.name} style={{ width: "90%", height: "90%", objectFit: "contain" }} />
+                  </div>
+                );
+              })()}
+            </div>
+
             <div>
               <strong style={{ color: "var(--accent-rose)", fontSize: "16px" }}>{pendingSelection.name}</strong>
               <p style={{ color: "var(--text-muted)", fontSize: "13px", marginTop: "8px", lineHeight: "1.5" }}>{pendingSelection.desc}</p>

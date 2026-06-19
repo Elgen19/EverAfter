@@ -1337,6 +1337,10 @@ button:hover .quiz-option-badge {
 }
 
 /* --- Mobile Responsiveness for EverAfter Studio --- */
+.mobile-only, .mobile-flex-only {
+  display: none !important;
+}
+
 @media (max-width: 991px) {
   .hidden-mobile {
     display: none !important;
