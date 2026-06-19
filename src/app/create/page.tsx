@@ -21,6 +21,7 @@ import SurveyCreator from "@/components/creator/SurveyCreator";
 import MusicCreator from "@/components/creator/MusicCreator";
 import SendLaterCreator from "@/components/creator/SendLaterCreator";
 import AudioMessageCreator from "@/components/creator/AudioMessageCreator";
+import PolaroidsCreator from "@/components/creator/PolaroidsCreator";
 
 function CreateLetterStudio() {
   const form = useLetterForm();
@@ -416,6 +417,15 @@ function CreateLetterStudio() {
                 ) : (
                   <AudioMessageCreator audioEnabled={form.audioEnabled} setAudioEnabled={form.setAudioEnabled} audioUrl={form.audioUrl} setAudioUrl={form.setAudioUrl} audioFile={form.audioFile} setAudioFile={form.setAudioFile} audioCustomMessage={form.audioCustomMessage} setAudioCustomMessage={form.setAudioCustomMessage} audioConfirmed={form.audioConfirmed} setAudioConfirmed={form.setAudioConfirmed} showAlert={form.showRomanticAlert} />
                 )}
+                <PolaroidsCreator
+                  polaroidsEnabled={form.polaroidsEnabled}
+                  setPolaroidsEnabled={form.setPolaroidsEnabled}
+                  polaroids={form.polaroids}
+                  setPolaroids={form.setPolaroids}
+                  polaroidsConfirmed={form.polaroidsConfirmed}
+                  setPolaroidsConfirmed={form.setPolaroidsConfirmed}
+                  showAlert={form.showRomanticAlert}
+                />
                 <SendLaterCreator sendLaterEnabled={form.sendLaterEnabled} setSendLaterEnabled={form.setSendLaterEnabled} sendLaterDate={form.sendLaterDate} setSendLaterDate={form.setSendLaterDate} sendLaterTime={form.sendLaterTime} setSendLaterTime={form.setSendLaterTime} />
               </div>
 

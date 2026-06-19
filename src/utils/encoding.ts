@@ -1,3 +1,8 @@
+export interface PolaroidItem {
+  imageUrl?: string;
+  caption?: string;
+}
+
 export interface LetterData {
   recipient: string;
   sender: string;
@@ -10,6 +15,10 @@ export interface LetterData {
   timestamp: number;
 
   // New optional customizations
+  polaroids?: {
+    enabled: boolean;
+    items: PolaroidItem[];
+  };
   email?: string;
   backdrop?: string;
   audioMessage?: {

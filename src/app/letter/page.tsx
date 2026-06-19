@@ -18,6 +18,7 @@ import ClosingStatement from "@/components/reader/ClosingStatement";
 import DateInvitation from "@/components/reader/DateInvitation";
 import SurveyFeedback from "@/components/reader/SurveyFeedback";
 import AudioMessage from "@/components/reader/AudioMessage";
+import PolaroidsReader from "@/components/reader/PolaroidsReader";
 import ThankYou from "@/components/reader/ThankYou";
 
 const BACKDROP_IMAGES: Record<string, string> = {
@@ -156,7 +157,7 @@ function LetterReader() {
   // Active steps calculation based on enabled modifications
   const activeSteps = useMemo<string[]>(() => {
     if (!data) return ["envelope"];
-    let rawOrder = data.stepOrder || ["security", "intro", "envelope", "audioMessage", "dateInvite", "closing", "survey"];
+    let rawOrder = data.stepOrder || ["security", "intro", "envelope", "polaroids", "audioMessage", "dateInvite", "closing", "survey"];
     if (data.audioMessage?.enabled && !rawOrder.includes("audioMessage")) {
       rawOrder = [...rawOrder];
       const envIdx = rawOrder.indexOf("envelope");
@@ -166,10 +167,20 @@ function LetterReader() {
         rawOrder.push("audioMessage");
       }
     }
+    if (data.polaroids?.enabled && !rawOrder.includes("polaroids")) {
+      rawOrder = [...rawOrder];
+      const envIdx = rawOrder.indexOf("envelope");
+      if (envIdx !== -1) {
+        rawOrder.splice(envIdx + 1, 0, "polaroids");
+      } else {
+        rawOrder.push("polaroids");
+      }
+    }
     const steps = rawOrder.filter((stepId: string) => {
       if (stepId === "envelope") return true;
       if (stepId === "security" && data.security?.enabled) return true;
       if (stepId === "intro" && data.intro?.enabled) return true;
+      if (stepId === "polaroids" && data.polaroids?.enabled) return true;
       if (stepId === "audioMessage" && data.audioMessage?.enabled) return true;
       if (stepId === "dateInvite" && data.dateInvite?.enabled) return true;
       if (stepId === "closing" && data.closing?.enabled) return true;
@@ -433,6 +444,7 @@ function LetterReader() {
               if (stepId === "security") { stepIcon = "🔒"; stepTitle = "Lock"; }
               else if (stepId === "intro") { stepIcon = "✨"; stepTitle = "Intro"; }
               else if (stepId === "envelope") { stepIcon = "✉"; stepTitle = "Letter"; }
+              else if (stepId === "polaroids") { stepIcon = "📸"; stepTitle = "Photos"; }
               else if (stepId === "audioMessage") { stepIcon = "🎤"; stepTitle = "Voice"; }
               else if (stepId === "dateInvite") { stepIcon = "🌹"; stepTitle = "Date"; }
               else if (stepId === "closing") { stepIcon = "✍"; stepTitle = "Closing"; }
@@ -581,6 +593,15 @@ function LetterReader() {
                 handleNextStep();
               }, 2400); // 800ms close + 1500ms retract + buffer
             }}
+          />
+        )}
+
+        {/* Step: Polaroid Photo Stack */}
+        {currentStep === "polaroids" && data.polaroids && (
+          <PolaroidsReader
+            polaroids={data.polaroids.items}
+            theme={data.theme}
+            onComplete={handleNextStep}
           />
         )}
 

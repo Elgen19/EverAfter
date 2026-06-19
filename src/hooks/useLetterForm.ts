@@ -147,7 +147,15 @@ export function useLetterForm() {
   const [audioCustomMessage, setAudioCustomMessage] = useState("Listen to my voice... ❤️");
   const [audioConfirmed, setAudioConfirmed] = useState(false);
 
-  const [stepOrder, setStepOrder] = useState<string[]>(["security", "intro", "envelope", "audioMessage", "dateInvite", "closing", "survey"]);
+  const [polaroidsEnabled, setPolaroidsEnabled] = useState(false);
+  const [polaroids, setPolaroids] = useState<any[]>([
+    { id: 0, url: "", file: null, caption: "" },
+    { id: 1, url: "", file: null, caption: "" },
+    { id: 2, url: "", file: null, caption: "" }
+  ]);
+  const [polaroidsConfirmed, setPolaroidsConfirmed] = useState(false);
+
+  const [stepOrder, setStepOrder] = useState<string[]>(["security", "intro", "envelope", "polaroids", "audioMessage", "dateInvite", "closing", "survey"]);
 
   // Share URL modal state
   const [shareUrl, setShareUrl] = useState("");
@@ -233,6 +241,28 @@ export function useLetterForm() {
               setAudioCustomMessage(data.audioMessage.customMessage || "");
               setAudioConfirmed(true);
             }
+            if (data.polaroids) {
+              setPolaroidsEnabled(data.polaroids.enabled || false);
+              const loadedPolaroids = [
+                { id: 0, url: "", file: null, caption: "" },
+                { id: 1, url: "", file: null, caption: "" },
+                { id: 2, url: "", file: null, caption: "" }
+              ];
+              if (data.polaroids.items && Array.isArray(data.polaroids.items)) {
+                data.polaroids.items.forEach((item: any, idx: number) => {
+                  if (idx < 3) {
+                    loadedPolaroids[idx] = {
+                      id: idx,
+                      url: item.imageUrl || "",
+                      file: null,
+                      caption: item.caption || ""
+                    };
+                  }
+                });
+              }
+              setPolaroids(loadedPolaroids);
+              setPolaroidsConfirmed(true);
+            }
             if (data.stepOrder) {
               const loadedOrder = [...data.stepOrder];
               if (!loadedOrder.includes("audioMessage")) {
@@ -241,6 +271,14 @@ export function useLetterForm() {
                   loadedOrder.splice(envIdx + 1, 0, "audioMessage");
                 } else {
                   loadedOrder.push("audioMessage");
+                }
+              }
+              if (!loadedOrder.includes("polaroids")) {
+                const envIdx = loadedOrder.indexOf("envelope");
+                if (envIdx !== -1) {
+                  loadedOrder.splice(envIdx + 1, 0, "polaroids");
+                } else {
+                  loadedOrder.push("polaroids");
                 }
               }
               setStepOrder(loadedOrder);
@@ -275,6 +313,7 @@ export function useLetterForm() {
     if (id === "envelope") return true;
     if (id === "security" && securityEnabled && securityConfirmed) return true;
     if (id === "intro" && introEnabled && introConfirmed) return true;
+    if (id === "polaroids" && polaroidsEnabled && polaroidsConfirmed) return true;
     if (id === "audioMessage" && audioEnabled && audioConfirmed) return true;
     if (id === "dateInvite" && dateInviteEnabled && dateInviteConfirmed) return true;
     if (id === "closing" && closingEnabled && closingConfirmed) return true;
@@ -287,6 +326,7 @@ export function useLetterForm() {
       case "security": return "🔒 Security Gate";
       case "intro": return "✨ Intro Statement";
       case "envelope": return "✉ Envelope & Letter [Core]";
+      case "polaroids": return "📸 Polaroid Stack";
       case "audioMessage": return "🎤 Audio Message";
       case "dateInvite": return "🌹 Date Invitation";
       case "closing": return "✍ Closing Statement (P.S.)";
@@ -345,6 +385,14 @@ export function useLetterForm() {
       showRomanticAlert("Let Love Unfold", "Let them read your letter first, darling. The voice message is best heard after they read your written words.");
       return;
     }
+    if (stepId === "polaroids" && direction === "up" && targetStepId === "envelope") {
+      showRomanticAlert("Let Love Unfold", "Let them read your devotion first, darling. The polaroid memories are best viewed after they open your letter.");
+      return;
+    }
+    if (stepId === "envelope" && direction === "down" && targetStepId === "polaroids") {
+      showRomanticAlert("Let Love Unfold", "Let them read your devotion first, darling. The polaroid memories are best viewed after they open your letter.");
+      return;
+    }
     if (stepId === "survey" && direction === "up") {
       showRomanticAlert("A Final Thought", "The survey must remain the final chapter of this journey, asking how their heart beats after reading your words.");
       return;
@@ -358,7 +406,7 @@ export function useLetterForm() {
     newActive[index] = newActive[targetIdx];
     newActive[targetIdx] = temp;
 
-    const disabled = ["security", "intro", "envelope", "audioMessage", "dateInvite", "closing", "survey"].filter(id => !newActive.includes(id));
+    const disabled = ["security", "intro", "envelope", "polaroids", "audioMessage", "dateInvite", "closing", "survey"].filter(id => !newActive.includes(id));
     setStepOrder([...newActive, ...disabled]);
   };
 
@@ -424,6 +472,10 @@ export function useLetterForm() {
     }
     if (audioEnabled && !audioConfirmed) {
       showRomanticAlert("Confirm Your Audio Message", "You have enabled the audio message. Please press the 'Confirm Audio' button to lock this customization in before sealing.");
+      return;
+    }
+    if (polaroidsEnabled && !polaroidsConfirmed) {
+      showRomanticAlert("Confirm Your Polaroid Stack", "You have enabled the Polaroid Stack. Please press the 'Seal Polaroid Stack' button to lock this customization in before sealing.");
       return;
     }
     if (dateInviteEnabled && !dateInviteConfirmed) {
@@ -558,12 +610,25 @@ export function useLetterForm() {
         audioUrl: audioUrl || undefined,
         customMessage: audioCustomMessage.trim() || undefined
       } : undefined,
+      polaroids: polaroidsEnabled ? {
+        enabled: true,
+        items: polaroids.filter(p => p.url.trim() !== "").map(p => ({
+          imageUrl: p.url.startsWith("blob:") ? undefined : p.url,
+          caption: p.caption.trim() || undefined
+        }))
+      } : undefined,
       stepOrder
     };
 
     const letterDataForEncoding = { ...letterData };
     if (letterDataForEncoding.audioMessage) {
       letterDataForEncoding.audioMessage = { ...letterDataForEncoding.audioMessage, audioUrl: undefined };
+    }
+    if (letterDataForEncoding.polaroids?.items) {
+      letterDataForEncoding.polaroids.items = letterDataForEncoding.polaroids.items.map(item => ({
+        ...item,
+        imageUrl: item.imageUrl?.startsWith("blob:") ? undefined : item.imageUrl
+      }));
     }
     const encoded = encodeLetterData(letterDataForEncoding);
     const origin = typeof window !== "undefined" ? window.location.origin : "";
@@ -589,6 +654,20 @@ export function useLetterForm() {
                 sanitizedData.audioMessage.audioUrl = finalAudioUrl;
               }
             }
+            if (polaroidsEnabled && sanitizedData.polaroids?.items) {
+              const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
+              for (let i = 0; i < polaroids.length; i++) {
+                const p = polaroids[i];
+                if (p.file) {
+                  const storageRef = ref(storage, `letters/${editId}/polaroid_${i}`);
+                  const snapshot = await uploadBytes(storageRef, p.file);
+                  const downloadUrl = await getDownloadURL(snapshot.ref);
+                  if (sanitizedData.polaroids.items[i]) {
+                    sanitizedData.polaroids.items[i].imageUrl = downloadUrl;
+                  }
+                }
+              }
+            }
             await updateDoc(docRef, { senderEmail: user?.email || null, ...sanitizedData });
             finalLink = `${origin}/letter?d=${encoded}&id=${editId}`;
             await updateDoc(docRef, { link: finalLink });
@@ -596,6 +675,12 @@ export function useLetterForm() {
             const initialSanitizedData = { ...sanitizedData };
             if (audioEnabled && audioFile && initialSanitizedData.audioMessage) {
               initialSanitizedData.audioMessage.audioUrl = null;
+            }
+            if (polaroidsEnabled && initialSanitizedData.polaroids?.items) {
+              initialSanitizedData.polaroids.items = initialSanitizedData.polaroids.items.map((item: any) => ({
+                ...item,
+                imageUrl: item.imageUrl || null
+              }));
             }
             const docRef = await addDoc(collection(db, "letters"), {
               userId: queryRecipientUid || user?.uid || "",
@@ -613,6 +698,26 @@ export function useLetterForm() {
               const snapshot = await uploadBytes(storageRef, audioFile);
               const finalAudioUrl = await getDownloadURL(snapshot.ref);
               await updateDoc(docRef, { "audioMessage.audioUrl": finalAudioUrl });
+            }
+            if (polaroidsEnabled && initialSanitizedData.polaroids?.items) {
+              const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
+              const updatedItems = [...initialSanitizedData.polaroids.items];
+              let hasNewUploads = false;
+              for (let i = 0; i < polaroids.length; i++) {
+                const p = polaroids[i];
+                if (p.file) {
+                  const storageRef = ref(storage, `letter/${letterId}/polaroid_${i}`);
+                  const snapshot = await uploadBytes(storageRef, p.file);
+                  const downloadUrl = await getDownloadURL(snapshot.ref);
+                  if (updatedItems[i]) {
+                    updatedItems[i].imageUrl = downloadUrl;
+                    hasNewUploads = true;
+                  }
+                }
+              }
+              if (hasNewUploads) {
+                await updateDoc(docRef, { "polaroids.items": updatedItems });
+              }
             }
             finalLink = `${origin}/letter?d=${encoded}&id=${letterId}`;
             await updateDoc(docRef, { link: finalLink });
@@ -720,6 +825,10 @@ export function useLetterForm() {
     audioEnabled, setAudioEnabled, audioUrl, setAudioUrl,
     audioFile, setAudioFile, audioCustomMessage, setAudioCustomMessage,
     audioConfirmed, setAudioConfirmed,
+    // Polaroids
+    polaroidsEnabled, setPolaroidsEnabled,
+    polaroids, setPolaroids,
+    polaroidsConfirmed, setPolaroidsConfirmed,
     // Step order
     stepOrder, activeSteps, getStepLabel,
     // Share modal
