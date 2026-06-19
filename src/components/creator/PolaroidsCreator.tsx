@@ -383,7 +383,7 @@ export default function PolaroidsCreator({
                         }} 
                       />
                       
-                      {/* Front caption area */}
+                      {/* Front caption area (Empty for image-only front look) */}
                       <div 
                         style={{ 
                           position: "absolute",
@@ -397,11 +397,7 @@ export default function PolaroidsCreator({
                           backfaceVisibility: "hidden",
                           WebkitBackfaceVisibility: "hidden",
                         }}
-                      >
-                        <span style={{ fontSize: "8px", color: "#666", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "var(--font-cursive)" }}>
-                          {item.caption || "Click me"}
-                        </span>
-                      </div>
+                      />
 
                       {/* Back: Caption note */}
                       <div 

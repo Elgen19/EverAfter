@@ -20,6 +20,12 @@ export default function PolaroidsReader({
   const [flippedIndex, setFlippedIndex] = useState<number | null>(null);
   const [interacted, setInteracted] = useState<boolean>(false);
 
+  // Dragging and swiping states
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
+
   // Initialize and filter out any empty records
   useEffect(() => {
     if (polaroids && Array.isArray(polaroids)) {
@@ -72,30 +78,113 @@ export default function PolaroidsReader({
     }
   };
 
+  const triggerSwipe = (dir: "left" | "right") => {
+    setSwipeDirection(dir);
+    setSlidingIndex(topIndex);
+    setFlippedIndex(null);
+    playSwooshSound();
+    setInteracted(true);
+
+    // Apply swipe translation offset
+    setDragOffset({ x: dir === "right" ? 350 : -350, y: 0 });
+
+    setTimeout(() => {
+      // Rotate items array: top card (last element) goes to bottom (first element)
+      setItems((prevItems) => {
+        if (prevItems.length <= 1) return prevItems;
+        const last = prevItems[prevItems.length - 1];
+        const rest = prevItems.slice(0, prevItems.length - 1);
+        return [last, ...rest];
+      });
+
+      setSlidingIndex(null);
+      setSwipeDirection(null);
+      setDragOffset({ x: 0, y: 0 });
+    }, 350);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (slidingIndex !== null || swipeDirection !== null) return;
+    setIsDragging(true);
+    setDragStart({ x: e.clientX, y: e.clientY });
+    setDragOffset({ x: 0, y: 0 });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    const deltaX = e.clientX - dragStart.x;
+    const deltaY = e.clientY - dragStart.y;
+    setDragOffset({ x: deltaX, y: deltaY });
+  };
+
+  const handleMouseUp = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+
+    const threshold = 100;
+    if (dragOffset.x > threshold) {
+      triggerSwipe("right");
+    } else if (dragOffset.x < -threshold) {
+      triggerSwipe("left");
+    } else {
+      // If drag distance is small, treat as click to flip
+      if (Math.abs(dragOffset.x) < 5 && Math.abs(dragOffset.y) < 5) {
+        setFlippedIndex(flippedIndex === topIndex ? null : topIndex);
+        playSwooshSound();
+      }
+      setDragOffset({ x: 0, y: 0 });
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isDragging) {
+      handleMouseUp();
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (slidingIndex !== null || swipeDirection !== null) return;
+    setIsDragging(true);
+    setDragStart({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+    setDragOffset({ x: 0, y: 0 });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    const deltaX = e.touches[0].clientX - dragStart.x;
+    const deltaY = e.touches[0].clientY - dragStart.y;
+    setDragOffset({ x: deltaX, y: deltaY });
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+
+    const threshold = 80;
+    if (dragOffset.x > threshold) {
+      triggerSwipe("right");
+    } else if (dragOffset.x < -threshold) {
+      triggerSwipe("left");
+    } else {
+      // If drag distance is small, treat as click to flip
+      if (Math.abs(dragOffset.x) < 8 && Math.abs(dragOffset.y) < 8) {
+        setFlippedIndex(flippedIndex === topIndex ? null : topIndex);
+        playSwooshSound();
+      }
+      setDragOffset({ x: 0, y: 0 });
+    }
+  };
+
   const handleCardClick = (index: number) => {
-    if (slidingIndex !== null) return;
+    if (slidingIndex !== null || swipeDirection !== null) return;
     setInteracted(true);
 
     if (index === topIndex) {
-      // If it's already the top card, click flips it
       setFlippedIndex(flippedIndex === index ? null : index);
       playSwooshSound();
     } else {
-      // If it's a background card, slide it out and put it on top of the stack
-      setSlidingIndex(index);
-      setFlippedIndex(null);
-      playSwooshSound();
-
-      // Step 1: Slide out
-      setTimeout(() => {
-        // Step 2: Update top card index
-        setTopIndex(index);
-        
-        // Step 3: Slide back in on top
-        setTimeout(() => {
-          setSlidingIndex(null);
-        }, 350);
-      }, 350);
+      // Clicking a background card cycles the top card off
+      triggerSwipe("left");
     }
   };
 
@@ -141,6 +230,7 @@ export default function PolaroidsReader({
           transform-style: preserve-3d;
           transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, z-index 0.3s ease;
           cursor: pointer;
+          touch-action: none;
         }
         .polaroid-card:hover {
           box-shadow: 0 12px 28px rgba(0,0,0,0.3);
@@ -277,8 +367,13 @@ export default function PolaroidsReader({
 
           // Build dynamic transformations
           let transformStr = "";
-          if (isSliding) {
-            // Slide card out to the side
+          if (isTop && (isDragging || swipeDirection !== null)) {
+            // Top card is active, dragging, or swiping
+            const rotateVal = dragOffset.x * 0.05;
+            const flipRotation = isFlipped ? "rotateY(180deg)" : "rotateY(0deg)";
+            transformStr = `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${rotateVal}deg) ${flipRotation} scale(1.05)`;
+          } else if (isSliding) {
+            // Slide card out to the side (fallback click transition)
             transformStr = "translateX(220px) rotate(16deg) scale(1.05)";
           } else if (isFlipped) {
             // Flip the top card
@@ -291,32 +386,42 @@ export default function PolaroidsReader({
             transformStr = `rotateY(0deg) rotate(${rotation}) translate(${offsetX}, ${offsetY})`;
           }
 
+          // Top card drag handlers, background cards click handlers
+          const cardHandlers = (isTop && items.length > 1) ? {
+            onMouseDown: handleMouseDown,
+            onMouseMove: handleMouseMove,
+            onMouseUp: handleMouseUp,
+            onMouseLeave: handleMouseLeave,
+            onTouchStart: handleTouchStart,
+            onTouchMove: handleTouchMove,
+            onTouchEnd: handleTouchEnd,
+          } : {
+            onClick: () => handleCardClick(index),
+          };
+
           return (
             <div
-              key={index}
+              key={item.imageUrl || index}
               className="polaroid-card"
               style={{
                 transform: transformStr,
                 zIndex: isSliding ? 40 : isTop ? 30 : 10 + index,
-                pointerEvents: slidingIndex !== null ? "none" : "auto"
+                pointerEvents: slidingIndex !== null && !isDragging ? "none" : "auto",
+                transition: isTop && isDragging ? "none" : undefined
               }}
-              onClick={() => handleCardClick(index)}
-              title={isTop ? "Click to flip card" : "Click to bring to front"}
+              {...cardHandlers}
+              title={isTop ? (items.length > 1 ? "Drag left/right to browse, click to flip" : "Click to flip") : "Click to browse"}
             >
-              {/* Front side */}
+              {/* Front side - Only photo, no words */}
               <div className="polaroid-front">
                 <div 
                   className="polaroid-image"
                   style={{ backgroundImage: `url(${item.imageUrl})` }}
                 />
-                <div className="polaroid-caption-wrapper">
-                  <span className="polaroid-caption">
-                    {item.caption || "A Sealed Memory"}
-                  </span>
-                </div>
+                <div className="polaroid-caption-wrapper" />
               </div>
 
-              {/* Back side */}
+              {/* Back side - Words / Caption */}
               <div className="polaroid-back">
                 <div className="polaroid-back-header">Memory Details</div>
                 <p className="polaroid-back-text">
@@ -330,9 +435,11 @@ export default function PolaroidsReader({
 
       {/* Interaction Hint */}
       <span className="polaroid-hint">
-        {topIndex === items.length - 1 && !interacted 
-          ? "👇 Click the top photo to flip it, or others to reorder!"
-          : "✨ Click top card to flip, background cards to shuffle"}
+        {items.length > 1
+          ? interacted
+            ? "✨ Swipe left/right to browse, click top card to flip"
+            : "👇 Swipe left/right to browse, click top photo to flip!"
+          : "✨ Click photo to flip"}
       </span>
 
       {/* Continue wizard button */}
