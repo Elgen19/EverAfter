@@ -120,7 +120,7 @@ export default function Envelope({
   const [isFirstOpen, setIsFirstOpen] = useState(true);
 
   // Map legacy state to expanded sub-view
-  const isFullView = isSheetExpanded;
+  const isFullView = isSheetExpanded && activeSheet === "letter";
 
   // Trigger sheet expanded view when envelope opens or activeStep changes
   useEffect(() => {
@@ -198,7 +198,7 @@ export default function Envelope({
     
     setIsSheetExpanded(false);
     
-    const closeDuration = activeSheet === "polaroids" ? 1400 : 800;
+    const closeDuration = activeSheet === "polaroids" ? 1000 : 800;
     
     setTimeout(() => {
       setActiveSheet("none");
@@ -757,14 +757,15 @@ export default function Envelope({
             justifyContent: "center",
             opacity: isSheetExpanded ? 1 : 0,
             pointerEvents: isSheetExpanded ? "auto" : "none",
-            transition: "opacity 1.4s cubic-bezier(0.4, 0, 0.2, 1)",
+            transition: "opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
             padding: "20px",
           }}
         >
           <div
             style={{
-              transform: isSheetExpanded ? "scale(1) translateY(0)" : "scale(0.1) translateY(420px)",
-              transition: "transform 1.4s cubic-bezier(0.34, 1.2, 0.64, 1)",
+              transform: isSheetExpanded ? "scale(1) translateY(-20px)" : "scale(0.05) translateY(180px)",
+              opacity: isSheetExpanded ? 1 : 0,
+              transition: "transform 1.1s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.8s ease",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",

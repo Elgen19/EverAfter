@@ -32,6 +32,12 @@ export default function PolaroidsReader({
       const filtered = polaroids.filter(p => p.imageUrl && p.imageUrl.trim() !== "");
       setItems(filtered);
       setTopIndex(filtered.length - 1);
+
+      // Play a swoosh sound when the photos spring out!
+      const timer = setTimeout(() => {
+        playSwooshSound();
+      }, 150); // Delay slightly to align with the spring action starting
+      return () => clearTimeout(timer);
     }
   }, [polaroids]);
 
