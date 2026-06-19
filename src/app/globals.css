@@ -1336,3 +1336,85 @@ button:hover .quiz-option-badge {
   }
 }
 
+/* --- Mobile Responsiveness for EverAfter Studio --- */
+@media (max-width: 991px) {
+  .hidden-mobile {
+    display: none !important;
+  }
+  .mobile-only {
+    display: block !important;
+  }
+  .mobile-flex-only {
+    display: flex !important;
+  }
+  .studio-form {
+    padding: 16px !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+    gap: 16px !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+  }
+  /* Reduce padding on the preview wrapper so it takes up less margins */
+  .studio-preview-wrapper {
+    padding: 10px 5px !important;
+  }
+}
+
+.mobile-tabs-container {
+  display: none;
+}
+
+@media (max-width: 991px) {
+  .mobile-tabs-container {
+    display: flex;
+    justify-content: space-around;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-card);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 20px;
+    width: 100%;
+  }
+
+  .mobile-tab-btn {
+    flex: 1;
+    padding: 10px 4px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    outline: none;
+  }
+
+  .mobile-tab-btn.active {
+    background: rgba(255, 75, 114, 0.08);
+    color: var(--accent-rose);
+    font-weight: 600;
+    border-color: rgba(255, 75, 114, 0.2);
+  }
+}
+
+.studio-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (max-width: 991px) {
+  .studio-section {
+    gap: 16px;
+  }
+}
+
+

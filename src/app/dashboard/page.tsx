@@ -86,13 +86,13 @@ export default function DashboardPage() {
   const getSenderFirstName = () => {
     if (!user) return "";
     const name = user.displayName || user.email.split("@")[0];
-    let cleanName = name.replace(/[._-]/g, " ").trim().replace(/([a-z])([A-Z])/g, "$1 $2");
+    const cleanName = name.replace(/[._-]/g, " ").trim().replace(/([a-z])([A-Z])/g, "$1 $2");
     return cleanName.split(/\s+/)[0] || "";
   };
   const getRecipientFirstName = () => {
     if (!recipient) return "";
     const name = recipient.firstName || "";
-    let cleanName = name.replace(/[._-]/g, " ").trim().replace(/([a-z])([A-Z])/g, "$1 $2");
+    const cleanName = name.replace(/[._-]/g, " ").trim().replace(/([a-z])([A-Z])/g, "$1 $2");
     return cleanName.split(/\s+/)[0] || "";
   };
   const senderFirstName = getSenderFirstName();

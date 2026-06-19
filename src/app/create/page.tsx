@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import Link from "next/link";
 import { useLetterForm } from "@/hooks/useLetterForm";
 import { THEMES, BACKDROPS, BACKDROP_PREVIEWS } from "./constants";
@@ -24,6 +24,32 @@ import AudioMessageCreator from "@/components/creator/AudioMessageCreator";
 
 function CreateLetterStudio() {
   const form = useLetterForm();
+  const [activeTab, setActiveTab] = useState<"write" | "design" | "addons" | "preview">("write");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!form.user || !form.recipientProfile) {
+      if (!form.recipient.trim()) {
+        form.showRomanticAlert("Recipient Required", "Please write the name of your sweetheart so we know who to seal this envelope for.");
+        setActiveTab("write");
+        return;
+      }
+      if (!form.sender.trim()) {
+        form.showRomanticAlert("Sender Required", "Please write your name or a sweet pseudonym so they know who this message is from.");
+        setActiveTab("write");
+        return;
+      }
+    }
+
+    if (!form.content.trim()) {
+      form.showRomanticAlert("Empty Heart", "Your love letter is currently empty. Write down your feelings and seal them in the envelope.");
+      setActiveTab("write");
+      return;
+    }
+
+    form.handleCreate(e);
+  };
 
   if (form.loading || !form.user || !form.recipientProfile) {
     return (
@@ -98,85 +124,136 @@ function CreateLetterStudio() {
           <div className="studio-header-spacer" style={{ width: "80px" }} />
         </header>
 
+        {/* Mobile Segmented Tab Control */}
+        <div className="mobile-tabs-container">
+          {([
+            { id: "write", label: "Write", icon: "✍️" },
+            { id: "design", label: "Design", icon: "🎨" },
+            { id: "addons", label: "Add-ons", icon: "🌟" },
+            { id: "preview", label: "Preview", icon: "👁️" }
+          ] as const).map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`mobile-tab-btn ${activeTab === tab.id ? "active" : ""}`}
+            >
+              <span style={{ fontSize: "16px" }}>{tab.icon}</span>
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
         <div className="studio-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(450px, 100%), 1fr))", gap: "40px", alignItems: "start" }}>
 
           {/* ── Left: Form Editor ── */}
-          <form onSubmit={form.handleCreate} className="glass studio-form hide-scrollbar" style={{ padding: "30px", display: "flex", flexDirection: "column", gap: "24px", maxHeight: "85vh", overflowY: "auto" }}>
-            <h2 style={{ fontSize: "18px", fontWeight: 600, borderBottom: "1px solid var(--border-card)", paddingBottom: "12px", color: "var(--text-main)" }}>
-              Write Your Letter
-            </h2>
+          <form id="create-letter-form" onSubmit={handleSubmit} className="glass studio-form hide-scrollbar" style={{ padding: "30px", display: "flex", flexDirection: "column", gap: "24px", maxHeight: "85vh", overflowY: "auto" }}>
+            
+            {/* --- Section 1: Write --- */}
+            <div className={`studio-section ${activeTab === "write" ? "" : "hidden-mobile"}`}>
+              <h2 style={{ fontSize: "18px", fontWeight: 600, borderBottom: "1px solid var(--border-card)", paddingBottom: "12px", color: "var(--text-main)" }}>
+                Write Your Letter
+              </h2>
 
-            {/* Names / email - only shown when not a logged-in user with profile */}
-            {form.user && form.recipientProfile ? null : (
-              <>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                  {(["Recipient Name", "Sender Name"] as const).map((label, i) => (
-                    <div key={label} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                      <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>{label}</label>
-                      <input
-                        type="text"
-                        value={i === 0 ? form.recipient : form.sender}
-                        onChange={(e) => i === 0 ? form.setRecipient(e.target.value) : form.setSender(e.target.value)}
-                        placeholder={i === 0 ? "e.g. My Sweetheart" : "e.g. Your Love"}
-                        maxLength={40} required
-                        style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid var(--border-card)", borderRadius: "8px", padding: "12px", color: "#fff", fontSize: "14px", outline: "none" }}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>Recipient's Email Address (Optional)</label>
-                  <input type="email" value={form.email} onChange={(e) => form.handleEmailChange(e.target.value)} placeholder="e.g. beloved@example.com"
-                    style={{ backgroundColor: "rgba(255,255,255,0.03)", border: form.emailError ? "1.5px solid var(--accent-rose)" : "1px solid var(--border-card)", borderRadius: "8px", padding: "12px", color: "#fff", fontSize: "14px", outline: "none" }}
-                  />
-                  {form.emailError && <span style={{ color: "var(--accent-rose)", fontSize: "11px", fontWeight: "bold" }}>⚠️ {form.emailError}</span>}
-                </div>
-              </>
-            )}
-
-            {/* Greeting & Farewell */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-              {(["Letter Greeting Prefix", "Letter Farewell / Sign-off"] as const).map((label, i) => (
-                <div key={label} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>{label}</label>
-                  <input
-                    type="text"
-                    value={i === 0 ? form.greeting : form.farewell}
-                    onChange={(e) => i === 0 ? form.setGreeting(e.target.value) : form.setFarewell(e.target.value)}
-                    placeholder={i === 0 ? "e.g. Dearest" : "e.g. With all my love,"}
-                    maxLength={40}
-                    style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid var(--border-card)", borderRadius: "8px", padding: "12px", color: "#fff", fontSize: "14px", outline: "none" }}
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Letter Body */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>Letter Body</label>
-                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                  <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
-                    {["❤️", "🥰", "🌹", "✨", "😘"].map((emoji) => (
-                      <button key={emoji} type="button" onClick={() => form.handleInsertEmoji(emoji)}
-                        style={{ background: "none", border: "none", fontSize: "16px", cursor: "pointer", padding: "2px", transition: "transform 0.1s" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.2)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                      >{emoji}</button>
+              {/* Names / email - only shown when not a logged-in user with profile */}
+              {form.user && form.recipientProfile ? null : (
+                <>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                    {(["Recipient Name", "Sender Name"] as const).map((label, i) => (
+                      <div key={label} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>{label}</label>
+                        <input
+                          type="text"
+                          value={i === 0 ? form.recipient : form.sender}
+                          onChange={(e) => i === 0 ? form.setRecipient(e.target.value) : form.setSender(e.target.value)}
+                          placeholder={i === 0 ? "e.g. My Sweetheart" : "e.g. Your Love"}
+                          maxLength={40}
+                          style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid var(--border-card)", borderRadius: "8px", padding: "12px", color: "#fff", fontSize: "14px", outline: "none" }}
+                        />
+                      </div>
                     ))}
                   </div>
-                  <EmojiPicker onSelect={form.handleInsertEmoji} />
-                </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>Recipient's Email Address (Optional)</label>
+                    <input type="email" value={form.email} onChange={(e) => form.handleEmailChange(e.target.value)} placeholder="e.g. beloved@example.com"
+                      style={{ backgroundColor: "rgba(255,255,255,0.03)", border: form.emailError ? "1.5px solid var(--accent-rose)" : "1px solid var(--border-card)", borderRadius: "8px", padding: "12px", color: "#fff", fontSize: "14px", outline: "none" }}
+                    />
+                    {form.emailError && <span style={{ color: "var(--accent-rose)", fontSize: "11px", fontWeight: "bold" }}>⚠️ {form.emailError}</span>}
+                  </div>
+                </>
+              )}
+
+              {/* Greeting & Farewell */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                {(["Letter Greeting Prefix", "Letter Farewell / Sign-off"] as const).map((label, i) => (
+                  <div key={label} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>{label}</label>
+                    <input
+                      type="text"
+                      value={i === 0 ? form.greeting : form.farewell}
+                      onChange={(e) => i === 0 ? form.setGreeting(e.target.value) : form.setFarewell(e.target.value)}
+                      placeholder={i === 0 ? "e.g. Dearest" : "e.g. With all my love,"}
+                      maxLength={40}
+                      style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid var(--border-card)", borderRadius: "8px", padding: "12px", color: "#fff", fontSize: "14px", outline: "none" }}
+                    />
+                  </div>
+                ))}
               </div>
-              <textarea
-                id="letter-body-textarea" value={form.content} onChange={(e) => form.setContent(e.target.value)}
-                placeholder="Write your feelings here..." required rows={6}
-                style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid var(--border-card)", borderRadius: "8px", padding: "14px", color: "#fff", fontSize: "14px", lineHeight: "1.6", outline: "none", resize: "vertical", minHeight: "120px" }}
-              />
+
+              {/* Letter Body */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>Letter Body</label>
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
+                      {["❤️", "🥰", "🌹", "✨", "😘"].map((emoji) => (
+                        <button key={emoji} type="button" onClick={() => form.handleInsertEmoji(emoji)}
+                          style={{ background: "none", border: "none", fontSize: "16px", cursor: "pointer", padding: "2px", transition: "transform 0.1s" }}
+                          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.2)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                        >{emoji}</button>
+                      ))}
+                    </div>
+                    <EmojiPicker onSelect={form.handleInsertEmoji} />
+                  </div>
+                </div>
+                <textarea
+                  id="letter-body-textarea" value={form.content} onChange={(e) => form.setContent(e.target.value)}
+                  placeholder="Write your feelings here..." rows={6}
+                  style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid var(--border-card)", borderRadius: "8px", padding: "14px", color: "#fff", fontSize: "14px", lineHeight: "1.6", outline: "none", resize: "vertical", minHeight: "120px" }}
+                />
+              </div>
+
+              {/* Mobile next button */}
+              <div className="mobile-only" style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px" }}>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("design")}
+                  style={{
+                    padding: "12px 20px",
+                    borderRadius: "10px",
+                    backgroundColor: "var(--accent-purple)",
+                    backgroundImage: "linear-gradient(135deg, #9c6cfa, #7c4bf5)",
+                    border: "none",
+                    color: "#fff",
+                    fontWeight: 600,
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px"
+                  }}
+                >
+                  Continue to Design 🎨
+                </button>
+              </div>
             </div>
 
-            {/* Stationery & customization options */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px", borderTop: "1px solid var(--border-card)", paddingTop: "20px" }}>
+            {/* --- Section 2: Design --- */}
+            <div className={`studio-section ${activeTab === "design" ? "" : "hidden-mobile"}`} style={{ borderTop: "none", paddingTop: "0" }}>
+              <h2 className="mobile-only" style={{ fontSize: "18px", fontWeight: 600, borderBottom: "1px solid var(--border-card)", paddingBottom: "12px", color: "var(--text-main)" }}>
+                Design Stationery & Envelope
+              </h2>
 
               {/* Theme selector */}
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -211,7 +288,7 @@ function CreateLetterStudio() {
               {/* Envelope style */}
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>Envelope Style & Animation</label>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "10px" }}>
                   {[
                     { id: "vintage-rose", label: "🌹 Red Envelope", desc: "Classic vintage crimson envelope with a gold wax seal" },
                     { id: "vintage-white", label: "✉ Vintage Lace", desc: "Elegant white linen envelope with a ruby red wax seal" },
@@ -228,60 +305,144 @@ function CreateLetterStudio() {
               </div>
 
               <MusicCreator music={form.music} setMusic={form.setMusic} musicType={form.musicType} setMusicType={form.setMusicType} musicUrl={form.musicUrl} setMusicUrl={form.setMusicUrl} />
-            </div>
 
-            {/* Optional customization accordions */}
-            <div style={{ borderTop: "1px solid var(--border-card)", paddingTop: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
-              <h3 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-main)", marginBottom: "4px" }}>Optional Customizations</h3>
-              <SecurityGateCreator securityEnabled={form.securityEnabled} setSecurityEnabled={form.setSecurityEnabled} securityType={form.securityType} setSecurityType={form.setSecurityType} securityQuestion={form.securityQuestion} setSecurityQuestion={form.setSecurityQuestion} securityAnswer={form.securityAnswer} setSecurityAnswer={form.setSecurityAnswer} securityChoices={form.securityChoices} setSecurityChoices={form.setSecurityChoices} securityConfirmed={form.securityConfirmed} setSecurityConfirmed={form.setSecurityConfirmed} showAlert={form.showRomanticAlert} />
-              <IntroCreator introEnabled={form.introEnabled} setIntroEnabled={form.setIntroEnabled} introText={form.introText} setIntroText={form.setIntroText} introAnimation={form.introAnimation} setIntroAnimation={form.setIntroAnimation} introConfirmed={form.introConfirmed} setIntroConfirmed={form.setIntroConfirmed} showAlert={form.showRomanticAlert} />
-              <ClosingCreator closingEnabled={form.closingEnabled} setClosingEnabled={form.setClosingEnabled} closingText={form.closingText} setClosingText={form.setClosingText} closingAnimation={form.closingAnimation} setClosingAnimation={form.setClosingAnimation} closingConfirmed={form.closingConfirmed} setClosingConfirmed={form.setClosingConfirmed} showAlert={form.showRomanticAlert} />
-              <DateInviteCreator dateInviteEnabled={form.dateInviteEnabled} setDateInviteEnabled={form.setDateInviteEnabled} dateInviteQuestion={form.dateInviteQuestion} setDateInviteQuestion={form.setDateInviteQuestion} dateInviteDate={form.dateInviteDate} setDateInviteDate={form.setDateInviteDate} dateInviteTime={form.dateInviteTime} setDateInviteTime={form.setDateInviteTime} dateInvitePlace={form.dateInvitePlace} setDateInvitePlace={form.setDateInvitePlace} dateInviteMapLink={form.dateInviteMapLink} setDateInviteMapLink={form.setDateInviteMapLink} dateInviteEmail={form.dateInviteEmail} setDateInviteEmail={form.setDateInviteEmail} dateInviteConfirmed={form.dateInviteConfirmed} setDateInviteConfirmed={form.setDateInviteConfirmed} sender={form.sender} recipient={form.recipient} showAlert={form.showRomanticAlert} />
-              <SurveyCreator surveyEnabled={form.surveyEnabled} setSurveyEnabled={form.setSurveyEnabled} surveyQuestion={form.surveyQuestion} setSurveyQuestion={form.setSurveyQuestion} surveyType={form.surveyType} setSurveyType={form.setSurveyType} surveyConfirmed={form.surveyConfirmed} setSurveyConfirmed={form.setSurveyConfirmed} showAlert={form.showRomanticAlert} />
-              {!form.user ? (
-                <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px dashed var(--border-card)", borderRadius: "10px", padding: "16px", fontSize: "12px", color: "var(--text-muted)", textAlign: "center" }}>
-                  🎤 Voice recording replies require an account. <Link href="/login" style={{ color: "var(--accent-rose)", fontWeight: "bold", textDecoration: "none" }}>Log in or Sign up</Link> to seal audio messages!
-                </div>
-              ) : (
-                <AudioMessageCreator audioEnabled={form.audioEnabled} setAudioEnabled={form.setAudioEnabled} audioUrl={form.audioUrl} setAudioUrl={form.setAudioUrl} audioFile={form.audioFile} setAudioFile={form.setAudioFile} audioCustomMessage={form.audioCustomMessage} setAudioCustomMessage={form.setAudioCustomMessage} audioConfirmed={form.audioConfirmed} setAudioConfirmed={form.setAudioConfirmed} showAlert={form.showRomanticAlert} />
-              )}
-              <SendLaterCreator sendLaterEnabled={form.sendLaterEnabled} setSendLaterEnabled={form.setSendLaterEnabled} sendLaterDate={form.sendLaterDate} setSendLaterDate={form.setSendLaterDate} sendLaterTime={form.sendLaterTime} setSendLaterTime={form.setSendLaterTime} />
-            </div>
-
-            {/* Step orderer */}
-            <div style={{ borderTop: "1px solid var(--border-card)", paddingTop: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
-              <div>
-                <h3 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-main)" }}>Customization Sequence Flow</h3>
-                <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "4px" }}>Rearrange the timeline flow of the recipient's love letter journey.</p>
+              {/* Mobile Design tab step buttons */}
+              <div className="mobile-only" style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "8px" }}>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("write")}
+                  style={{
+                    padding: "12px 20px",
+                    borderRadius: "10px",
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    border: "1px solid var(--border-card)",
+                    color: "var(--text-muted)",
+                    fontWeight: 500,
+                    fontSize: "14px",
+                    cursor: "pointer"
+                  }}
+                >
+                  Back to Write
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("addons")}
+                  style={{
+                    padding: "12px 20px",
+                    borderRadius: "10px",
+                    backgroundColor: "var(--accent-purple)",
+                    backgroundImage: "linear-gradient(135deg, #9c6cfa, #7c4bf5)",
+                    border: "none",
+                    color: "#fff",
+                    fontWeight: 600,
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px"
+                  }}
+                >
+                  Continue to Add-ons 🌟
+                </button>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "8px" }}>
-                {form.activeSteps.map((stepId, idx) => (
-                  <div key={stepId} className="customizer-step-item">
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <span style={{ width: "22px", height: "22px", borderRadius: "50%", backgroundColor: stepId === "envelope" ? "var(--accent-rose)" : "rgba(255,255,255,0.08)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: "bold" }}>{idx + 1}</span>
-                      <span style={{ fontSize: "13px", fontWeight: 500 }}>{form.getStepLabel(stepId)}</span>
-                    </div>
-                    <div style={{ display: "flex", gap: "4px" }}>
-                      {(["up", "down"] as const).map((dir) => {
-                        const disabled = dir === "up" ? idx === 0 : idx === form.activeSteps.length - 1;
-                        return (
-                          <button key={dir} type="button" onClick={() => form.moveStep(idx, dir)} disabled={disabled}
-                            style={{ background: "none", border: "none", color: "#fff", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.25 : 0.7, padding: "4px 8px", fontSize: "13px" }}
-                            title={`Move Step ${dir === "up" ? "Up" : "Down"}`}
-                          >{dir === "up" ? "▲" : "▼"}</button>
-                        );
-                      })}
-                    </div>
+            </div>
+
+            {/* --- Section 3: Add-ons & Customizations --- */}
+            <div className={`studio-section ${activeTab === "addons" ? "" : "hidden-mobile"}`} style={{ borderTop: "none", paddingTop: "0" }}>
+              <h2 className="mobile-only" style={{ fontSize: "18px", fontWeight: 600, borderBottom: "1px solid var(--border-card)", paddingBottom: "12px", color: "var(--text-main)" }}>
+                Add-ons & Sequence Flow
+              </h2>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <h3 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-main)", marginBottom: "4px" }}>Optional Customizations</h3>
+                <SecurityGateCreator securityEnabled={form.securityEnabled} setSecurityEnabled={form.setSecurityEnabled} securityType={form.securityType} setSecurityType={form.setSecurityType} securityQuestion={form.securityQuestion} setSecurityQuestion={form.setSecurityQuestion} securityAnswer={form.securityAnswer} setSecurityAnswer={form.setSecurityAnswer} securityChoices={form.securityChoices} setSecurityChoices={form.setSecurityChoices} securityConfirmed={form.securityConfirmed} setSecurityConfirmed={form.setSecurityConfirmed} showAlert={form.showRomanticAlert} />
+                <IntroCreator introEnabled={form.introEnabled} setIntroEnabled={form.setIntroEnabled} introText={form.introText} setIntroText={form.setIntroText} introAnimation={form.introAnimation} setIntroAnimation={form.setIntroAnimation} introConfirmed={form.introConfirmed} setIntroConfirmed={form.setIntroConfirmed} showAlert={form.showRomanticAlert} />
+                <ClosingCreator closingEnabled={form.closingEnabled} setClosingEnabled={form.setClosingEnabled} closingText={form.closingText} setClosingText={form.setClosingText} closingAnimation={form.closingAnimation} setClosingAnimation={form.setClosingAnimation} closingConfirmed={form.closingConfirmed} setClosingConfirmed={form.setClosingConfirmed} showAlert={form.showRomanticAlert} />
+                <DateInviteCreator dateInviteEnabled={form.dateInviteEnabled} setDateInviteEnabled={form.setDateInviteEnabled} dateInviteQuestion={form.dateInviteQuestion} setDateInviteQuestion={form.setDateInviteQuestion} dateInviteDate={form.dateInviteDate} setDateInviteDate={form.setDateInviteDate} dateInviteTime={form.dateInviteTime} setDateInviteTime={form.setDateInviteTime} dateInvitePlace={form.dateInvitePlace} setDateInvitePlace={form.setDateInvitePlace} dateInviteMapLink={form.dateInviteMapLink} setDateInviteMapLink={form.setDateInviteMapLink} dateInviteEmail={form.dateInviteEmail} setDateInviteEmail={form.setDateInviteEmail} dateInviteConfirmed={form.dateInviteConfirmed} setDateInviteConfirmed={form.setDateInviteConfirmed} sender={form.sender} recipient={form.recipient} showAlert={form.showRomanticAlert} />
+                <SurveyCreator surveyEnabled={form.surveyEnabled} setSurveyEnabled={form.setSurveyEnabled} surveyQuestion={form.surveyQuestion} setSurveyQuestion={form.setSurveyQuestion} surveyType={form.surveyType} setSurveyType={form.setSurveyType} surveyConfirmed={form.surveyConfirmed} setSurveyConfirmed={form.setSurveyConfirmed} showAlert={form.showRomanticAlert} />
+                {!form.user ? (
+                  <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px dashed var(--border-card)", borderRadius: "10px", padding: "16px", fontSize: "12px", color: "var(--text-muted)", textAlign: "center" }}>
+                    🎤 Voice recording replies require an account. <Link href="/login" style={{ color: "var(--accent-rose)", fontWeight: "bold", textDecoration: "none" }}>Log in or Sign up</Link> to seal audio messages!
                   </div>
-                ))}
+                ) : (
+                  <AudioMessageCreator audioEnabled={form.audioEnabled} setAudioEnabled={form.setAudioEnabled} audioUrl={form.audioUrl} setAudioUrl={form.setAudioUrl} audioFile={form.audioFile} setAudioFile={form.setAudioFile} audioCustomMessage={form.audioCustomMessage} setAudioCustomMessage={form.setAudioCustomMessage} audioConfirmed={form.audioConfirmed} setAudioConfirmed={form.setAudioConfirmed} showAlert={form.showRomanticAlert} />
+                )}
+                <SendLaterCreator sendLaterEnabled={form.sendLaterEnabled} setSendLaterEnabled={form.setSendLaterEnabled} sendLaterDate={form.sendLaterDate} setSendLaterDate={form.setSendLaterDate} sendLaterTime={form.sendLaterTime} setSendLaterTime={form.setSendLaterTime} />
+              </div>
+
+              {/* Step orderer */}
+              <div style={{ borderTop: "1px solid var(--border-card)", paddingTop: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                <div>
+                  <h3 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-main)" }}>Customization Sequence Flow</h3>
+                  <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "4px" }}>Rearrange the timeline flow of the recipient's love letter journey.</p>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "8px" }}>
+                  {form.activeSteps.map((stepId, idx) => (
+                    <div key={stepId} className="customizer-step-item">
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <span style={{ width: "22px", height: "22px", borderRadius: "50%", backgroundColor: stepId === "envelope" ? "var(--accent-rose)" : "rgba(255,255,255,0.08)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: "bold", color: "#fff" }}>{idx + 1}</span>
+                        <span style={{ fontSize: "13px", fontWeight: 500 }}>{form.getStepLabel(stepId)}</span>
+                      </div>
+                      <div style={{ display: "flex", gap: "4px" }}>
+                        {(["up", "down"] as const).map((dir) => {
+                          const disabled = dir === "up" ? idx === 0 : idx === form.activeSteps.length - 1;
+                          return (
+                            <button key={dir} type="button" onClick={() => form.moveStep(idx, dir)} disabled={disabled}
+                              style={{ background: "none", border: "none", color: "#fff", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.25 : 0.7, padding: "4px 8px", fontSize: "13px" }}
+                              title={`Move Step ${dir === "up" ? "Up" : "Down"}`}
+                            >{dir === "up" ? "▲" : "▼"}</button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Mobile Add-ons tab step buttons */}
+              <div className="mobile-only" style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "8px" }}>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("design")}
+                  style={{
+                    padding: "12px 20px",
+                    borderRadius: "10px",
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    border: "1px solid var(--border-card)",
+                    color: "var(--text-muted)",
+                    fontWeight: 500,
+                    fontSize: "14px",
+                    cursor: "pointer"
+                  }}
+                >
+                  Back to Design
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("preview")}
+                  style={{
+                    padding: "12px 20px",
+                    borderRadius: "10px",
+                    backgroundColor: "var(--accent-purple)",
+                    backgroundImage: "linear-gradient(135deg, #9c6cfa, #7c4bf5)",
+                    border: "none",
+                    color: "#fff",
+                    fontWeight: 600,
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px"
+                  }}
+                >
+                  Preview Letter 👁️
+                </button>
               </div>
             </div>
-
-
-
 
             {/* Submit */}
             <button type="submit"
+              className={activeTab === "addons" ? "" : "hidden-mobile"}
               style={{ width: "100%", padding: "16px", borderRadius: "12px", backgroundColor: "var(--accent-rose)", backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)", border: "none", color: "#fff", fontWeight: 600, fontSize: "15px", cursor: "pointer", boxShadow: "0 8px 20px rgba(255, 75, 114, 0.25)", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", transition: "all 0.2s", marginTop: "12px" }}
               onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
               onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
@@ -297,7 +458,7 @@ function CreateLetterStudio() {
           </form>
 
           {/* ── Right: Live Preview ── */}
-          <div className="studio-preview-col" style={{ display: "flex", flexDirection: "column", gap: "16px", position: "sticky", top: "20px" }}>
+          <div className={`studio-preview-col ${activeTab === "preview" ? "" : "hidden-mobile"}`} style={{ display: "flex", flexDirection: "column", gap: "16px", position: "sticky", top: "20px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ display: "flex", gap: "8px" }}>
                 {(["letter", "envelope"] as const).map((mode) => (
@@ -335,6 +496,23 @@ function CreateLetterStudio() {
                 getGlassyBorder={getGlassyBorder}
               />
             )}
+
+            {/* Mobile-only Submit button for Preview tab */}
+            <div className="mobile-only" style={{ marginTop: "12px" }}>
+              <button type="submit" form="create-letter-form"
+                style={{ width: "100%", padding: "16px", borderRadius: "12px", backgroundColor: "var(--accent-rose)", backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)", border: "none", color: "#fff", fontWeight: 600, fontSize: "15px", cursor: "pointer", boxShadow: "0 8px 20px rgba(255, 75, 114, 0.25)", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", transition: "all 0.2s" }}
+                onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
+                onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
+              >
+                {form.editId ? (
+                  <><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Save Changes</>
+                ) : form.isWriteback ? (
+                  <><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>Send Write Back ✍️</>
+                ) : (
+                  <><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg>Seal Envelope & Get Link</>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </main>

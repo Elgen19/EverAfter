@@ -44,16 +44,16 @@ function MailboxContent() {
     return letters;
   }, [letters, activeTab]);
 
-  // Reset active index when changing tabs
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [activeTab]);
-
   // Scroll tracking states & refs
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const lastWheelTime = useRef(0);
   const touchStartY = useRef(0);
+
+  // Reset active index when changing tabs
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [activeTab]);
 
   // Manual non-passive event listeners to successfully preventDefault and block body scrolling
   useEffect(() => {
@@ -471,13 +471,19 @@ function MailboxContent() {
           {/* Bursting Sparkling Hearts & Gold Dust Particles */}
           <div style={{ position: "absolute", width: "100%", height: "100%", overflow: "hidden", pointerEvents: "none" }}>
             {[...Array(30)].map((_, i) => {
-              const angle = (i * 360) / 30 + Math.random() * 15;
-              const velocity = 120 + Math.random() * 280;
+              // Deterministic pseudo-random number generator for react purity rules
+              const getPseudoRandom = (idx: number, offset: number) => {
+                const seed = idx * 12345.67 + offset * 9876.54;
+                const x = Math.sin(seed) * 10000;
+                return x - Math.floor(x);
+              };
+              const angle = (i * 360) / 30 + getPseudoRandom(i, 1) * 15;
+              const velocity = 120 + getPseudoRandom(i, 2) * 280;
               const rad = (angle * Math.PI) / 180;
               const tx = `${Math.cos(rad) * velocity}px`;
               const ty = `${Math.sin(rad) * velocity}px`;
-              const scale = 0.6 + Math.random() * 1.2;
-              const delay = Math.random() * 0.12;
+              const scale = 0.6 + getPseudoRandom(i, 3) * 1.2;
+              const delay = getPseudoRandom(i, 4) * 0.12;
               const isHeart = i % 3 === 0;
               return (
                 <div
@@ -487,7 +493,7 @@ function MailboxContent() {
                     top: "50%",
                     left: "50%",
                     transform: "translate(-50%, -50%) scale(0)",
-                    fontSize: isHeart ? `${18 + Math.random() * 18}px` : `${12 + Math.random() * 12}px`,
+                    fontSize: isHeart ? `${18 + getPseudoRandom(i, 5) * 18}px` : `${12 + getPseudoRandom(i, 6) * 12}px`,
                     color: isHeart ? "#ff4b72" : "#e2b857",
                     textShadow: "0 0 10px rgba(255,255,255,0.9)",
                     filter: "drop-shadow(0 0 12px rgba(226, 184, 87, 0.85))",
