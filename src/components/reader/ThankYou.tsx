@@ -125,8 +125,8 @@ export default function ThankYou({
           </div>
         ))}
       </div>
-      <div style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%", zIndex: 10, backgroundColor: "rgba(11, 7, 17, 0.97)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "20px" }}>
-        <div style={{ padding: "30px", borderRadius: "16px", background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(255, 255, 255, 0.1)", boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5)", textAlign: "center", color: "#fff", display: "flex", flexDirection: "column", alignItems: "center", gap: "16px", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}>
+      <div style={{ position: "fixed", left: 0, top: 0, width: "100vw", height: "100vh", zIndex: 99999, backgroundColor: "rgba(11, 7, 17, 0.97)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "20px" }}>
+        <div className="glass thankyou-card" style={{ width: "90%", maxWidth: "420px", padding: "24px 16px", borderRadius: "16px", background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(255, 255, 255, 0.1)", boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5)", textAlign: "center", color: "#fff", display: "flex", flexDirection: "column", alignItems: "center", gap: "16px", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}>
           <div style={{ fontSize: "48px", animation: "heartbeat-survey 1.2s infinite ease-in-out" }}>💖</div>
           <div style={{ fontSize: "18px", fontWeight: "bold" }}>Preparing Your Love Letter...</div>
           <div style={{ fontSize: "13px", color: "var(--text-muted)" }}>Generating a high-fidelity PDF, please wait a moment.</div>
@@ -204,22 +204,22 @@ export default function ThankYou({
               </div>
             </div>
           </div>
-          <div className="style-picker-buttons" style={{ display: "flex", gap: "10px", width: "100%", marginTop: "8px" }}>
+          <div className="style-picker-buttons style-picker-buttons-horizontal" style={{ display: "flex", gap: "10px", width: "100%", marginTop: "8px" }}>
             <button onClick={() => setShowStylePicker(false)}
               style={{ flex: 1, padding: "12px", borderRadius: "6px", background: "none", border: "1px solid rgba(255, 255, 255, 0.15)", color: "var(--text-muted)", fontSize: "13px", cursor: "pointer", transition: "all 0.2s" }}
               onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.35)")}
               onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.15)")}
             >Cancel</button>
             <button onClick={() => { setShowStylePicker(false); setShowFullPreview(true); }}
-              style={{ flex: 1.2, padding: "12px", borderRadius: "6px", background: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#fff", fontSize: "13px", cursor: "pointer", transition: "all 0.2s" }}
+              style={{ flex: 1, padding: "12px", borderRadius: "6px", background: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#fff", fontSize: "13px", cursor: "pointer", transition: "all 0.2s" }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.12)"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.3)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.05)"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.15)"; }}
-            >🔍 Preview Full Letter</button>
+            >Preview</button>
             <button onClick={handleDownloadPDF}
-              style={{ flex: 1.5, padding: "12px", borderRadius: "6px", background: colors.buttonBg, backgroundImage: theme === "blush" || theme === "royal" ? "none" : "linear-gradient(135deg, #ff4b72, #d9264c)", color: "#fff", fontWeight: "bold", fontSize: "13px", border: "none", cursor: "pointer", boxShadow: `0 4px 10px ${colors.shadow}`, transition: "transform 0.2s" }}
+              style={{ flex: 1.2, padding: "12px", borderRadius: "6px", background: colors.buttonBg, backgroundImage: theme === "blush" || theme === "royal" ? "none" : "linear-gradient(135deg, #ff4b72, #d9264c)", color: "#fff", fontWeight: "bold", fontSize: "13px", border: "none", cursor: "pointer", boxShadow: `0 4px 10px ${colors.shadow}`, transition: "transform 0.2s" }}
               onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.02)")}
               onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
-            >Download PDF 📥</button>
+            >Download</button>
           </div>
         </div>
         {PdfHiddenTarget}
