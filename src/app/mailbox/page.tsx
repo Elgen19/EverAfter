@@ -896,7 +896,7 @@ function MailboxContent() {
                 } as React.CSSProperties}
               >
                 {/* Envelope Core from Envelope.tsx */}
-                <div className="envelope-container mailbox-envelope-container" style={{ transform: "scale(0.85)" }}>
+                <div className="envelope-container mailbox-envelope-container">
                   <div 
                     className={`envelope-wrapper ${themeClass} vintage-rose-style`}
                     style={{
