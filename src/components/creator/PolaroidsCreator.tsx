@@ -345,7 +345,7 @@ export default function PolaroidsCreator({
                     inset: 0,
                     backgroundColor: "#fff",
                     borderRadius: "6px",
-                    padding: "8px 8px 24px 8px",
+                    padding: "8px 8px 20px 8px",
                     boxShadow: isActive ? "0 10px 24px rgba(0,0,0,0.4)" : "0 4px 12px rgba(0,0,0,0.25)",
                     transformStyle: "preserve-3d",
                     transition: "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -368,7 +368,7 @@ export default function PolaroidsCreator({
                       {/* Front: Polaroid Image */}
                       <div 
                         style={{ 
-                          height: "115px", 
+                          height: "142px", 
                           backgroundColor: "#f0f0f0",
                           backgroundImage: `url(${item.url})`,
                           backgroundSize: "cover",

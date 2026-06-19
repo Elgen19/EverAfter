@@ -212,7 +212,7 @@ export default function Envelope({
           if (onClose) onClose();
         }, 1200); // Wait for flap to close
       }
-    }, 600); // Wait for sheet to scale down
+    }, 800); // Wait for sheet to scale down (800ms matches transition)
   };
 
   const hasBackdrop = (backdrop && backdrop !== "none") || theme === "celestial";
@@ -285,13 +285,13 @@ export default function Envelope({
         onClick={handleOpen}
         style={{
           transform: isFullView 
-            ? "scale(0.8) translateY(100px)" 
+            ? "scale(0.7) translateY(180px)" 
             : isOpen 
               ? "translateY(110px) scale(0.95)" 
               : "scale(1)",
-          opacity: isFullView ? 0 : 1,
-          visibility: isFullView ? "hidden" : "visible",
-          transition: `transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease, visibility 0s linear ${isFullView ? "0.4s" : "0s"}`,
+          opacity: isFullView ? 0.85 : 1,
+          visibility: "visible",
+          transition: "transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease",
           pointerEvents: isFullView ? "none" : "auto",
         }}
       >
@@ -456,7 +456,7 @@ export default function Envelope({
             justifyContent: "center",
             opacity: isSheetExpanded ? 1 : 0,
             pointerEvents: isSheetExpanded ? "auto" : "none",
-            transition: "opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+            transition: "opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
             padding: "20px",
           }}
         >
@@ -483,8 +483,8 @@ export default function Envelope({
               fontFamily: "var(--stationery-font)",
               display: "flex",
               flexDirection: "column",
-              transform: isSheetExpanded ? "scale(1) translateY(0)" : "scale(0.9) translateY(40px)",
-              transition: "transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+              transform: isSheetExpanded ? "scale(1) translateY(0)" : "scale(0.1) translateY(420px)",
+              transition: "transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)",
               overflow: "hidden",
             }}
           >
@@ -755,14 +755,14 @@ export default function Envelope({
             justifyContent: "center",
             opacity: isSheetExpanded ? 1 : 0,
             pointerEvents: isSheetExpanded ? "auto" : "none",
-            transition: "opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+            transition: "opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
             padding: "20px",
           }}
         >
           <div
             style={{
-              transform: isSheetExpanded ? "scale(1) translateY(0)" : "scale(0.9) translateY(40px)",
-              transition: "transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+              transform: isSheetExpanded ? "scale(1) translateY(0)" : "scale(0.1) translateY(420px)",
+              transition: "transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",

@@ -226,7 +226,7 @@ export default function PolaroidsReader({
           border-radius: 8px;
           background-color: #ffffff;
           box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-          padding: 12px 12px 32px 12px;
+          padding: 12px 12px 36px 12px;
           transform-style: preserve-3d;
           transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, z-index 0.3s ease;
           cursor: pointer;
@@ -237,7 +237,7 @@ export default function PolaroidsReader({
         }
         .polaroid-front {
           position: absolute;
-          inset: 12px 12px 32px 12px;
+          inset: 12px 12px 36px 12px;
           backface-visibility: hidden;
           -webkit-backface-visibility: hidden;
           display: flex;
@@ -246,7 +246,7 @@ export default function PolaroidsReader({
         }
         .polaroid-image {
           width: 100%;
-          height: 220px;
+          height: 272px;
           border-radius: 4px;
           background-color: #efefef;
           background-size: cover;
@@ -329,11 +329,14 @@ export default function PolaroidsReader({
             width: 220px;
             height: 270px;
           }
+          .polaroid-card {
+            padding: 10px 10px 30px 10px;
+          }
           .polaroid-front {
-            inset: 10px 10px 28px 10px;
+            inset: 10px 10px 30px 10px;
           }
           .polaroid-image {
-            height: 180px;
+            height: 230px;
           }
           .polaroid-caption {
             font-size: 12px;
