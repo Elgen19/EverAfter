@@ -67,10 +67,10 @@ interface CustomCSSProperties extends React.CSSProperties {
 }
 
 const previewCardsConfig = [
-  { left: "-180px", right: "auto", top: "-220px", rotate: -12, delay: 0.5 },
-  { left: "auto", right: "-180px", top: "-220px", rotate: 12, delay: 0.65 },
-  { left: "-200px", right: "auto", top: "50px", rotate: -22, delay: 0.8 },
-  { left: "auto", right: "-200px", top: "50px", rotate: 22, delay: 0.95 },
+  { tx: "-440px", ty: "-220px", rotate: -12, delay: 0.5 },
+  { tx: "440px", ty: "-220px", rotate: 12, delay: 0.65 },
+  { tx: "-460px", ty: "50px", rotate: -22, delay: 0.8 },
+  { tx: "460px", ty: "50px", rotate: 22, delay: 0.95 },
 ];
 
 interface EnvelopeProps {
@@ -561,9 +561,10 @@ export default function Envelope({
                     key={p.imageUrl || idx}
                     style={{
                       position: "absolute",
-                      left: config.left,
-                      right: config.right,
-                      top: config.top,
+                      left: "50%",
+                      top: "50%",
+                      marginLeft: "-75px",
+                      marginTop: "-90px",
                       width: "150px",
                       height: "180px",
                       padding: "8px 8px 24px 8px",
@@ -571,9 +572,9 @@ export default function Envelope({
                       borderRadius: "6px",
                       boxShadow: "0 10px 25px rgba(0,0,0,0.25)",
                       transform: isSheetExpanded 
-                        ? `rotate(${config.rotate}deg) scale(1) translateY(0)` 
-                        : `rotate(0deg) scale(0.05) translateY(420px)`,
-                      opacity: isSheetExpanded ? 0.9 : 0,
+                        ? `translateX(${config.tx}) translateY(${config.ty}) rotate(${config.rotate}deg) scale(1)` 
+                        : `translateX(0px) translateY(200px) rotate(0deg) scale(0.05)`,
+                      opacity: isSheetExpanded ? 0.95 : 0,
                       transition: isSheetExpanded
                         ? `transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) ${config.delay}s, opacity 0.8s ease ${config.delay}s`
                         : "transform 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0s, opacity 0.6s ease 0s",
