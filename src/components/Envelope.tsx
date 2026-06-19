@@ -10,6 +10,8 @@ import {
   Geist_Mono, 
   Libre_Baskerville 
 } from "next/font/google";
+import PolaroidsReader from "./reader/PolaroidsReader";
+import { PolaroidItem } from "@/utils/encoding";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -78,6 +80,13 @@ interface EnvelopeProps {
   isOnlyStep?: boolean;
   onOpen?: () => void;
   onClose?: () => void;
+
+  // Adjacent polaroids configuration
+  polaroids?: PolaroidItem[];
+  activeStep?: string;
+  onStepComplete?: () => void;
+  isAdjacentToPolaroids?: boolean;
+  polaroidsFirst?: boolean;
 }
 
 export default function Envelope({
@@ -94,27 +103,61 @@ export default function Envelope({
   isOnlyStep = false,
   onOpen,
   onClose,
+  polaroids,
+  activeStep,
+  onStepComplete,
+  isAdjacentToPolaroids = false,
+  polaroidsFirst = false,
 }: EnvelopeProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isFullView, setIsFullView] = useState(false);
   const [isSealBroken, setIsSealBroken] = useState(false);
   const [isBreaking, setIsBreaking] = useState(false);
   const [burstHearts, setBurstHearts] = useState<{ id: number; char: string; tx: string; ty: string; scale: number; rot: string }[]>([]);
 
-  // Trigger full page letter overlay after slide-out animation finishes
+  // Sub-view active sheet states
+  const [activeSheet, setActiveSheet] = useState<"letter" | "polaroids" | "none">("none");
+  const [isSheetExpanded, setIsSheetExpanded] = useState(false);
+  const [isFirstOpen, setIsFirstOpen] = useState(true);
+
+  // Map legacy state to expanded sub-view
+  const isFullView = isSheetExpanded;
+
+  // Trigger sheet expanded view when envelope opens or activeStep changes
   useEffect(() => {
     if (isOpen) {
-      const timer = setTimeout(() => {
-        setIsFullView(true);
-      }, 3000); // Wait for flap rotation (1.2s) + letter slide out (1.8s)
-      return () => clearTimeout(timer);
+      if (isFirstOpen) {
+        const timer = setTimeout(() => {
+          if (activeStep === "polaroids") {
+            setActiveSheet("polaroids");
+          } else {
+            setActiveSheet("letter");
+          }
+          setIsSheetExpanded(true);
+          setIsFirstOpen(false);
+        }, 3000); // Flap rotation (1.2s) + letter slide out (1.8s)
+        return () => clearTimeout(timer);
+      } else {
+        // If it's a step transition (already opened)
+        if (activeStep === "polaroids") {
+          setActiveSheet("polaroids");
+          const timer = setTimeout(() => {
+            setIsSheetExpanded(true);
+          }, 150);
+          return () => clearTimeout(timer);
+        } else if (activeStep === "envelope") {
+          setActiveSheet("letter");
+          const timer = setTimeout(() => {
+            setIsSheetExpanded(true);
+          }, 150);
+          return () => clearTimeout(timer);
+        }
+      }
     } else {
-      const timer = setTimeout(() => {
-        setIsFullView(false);
-      }, 0);
-      return () => clearTimeout(timer);
+      setIsSheetExpanded(false);
+      setActiveSheet("none");
+      setIsFirstOpen(true);
     }
-  }, [isOpen]);
+  }, [isOpen, activeStep, isFirstOpen]);
 
   const handleOpen = () => {
     if (isOpen || isBreaking) return;
@@ -150,14 +193,26 @@ export default function Envelope({
     }, 2200);
   };
 
-  const handleClose = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsFullView(false);
-    // Add longer timeout before closing envelope to let full view scale down first
+  const handleClose = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    
+    setIsSheetExpanded(false);
+    
     setTimeout(() => {
-      setIsOpen(false);
-      if (onClose) onClose();
-    }, 800); // Slower retracting delay
+      setActiveSheet("none");
+      
+      const isLetterFirstTransition = isAdjacentToPolaroids && !polaroidsFirst && activeStep === "envelope";
+      const isPolaroidFirstTransition = isAdjacentToPolaroids && polaroidsFirst && activeStep === "polaroids";
+      
+      if (isLetterFirstTransition || isPolaroidFirstTransition) {
+        if (onStepComplete) onStepComplete();
+      } else {
+        setIsOpen(false);
+        setTimeout(() => {
+          if (onClose) onClose();
+        }, 1200); // Wait for flap to close
+      }
+    }, 600); // Wait for sheet to scale down
   };
 
   const hasBackdrop = (backdrop && backdrop !== "none") || theme === "celestial";
@@ -383,317 +438,346 @@ export default function Envelope({
           </div>
         </div>
       </div>
-      </div>
-
-      {/* Expanded Full Screen Stationery Sheet (Fade-in portal style) */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 90,
-          background: "transparent",
-          backdropFilter: "none",
-          WebkitBackdropFilter: "none",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          opacity: isFullView ? 1 : 0,
-          pointerEvents: isFullView ? "auto" : "none",
-          transition: "opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-          padding: "20px",
-        }}
-      >
-        <style>{`
-          .hide-scrollbar {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-          }
-          .hide-scrollbar::-webkit-scrollbar {
-            display: none;  /* Chrome, Safari and Opera */
-          }
-        `}</style>
-
-
-        {/* The beautiful letter paper page */}
+    </div>      {/* Expanded Full Screen Stationery Sheet (Fade-in portal style) */}
+      {activeSheet === "letter" && (
         <div
-          className={`stationery-sheet ${themeClass} ${hasBackdrop ? "has-backdrop" : ""}`}
           style={{
-            position: "relative",
-            width: "100%",
-            maxWidth: "680px",
-            height: "80vh",
-            maxHeight: "calc(100vh - 160px)",
-            backgroundColor: getGlassyBg(),
-            backgroundImage: hasBackdrop ? "none" : "var(--bg-image)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-            backdropFilter: hasBackdrop ? "blur(16px)" : "none",
-            WebkitBackdropFilter: hasBackdrop ? "blur(16px)" : "none",
-            border: `1px solid ${getGlassyBorder()}`,
-            borderRadius: "16px",
-            boxShadow: "0 25px 60px -15px rgba(0,0,0,0.6)",
-            color: "var(--stationery-text)",
-            fontFamily: "var(--stationery-font)",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 90,
+            background: "transparent",
+            backdropFilter: "none",
+            WebkitBackdropFilter: "none",
             display: "flex",
-            flexDirection: "column",
-            transform: isFullView ? "scale(1) translateY(0)" : "scale(0.9) translateY(40px)",
-            transition: "transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
-            overflow: "hidden",
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: isSheetExpanded ? 1 : 0,
+            pointerEvents: isSheetExpanded ? "auto" : "none",
+            transition: "opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+            padding: "20px",
           }}
         >
-          {theme === "blush" && (
-            <>
-              {/* Delicate corner floral SVGs */}
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", zIndex: 5 }}>
-                <svg width="100%" height="100%" style={{ position: "absolute", top: 0, left: 0 }}>
-                  <defs>
-                    <g id="blush-corner-reader">
-                      <path d="M 10,10 C 22,10 26,14 26,26 C 26,20 22,20 22,10" fill="none" stroke="#B76E79" strokeWidth="1" />
-                      <path d="M 10,10 C 10,22 14,26 26,26" fill="none" stroke="#B76E79" strokeWidth="1" />
-                      <path d="M 14,20 Q 18,18 20,14" fill="none" stroke="#B76E79" strokeWidth="0.75" />
-                      <path d="M 20,14 C 24,16 26,20 22,22 C 18,20 18,16 20,14 Z" fill="#E8B4B8" opacity="0.35" />
-                    </g>
-                  </defs>
-                  <use href="#blush-corner-reader" x="0" y="0" />
-                  <use href="#blush-corner-reader" x="0" y="0" transform="translate(100%, 0) scale(-1, 1)" style={{ transformOrigin: "right top" }} />
-                  <use href="#blush-corner-reader" x="0" y="0" transform="translate(0, 100%) scale(1, -1)" style={{ transformOrigin: "left bottom" }} />
-                  <use href="#blush-corner-reader" x="0" y="0" transform="translate(100%, 100%) scale(-1, -1)" style={{ transformOrigin: "right bottom" }} />
-                </svg>
-              </div>
-
-              {/* Light watercolor rose in bottom-left corner */}
-              <div style={{
-                position: "absolute",
-                bottom: "35px",
-                left: "35px",
-                fontSize: "72px",
-                filter: "saturate(35%) opacity(0.22)",
-                pointerEvents: "none",
-                zIndex: 4
-              }}>
-                🌹
-              </div>
-            </>
-          )}
-
-          {theme === "royal" && (
-            <>
-              <div style={{ position: "absolute", top: "10px", left: "10px", fontSize: "18px", pointerEvents: "none", zIndex: 5 }}>⚜️</div>
-              <div style={{ position: "absolute", top: "10px", right: "10px", fontSize: "18px", pointerEvents: "none", zIndex: 5 }}>⚜️</div>
-              <div style={{ position: "absolute", bottom: "10px", left: "10px", fontSize: "18px", pointerEvents: "none", zIndex: 5 }}>⚜️</div>
-              <div style={{ position: "absolute", bottom: "10px", right: "10px", fontSize: "18px", pointerEvents: "none", zIndex: 5 }}>⚜️</div>
-              <div style={{ position: "absolute", left: "4px", top: "50%", transform: "translateY(-50%) rotate(90deg)", fontSize: "14px", opacity: 0.7, pointerEvents: "none", zIndex: 5 }}>🌿</div>
-              <div style={{ position: "absolute", right: "4px", top: "50%", transform: "translateY(-50%) rotate(-90deg)", fontSize: "14px", opacity: 0.7, pointerEvents: "none", zIndex: 5 }}>🌿</div>
-              <div style={{ position: "absolute", top: "12px", left: "50%", transform: "translateX(-50%)", color: "#C9A227", zIndex: 10, pointerEvents: "none" }}>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z" fill="currentColor" fillOpacity="0.15" />
-                  <path d="M3 20h18" strokeWidth="2" />
-                  <circle cx="12" cy="3" r="1.5" fill="currentColor" />
-                  <circle cx="2" cy="3" r="1.5" fill="currentColor" />
-                  <circle cx="22" cy="3" r="1.5" fill="currentColor" />
-                </svg>
-              </div>
-            </>
-          )}
-
-          {/* Letter Body Scroll Container */}
+          {/* The beautiful letter paper page */}
           <div
-            className="hide-scrollbar stationery-scroll-container"
+            className={`stationery-sheet ${themeClass} ${hasBackdrop ? "has-backdrop" : ""}`}
             style={{
-              overflowY: "auto",
-              flex: 1,
+              position: "relative",
+              width: "100%",
+              maxWidth: "680px",
+              height: "80vh",
+              maxHeight: "calc(100vh - 160px)",
+              backgroundColor: getGlassyBg(),
+              backgroundImage: hasBackdrop ? "none" : "var(--bg-image)",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+              backdropFilter: hasBackdrop ? "blur(16px)" : "none",
+              WebkitBackdropFilter: hasBackdrop ? "blur(16px)" : "none",
+              border: `1px solid ${getGlassyBorder()}`,
+              borderRadius: "16px",
+              boxShadow: "0 25px 60px -15px rgba(0,0,0,0.6)",
+              color: "var(--stationery-text)",
+              fontFamily: "var(--stationery-font)",
               display: "flex",
               flexDirection: "column",
-              gap: "24px",
-              zIndex: 6,
+              transform: isSheetExpanded ? "scale(1) translateY(0)" : "scale(0.9) translateY(40px)",
+              transition: "transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+              overflow: "hidden",
             }}
           >
-            {/* Header: To */}
-            <div 
-              className="letter-greeting"
-              style={{
-                fontWeight: theme === "blush" ? "600" : theme === "royal" ? "bold" : "normal",
-                fontFamily: theme === "blush" ? "var(--font-playfair)" : theme === "royal" ? "var(--font-cinzel-dec)" : "var(--font-cursive)",
-                borderBottom: theme === "blush" || theme === "royal" ? "none" : "1px solid rgba(0,0,0,0.05)",
-                textAlign: theme === "blush" ? "center" : "left",
-                paddingBottom: "8px",
-                color: theme === "blush" ? "var(--stationery-text)" : "var(--stationery-accent)",
-              }}
-            >
-              {greeting ? `${greeting} ` : ""}{recipient || "My Loved One"},
-            </div>
-
             {theme === "blush" && (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", margin: "-10px 0 0px 0" }}>
-                <div style={{ height: "1px", width: "40px", backgroundColor: "#B76E79", opacity: 0.4 }} />
-                <span style={{ color: "#E8B4B8", fontSize: "12px" }}>❤</span>
-                <div style={{ height: "1px", width: "40px", backgroundColor: "#B76E79", opacity: 0.4 }} />
-              </div>
+              <>
+                {/* Delicate corner floral SVGs */}
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", zIndex: 5 }}>
+                  <svg width="100%" height="100%" style={{ position: "absolute", top: 0, left: 0 }}>
+                    <defs>
+                      <g id="blush-corner-reader">
+                        <path d="M 10,10 C 22,10 26,14 26,26 C 26,20 22,20 22,10" fill="none" stroke="#B76E79" strokeWidth="1" />
+                        <path d="M 10,10 C 10,22 14,26 26,26" fill="none" stroke="#B76E79" strokeWidth="1" />
+                        <path d="M 14,20 Q 18,18 20,14" fill="none" stroke="#B76E79" strokeWidth="0.75" />
+                        <path d="M 20,14 C 24,16 26,20 22,22 C 18,20 18,16 20,14 Z" fill="#E8B4B8" opacity="0.35" />
+                      </g>
+                    </defs>
+                    <use href="#blush-corner-reader" x="0" y="0" />
+                    <use href="#blush-corner-reader" x="0" y="0" transform="translate(100%, 0) scale(-1, 1)" style={{ transformOrigin: "right top" }} />
+                    <use href="#blush-corner-reader" x="0" y="0" transform="translate(0, 100%) scale(1, -1)" style={{ transformOrigin: "left bottom" }} />
+                    <use href="#blush-corner-reader" x="0" y="0" transform="translate(100%, 100%) scale(-1, -1)" style={{ transformOrigin: "right bottom" }} />
+                  </svg>
+                </div>
+
+                {/* Light watercolor rose in bottom-left corner */}
+                <div style={{
+                  position: "absolute",
+                  bottom: "35px",
+                  left: "35px",
+                  fontSize: "72px",
+                  filter: "saturate(35%) opacity(0.22)",
+                  pointerEvents: "none",
+                  zIndex: 4
+                }}>
+                  🌹
+                </div>
+              </>
             )}
 
             {theme === "royal" && (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", margin: "-10px 0 0px 0" }}>
-                <div style={{ height: "1px", flex: 1, backgroundColor: "#C9A227", opacity: 0.5 }} />
-                <span style={{ color: "#7B1E1E", fontSize: "14px" }}>⚜️</span>
-                <div style={{ height: "1px", flex: 1, backgroundColor: "#C9A227", opacity: 0.5 }} />
-              </div>
+              <>
+                <div style={{ position: "absolute", top: "10px", left: "10px", fontSize: "18px", pointerEvents: "none", zIndex: 5 }}>⚜️</div>
+                <div style={{ position: "absolute", top: "10px", right: "10px", fontSize: "18px", pointerEvents: "none", zIndex: 5 }}>⚜️</div>
+                <div style={{ position: "absolute", bottom: "10px", left: "10px", fontSize: "18px", pointerEvents: "none", zIndex: 5 }}>⚜️</div>
+                <div style={{ position: "absolute", bottom: "10px", right: "10px", fontSize: "18px", pointerEvents: "none", zIndex: 5 }}>⚜️</div>
+                <div style={{ position: "absolute", left: "4px", top: "50%", transform: "translateY(-50%) rotate(90deg)", fontSize: "14px", opacity: 0.7, pointerEvents: "none", zIndex: 5 }}>🌿</div>
+                <div style={{ position: "absolute", right: "4px", top: "50%", transform: "translateY(-50%) rotate(-90deg)", fontSize: "14px", opacity: 0.7, pointerEvents: "none", zIndex: 5 }}>🌿</div>
+                <div style={{ position: "absolute", top: "12px", left: "50%", transform: "translateX(-50%)", color: "#C9A227", zIndex: 10, pointerEvents: "none" }}>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z" fill="currentColor" fillOpacity="0.15" />
+                    <path d="M3 20h18" strokeWidth="2" />
+                    <circle cx="12" cy="3" r="1.5" fill="currentColor" />
+                    <circle cx="2" cy="3" r="1.5" fill="currentColor" />
+                    <circle cx="22" cy="3" r="1.5" fill="currentColor" />
+                  </svg>
+                </div>
+              </>
             )}
 
+            {/* Letter Body Scroll Container */}
             <div
-              className="letter-body"
+              className="hide-scrollbar stationery-scroll-container"
               style={{
-                fontSize: "18px",
-                lineHeight: "1.8",
-                whiteSpace: "pre-wrap",
-                color: "var(--stationery-text)",
-                fontFamily: "var(--stationery-font)",
-                letterSpacing: "0.3px",
+                overflowY: "auto",
                 flex: 1,
-                paddingBottom: "24px"
+                display: "flex",
+                flexDirection: "column",
+                gap: "24px",
+                zIndex: 6,
               }}
             >
-              {content}
-            </div>
-
-
-
-            {/* Footer: From */}
-            <div
-              style={{
-                textAlign: "right",
-                marginTop: "auto",
-                paddingTop: "24px",
-                borderTop: "1px solid rgba(0,0,0,0.05)",
-              }}
-            >
-              {farewell && (
-                <div className="letter-farewell" style={{ fontFamily: "var(--font-cursive)", opacity: 0.75, marginBottom: "4px" }}>
-                  {farewell}
-                </div>
-              )}
-              <div
-                className="letter-signature"
+              {/* Header: To */}
+              <div 
+                className="letter-greeting"
                 style={{
-                  fontFamily: theme === "blush" ? "var(--font-allura)" : theme === "royal" ? "var(--font-great-vibes)" : "var(--font-cursive)",
-                  color: theme === "blush" ? "#B76E79" : "var(--stationery-accent)",
-                  marginTop: "6px",
+                  fontWeight: theme === "blush" ? "600" : theme === "royal" ? "bold" : "normal",
+                  fontFamily: theme === "blush" ? "var(--font-playfair)" : theme === "royal" ? "var(--font-cinzel-dec)" : "var(--font-cursive)",
+                  borderBottom: theme === "blush" || theme === "royal" ? "none" : "1px solid rgba(0,0,0,0.05)",
+                  textAlign: theme === "blush" ? "center" : "left",
+                  paddingBottom: "8px",
+                  color: theme === "blush" ? "var(--stationery-text)" : "var(--stationery-accent)",
                 }}
               >
-                {sender || "Yours Truly"}
+                {greeting ? `${greeting} ` : ""}{recipient || "My Loved One"},
               </div>
 
               {theme === "blush" && (
-                <div style={{ 
-                  width: "120px", 
-                  height: "1px", 
-                  background: "linear-gradient(to right, transparent, #B76E79, transparent)", 
-                  marginTop: "4px", 
-                  marginLeft: "auto" 
-                }} />
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", margin: "-10px 0 0px 0" }}>
+                  <div style={{ height: "1px", width: "40px", backgroundColor: "#B76E79", opacity: 0.4 }} />
+                  <span style={{ color: "#E8B4B8", fontSize: "12px" }}>❤</span>
+                  <div style={{ height: "1px", width: "40px", backgroundColor: "#B76E79", opacity: 0.4 }} />
+                </div>
               )}
 
               {theme === "royal" && (
-                <div style={{ display: "flex", justifyContent: "center", marginTop: "24px" }}>
-                  <div style={{
-                    width: "56px",
-                    height: "56px",
-                    borderRadius: "50%",
-                    background: "radial-gradient(circle, #a83232 0%, #7B1E1E 60%, #4d0f0f 100%)",
-                    boxShadow: "0 4px 10px rgba(0,0,0,0.3), inset 0 2px 3px rgba(255,255,255,0.25)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    position: "relative",
-                    border: "1px solid rgba(123,30,30,0.5)"
-                  }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C9A227" strokeWidth="1.5" style={{ opacity: 0.85, filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.3))" }}>
-                      <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z" fill="#C9A227" fillOpacity="0.2" />
-                      <path d="M3 20h18" />
-                    </svg>
-                    <div style={{
-                      position: "absolute",
-                      top: "-3px",
-                      left: "-3px",
-                      right: "-3px",
-                      bottom: "-3px",
-                      borderRadius: "50%",
-                      border: "2px solid #7B1E1E",
-                      opacity: 0.35
-                    }} />
-                  </div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", margin: "-10px 0 0px 0" }}>
+                  <div style={{ height: "1px", flex: 1, backgroundColor: "#C9A227", opacity: 0.5 }} />
+                  <span style={{ color: "#7B1E1E", fontSize: "14px" }}>⚜️</span>
+                  <div style={{ height: "1px", flex: 1, backgroundColor: "#C9A227", opacity: 0.5 }} />
                 </div>
               )}
-              {isOnlyStep && (
-                <div style={{ display: "flex", justifyContent: "center", marginTop: "40px", paddingBottom: "20px" }}>
-                  <button
-                    onClick={() => {
-                      if (typeof window !== "undefined") {
-                        window.close();
-                        setTimeout(() => {
-                          window.location.href = "/dashboard";
-                        }, 150);
-                      }
-                    }}
-                    style={{
-                      padding: "10px 24px",
-                      borderRadius: "8px",
-                      backgroundColor: theme === "blush" ? "#B76E79" : "var(--accent-rose)",
-                      backgroundImage: theme === "blush" ? "none" : "linear-gradient(135deg, #ff4b72, #d9264c)",
-                      border: "none",
-                      color: "#fff",
-                      fontWeight: 600,
-                      fontSize: "13px",
-                      cursor: "pointer",
-                      boxShadow: "0 4px 12px rgba(255, 75, 114, 0.2)",
-                      transition: "all 0.2s"
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-1px)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
-                  >
-                    Close & Exit 💌
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
 
-          {/* Floating Close Action inside the letter sheet */}
-          <button
-            onClick={handleClose}
-            style={{
-              position: "absolute",
-              top: "20px",
-              right: "20px",
-              background: theme === "celestial" ? "rgba(255, 255, 255, 0.15)" : "rgba(0, 0, 0, 0.05)",
-              border: "none",
-              borderRadius: "50%",
-              width: "36px",
-              height: "36px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "var(--stationery-text)",
-              opacity: 0.6,
-              transition: "opacity 0.2s, background-color 0.2s",
-              zIndex: 100,
-            }}
-            title="Fold Back into Envelope"
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}
-          >
-            {/* SVG X icon */}
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
+              <div
+                className="letter-body"
+                style={{
+                  fontSize: "18px",
+                  lineHeight: "1.8",
+                  whiteSpace: "pre-wrap",
+                  color: "var(--stationery-text)",
+                  fontFamily: "var(--stationery-font)",
+                  letterSpacing: "0.3px",
+                  flex: 1,
+                  paddingBottom: "24px"
+                }}
+              >
+                {content}
+              </div>
+
+              {/* Footer: From */}
+              <div
+                style={{
+                  textAlign: "right",
+                  marginTop: "auto",
+                  paddingTop: "24px",
+                  borderTop: "1px solid rgba(0,0,0,0.05)",
+                }}
+              >
+                {farewell && (
+                  <div className="letter-farewell" style={{ fontFamily: "var(--font-cursive)", opacity: 0.75, marginBottom: "4px" }}>
+                    {farewell}
+                  </div>
+                )}
+                <div
+                  className="letter-signature"
+                  style={{
+                    fontFamily: theme === "blush" ? "var(--font-allura)" : theme === "royal" ? "var(--font-great-vibes)" : "var(--font-cursive)",
+                    color: theme === "blush" ? "#B76E79" : "var(--stationery-accent)",
+                    marginTop: "6px",
+                  }}
+                >
+                  {sender || "Yours Truly"}
+                </div>
+
+                {theme === "blush" && (
+                  <div style={{ 
+                    width: "120px", 
+                    height: "1px", 
+                    background: "linear-gradient(to right, transparent, #B76E79, transparent)", 
+                    marginTop: "4px", 
+                    marginLeft: "auto" 
+                  }} />
+                )}
+
+                {theme === "royal" && (
+                  <div style={{ display: "flex", justifyContent: "center", marginTop: "24px" }}>
+                    <div style={{
+                      width: "56px",
+                      height: "56px",
+                      borderRadius: "50%",
+                      background: "radial-gradient(circle, #a83232 0%, #7B1E1E 60%, #4d0f0f 100%)",
+                      boxShadow: "0 4px 10px rgba(0,0,0,0.3), inset 0 2px 3px rgba(255,255,255,0.25)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      position: "relative",
+                      border: "1px solid rgba(123,30,30,0.5)"
+                    }}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C9A227" strokeWidth="1.5" style={{ opacity: 0.85, filter: "drop-shadow(1px 1px 1px rgba(0,0,0,0.3))" }}>
+                        <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z" fill="#C9A227" fillOpacity="0.2" />
+                        <path d="M3 20h18" />
+                      </svg>
+                      <div style={{
+                        position: "absolute",
+                        top: "-3px",
+                        left: "-3px",
+                        right: "-3px",
+                        bottom: "-3px",
+                        borderRadius: "50%",
+                        border: "2px solid #7B1E1E",
+                        opacity: 0.35
+                      }} />
+                    </div>
+                  </div>
+                )}
+                {isOnlyStep && (
+                  <div style={{ display: "flex", justifyContent: "center", marginTop: "40px", paddingBottom: "20px" }}>
+                    <button
+                      onClick={() => {
+                        if (typeof window !== "undefined") {
+                          window.close();
+                          setTimeout(() => {
+                            window.location.href = "/dashboard";
+                          }, 150);
+                        }
+                      }}
+                      style={{
+                        padding: "10px 24px",
+                        borderRadius: "8px",
+                        backgroundColor: theme === "blush" ? "#B76E79" : "var(--accent-rose)",
+                        backgroundImage: theme === "blush" ? "none" : "linear-gradient(135deg, #ff4b72, #d9264c)",
+                        border: "none",
+                        color: "#fff",
+                        fontWeight: 600,
+                        fontSize: "13px",
+                        cursor: "pointer",
+                        boxShadow: "0 4px 12px rgba(255, 75, 114, 0.2)",
+                        transition: "all 0.2s"
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-1px)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
+                    >
+                      Close & Exit 💌
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Floating Close Action inside the letter sheet */}
+            <button
+              onClick={handleClose}
+              style={{
+                position: "absolute",
+                top: "20px",
+                right: "20px",
+                background: theme === "celestial" ? "rgba(255, 255, 255, 0.15)" : "rgba(0, 0, 0, 0.05)",
+                border: "none",
+                borderRadius: "50%",
+                width: "36px",
+                height: "36px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--stationery-text)",
+                opacity: 0.6,
+                transition: "opacity 0.2s, background-color 0.2s",
+                zIndex: 100,
+              }}
+              title="Fold Back into Envelope"
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}
+            >
+              {/* SVG X icon */}
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Expanded Full Screen Polaroid Stack (Fade-in portal style) */}
+      {activeSheet === "polaroids" && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 90,
+            background: "transparent",
+            backdropFilter: "none",
+            WebkitBackdropFilter: "none",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: isSheetExpanded ? 1 : 0,
+            pointerEvents: isSheetExpanded ? "auto" : "none",
+            transition: "opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+            padding: "20px",
+          }}
+        >
+          <div
+            style={{
+              transform: isSheetExpanded ? "scale(1) translateY(0)" : "scale(0.9) translateY(40px)",
+              transition: "transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              width: "100%",
+            }}
+          >
+            <PolaroidsReader
+              polaroids={polaroids || []}
+              theme={theme}
+              onComplete={() => handleClose()}
+            />
+          </div>
+        </div>
+      )}
+
       {isOnlyStep && isSealBroken && !isOpen && !isFullView && !isBreaking && (
         <button
           onClick={() => {

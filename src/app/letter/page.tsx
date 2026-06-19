@@ -191,6 +191,17 @@ function LetterReader() {
     return steps;
   }, [data]);
 
+  // Check if envelope and polaroids are adjacent steps in the wizard
+  const envelopeAdjacency = useMemo(() => {
+    if (!data?.polaroids?.enabled) return { isAdjacent: false, polaroidsFirst: false };
+    const envIdx = activeSteps.indexOf("envelope");
+    const polIdx = activeSteps.indexOf("polaroids");
+    if (envIdx === -1 || polIdx === -1) return { isAdjacent: false, polaroidsFirst: false };
+    const isAdjacent = Math.abs(envIdx - polIdx) === 1;
+    const polaroidsFirst = polIdx < envIdx;
+    return { isAdjacent, polaroidsFirst };
+  }, [activeSteps, data]);
+
   // Wizard transitions and step tracking
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -317,18 +328,30 @@ function LetterReader() {
       const unlockingNewStep = nextVisibleIndex > currentStepIndex;
       const nextStepId = activeSteps[nextVisibleIndex];
 
-      if (nextStepId === "envelope" && unlockingNewStep) {
+      const isEnvPolTransition = envelopeAdjacency.isAdjacent && (
+        (currentStep === "envelope" && nextStepId === "polaroids") ||
+        (currentStep === "polaroids" && nextStepId === "envelope")
+      );
+
+      if (nextStepId === "envelope" && unlockingNewStep && !isEnvPolTransition) {
         setTriggerFlash(true);
       }
 
-      setIsTransitioning(true);
-      setTimeout(() => {
+      if (isEnvPolTransition) {
         if (unlockingNewStep) {
           setCurrentStepIndex(nextVisibleIndex);
         }
         setVisibleStepIndex(nextVisibleIndex);
-        setIsTransitioning(false);
-      }, 700);
+      } else {
+        setIsTransitioning(true);
+        setTimeout(() => {
+          if (unlockingNewStep) {
+            setCurrentStepIndex(nextVisibleIndex);
+          }
+          setVisibleStepIndex(nextVisibleIndex);
+          setIsTransitioning(false);
+        }, 700);
+      }
     }
   };
 
@@ -459,11 +482,21 @@ function LetterReader() {
                   <button
                     onClick={() => {
                       if (isClickable && !isTransitioning) {
-                        setIsTransitioning(true);
-                        setTimeout(() => {
+                        const targetStepId = activeSteps[idx];
+                        const isEnvPolTransition = envelopeAdjacency.isAdjacent && (
+                          (currentStep === "envelope" && targetStepId === "polaroids") ||
+                          (currentStep === "polaroids" && targetStepId === "envelope")
+                        );
+
+                        if (isEnvPolTransition) {
                           setVisibleStepIndex(idx);
-                          setIsTransitioning(false);
-                        }, 700);
+                        } else {
+                          setIsTransitioning(true);
+                          setTimeout(() => {
+                            setVisibleStepIndex(idx);
+                            setIsTransitioning(false);
+                          }, 700);
+                        }
                       }
                     }}
                     style={{
@@ -574,8 +607,33 @@ function LetterReader() {
           />
         )}
 
-        {/* Step: Envelope (Core) */}
-        {currentStep === "envelope" && (
+        {/* Step: Unified Envelope / Polaroid Adjacent Stack */}
+        {envelopeAdjacency.isAdjacent && (currentStep === "envelope" || currentStep === "polaroids") && (
+          <Envelope
+            recipient={data.recipient}
+            sender={data.sender}
+            content={data.content}
+            theme={data.theme}
+            sealSymbol={data.sealSymbol}
+            sealColor={data.sealColor}
+            envelopeStyle={data.envelopeStyle}
+            greeting={data.greeting}
+            farewell={data.farewell}
+            backdrop={data.backdrop}
+            isOnlyStep={activeSteps.length === 1}
+            polaroids={data.polaroids?.items}
+            activeStep={currentStep}
+            onStepComplete={handleNextStep}
+            isAdjacentToPolaroids={true}
+            polaroidsFirst={envelopeAdjacency.polaroidsFirst}
+            onClose={() => {
+              handleNextStep();
+            }}
+          />
+        )}
+
+        {/* Step: Envelope (Core) - Non-adjacent fallback */}
+        {!envelopeAdjacency.isAdjacent && currentStep === "envelope" && (
           <Envelope
             recipient={data.recipient}
             sender={data.sender}
@@ -596,8 +654,8 @@ function LetterReader() {
           />
         )}
 
-        {/* Step: Polaroid Photo Stack */}
-        {currentStep === "polaroids" && data.polaroids && (
+        {/* Step: Polaroid Photo Stack - Non-adjacent fallback */}
+        {!envelopeAdjacency.isAdjacent && currentStep === "polaroids" && data.polaroids && (
           <PolaroidsReader
             polaroids={data.polaroids.items}
             theme={data.theme}
