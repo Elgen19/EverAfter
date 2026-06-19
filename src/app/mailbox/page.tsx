@@ -586,14 +586,15 @@ function MailboxContent() {
         }
         @keyframes active-shake {
           0% { transform: scale(0.9) rotate(var(--rotation, 0deg)); }
-          25% { transform: scale(1.08) rotate(-2deg); }
-          50% { transform: scale(1.08) rotate(2deg); }
-          75% { transform: scale(1.08) rotate(-1deg); }
-          90% { transform: scale(1.08) rotate(0.5deg); }
-          100% { transform: scale(1.08) rotate(0deg); }
+          25% { transform: scale(var(--active-envelope-scale, 1.08)) rotate(-2deg); }
+          50% { transform: scale(var(--active-envelope-scale, 1.08)) rotate(2deg); }
+          75% { transform: scale(var(--active-envelope-scale, 1.08)) rotate(-1deg); }
+          90% { transform: scale(var(--active-envelope-scale, 1.08)) rotate(0.5deg); }
+          100% { transform: scale(var(--active-envelope-scale, 1.08)) rotate(0deg); }
         }
         .active-envelope-shake {
           animation: active-shake 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+          transform: scale(var(--active-envelope-scale, 1.08)) rotate(0deg);
         }
         @keyframes pulse-keyhole {
           0%, 100% { transform: scale(1); opacity: 0.7; }

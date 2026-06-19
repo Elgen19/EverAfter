@@ -34,6 +34,7 @@
   --font-ui: var(--font-inter, 'Inter', sans-serif);
   --font-cursive: var(--font-dancing-script, 'Dancing Script', cursive);
   --page-padding-top: 120px;
+  --active-envelope-scale: 1.08;
 }
 
 * {
@@ -1352,6 +1353,7 @@ button:hover .quiz-option-badge {
   }
   :root {
     --slot-height: 135px !important;
+    --active-envelope-scale: 0.95 !important;
   }
   .studio-preview-mode-header {
     flex-direction: column !important;
@@ -1570,6 +1572,7 @@ button:hover .quiz-option-badge {
   :root {
     --envelope-min-height: 280px;
     --slot-height: 110px !important;
+    --active-envelope-scale: 0.92 !important;
   }
   .recipient-setup-card {
     padding: 24px 16px !important;
