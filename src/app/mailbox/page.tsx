@@ -1014,7 +1014,7 @@ function MailboxContent() {
                       fontWeight: "bold",
                       color: "#fff",
                       boxShadow: "0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2)",
-                      transform: "rotate(6deg)",
+                      transform: "rotate(6deg) translateZ(3px)",
                       zIndex: 7,
                       textTransform: "uppercase",
                       letterSpacing: "0.5px",
