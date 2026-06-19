@@ -260,6 +260,14 @@ export default function PolaroidsReader({
   const originalIndex = polaroids.findIndex(p => p.imageUrl === currentItem?.imageUrl);
   const displayIndex = originalIndex !== -1 ? originalIndex + 1 : 1;
 
+  const truncateCaption = (text: string | undefined) => {
+    if (!text) return "💖";
+    if (text.length > 10) {
+      return text.slice(0, 10) + "...";
+    }
+    return text;
+  };
+
   if (items.length === 0) {
     return (
       <div className="glass" style={{ maxWidth: "480px", padding: "40px", textAlign: "center" }}>
@@ -281,10 +289,27 @@ export default function PolaroidsReader({
         justifyContent: "center", 
         width: "100%", 
         maxWidth: "460px",
-        padding: "0 20px",
+        padding: "60px 20px 20px 20px",
         position: "relative"
       }}
     >
+      {/* Title Statement */}
+      <h2
+        style={{
+          fontFamily: "var(--font-caveat-google), var(--font-cursive), cursive",
+          fontSize: "36px",
+          color: "var(--accent-gold, #e2b857)",
+          marginBottom: "32px",
+          textAlign: "center",
+          fontWeight: "normal",
+          opacity: entryComplete ? 0.95 : 0,
+          transform: entryComplete ? "translateY(0)" : "translateY(-10px)",
+          transition: "opacity 0.8s ease, transform 0.8s ease",
+          textShadow: "0 2px 10px rgba(0,0,0,0.3)"
+        }}
+      >
+        Captured Memories
+      </h2>
       <style>{`
         .polaroid-card-container {
           position: relative;
@@ -542,13 +567,13 @@ export default function PolaroidsReader({
             transformStr = "translateX(220px) rotate(16deg) scale(1.05)";
           } else if (isFlipped) {
             // Flip the top card
-            transformStr = `rotateY(180deg) scale(1.05) translateY(-20px) rotateX(${hoverOffset.rx}deg) rotateY(${-hoverOffset.ry}deg)`;
+            transformStr = `rotateY(180deg) scale(1.05) translateY(15px) rotateX(${hoverOffset.rx}deg) rotateY(${-hoverOffset.ry}deg)`;
           } else if (isTop) {
             // Top card sits flat and slightly scaled up
-            transformStr = `rotateY(0deg) scale(1.05) translateY(-20px) rotateX(${hoverOffset.rx}deg) rotateY(${hoverOffset.ry}deg)`;
+            transformStr = `rotateY(0deg) scale(1.05) translateY(15px) rotateX(${hoverOffset.rx}deg) rotateY(${hoverOffset.ry}deg)`;
           } else {
             // Underneath cards remain staggered
-            transformStr = `rotateY(0deg) rotate(${rotation}) translate(${offsetX}, calc(${offsetY} - 20px))`;
+            transformStr = `rotateY(0deg) rotate(${rotation}) translate(${offsetX}, calc(${offsetY} + 15px))`;
           }
 
           // Unified top card drag, hover-tilt, click handlers
@@ -621,7 +646,7 @@ export default function PolaroidsReader({
                   style={{ backgroundImage: `url(${item.imageUrl})` }}
                 />
                 <div className="polaroid-caption-wrapper">
-                  <span className="polaroid-caption">{item.caption || "💖"}</span>
+                  <span className="polaroid-caption">{truncateCaption(item.caption)}</span>
                 </div>
               </div>
 
@@ -641,27 +666,6 @@ export default function PolaroidsReader({
           );
         })}
       </div>
-
-      {/* Desktop glassmorphism navigation arrows */}
-      {entryComplete && items.length > 1 && (
-        <div className="desktop-nav-arrows">
-          <button
-            onClick={() => triggerSwipe("left")}
-            className="nav-arrow-btn"
-            style={{ marginRight: "10px" }}
-            aria-label="Previous Photo"
-          >
-            ‹
-          </button>
-          <button
-            onClick={() => triggerSwipe("right")}
-            className="nav-arrow-btn"
-            aria-label="Next Photo"
-          >
-            ›
-          </button>
-        </div>
-      )}
 
       {/* Pill-shaped photo counter */}
       <div

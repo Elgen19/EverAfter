@@ -255,78 +255,90 @@ export default function ThankYou({
             From {sender} to {recipient} with love
           </div>
         )}
-        <div className="style-picker-buttons" style={{ display: "flex", gap: "12px", width: "100%", boxSizing: "border-box" }}>
-          <button onClick={() => setShowStylePicker(true)}
-            style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#fff", fontWeight: 600, fontSize: "13px", cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; }}
-          >📥 Download Letter</button>
-          {!isWriteback && (
-            <button onClick={handleWriteBack}
-              style={{ flex: 1, padding: "12px", borderRadius: "8px", background: colors.buttonBg, backgroundImage: theme === "blush" || theme === "royal" ? "none" : "linear-gradient(135deg, #ff4b72, #d9264c)", border: "none", color: "#fff", fontWeight: 600, fontSize: "13px", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", boxShadow: `0 4px 10px ${colors.shadow}` }}
-              onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
-              onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
-            >✍️ Write Back</button>
-          )}
-          {isWriteback && replyToId && (
-            <button onClick={() => { window.location.href = `/letter?id=${replyToId}`; }}
-              style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "linear-gradient(135deg, #e2b857 0%, #b38f36 100%)", border: "none", color: "#fff", fontWeight: 600, fontSize: "13px", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", boxShadow: "0 4px 10px rgba(226, 184, 87, 0.2)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
-              onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
-            >Original Letter ↩</button>
-          )}
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%", boxSizing: "border-box" }}>
+          {/* Primary Journey Steps */}
+          <div style={{ display: "flex", gap: "12px", width: "100%" }}>
+            <button 
+              onClick={() => {
+                const targetLink = mailboxLink || `/mailbox?ref=${parentLetterId}`;
+                window.location.href = targetLink;
+              }}
+              className="glowing-mailbox-btn"
+              style={{ 
+                flex: 1.2, 
+                padding: "12px", 
+                borderRadius: "8px", 
+                background: "linear-gradient(135deg, #ff4b72, #9c6cfa)", 
+                border: "1px solid rgba(255, 255, 255, 0.2)", 
+                color: "#fff", 
+                fontWeight: "bold", 
+                fontSize: "14px", 
+                cursor: "pointer", 
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px",
+                boxShadow: "0 0 15px rgba(255, 75, 114, 0.4), 0 0 25px rgba(156, 108, 250, 0.3)",
+                transition: "all 0.3s ease"
+              }}
+            >
+              📬 Mailbox
+            </button>
+            {!isWriteback && (
+              <button onClick={handleWriteBack}
+                style={{ flex: 1, padding: "12px", borderRadius: "8px", background: colors.buttonBg, backgroundImage: theme === "blush" || theme === "royal" ? "none" : "linear-gradient(135deg, #ff4b72, #d9264c)", border: "none", color: "#fff", fontWeight: 600, fontSize: "14px", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", boxShadow: `0 4px 10px ${colors.shadow}` }}
+                onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
+                onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
+              >
+                ✍️ Write Back
+              </button>
+            )}
+            {isWriteback && replyToId && (
+              <button onClick={() => { window.location.href = `/letter?id=${replyToId}`; }}
+                style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "linear-gradient(135deg, #e2b857 0%, #b38f36 100%)", border: "none", color: "#fff", fontWeight: 600, fontSize: "14px", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", boxShadow: "0 4px 10px rgba(226, 184, 87, 0.2)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
+                onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
+              >
+                Original Letter ↩
+              </button>
+            )}
+          </div>
+
+          {/* Secondary Utilities */}
+          <div style={{ display: "flex", gap: "12px", width: "100%" }}>
+            <button onClick={() => setShowStylePicker(true)}
+              style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#fff", fontWeight: 600, fontSize: "13px", cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; }}
+            >
+              📥 Download Letter
+            </button>
+            <button 
+              onClick={handleReplay}
+              style={{ 
+                flex: 1, 
+                padding: "12px", 
+                borderRadius: "8px", 
+                background: "rgba(255, 255, 255, 0.05)", 
+                border: "1px solid rgba(255, 255, 255, 0.15)", 
+                color: "#fff", 
+                fontWeight: "bold", 
+                fontSize: "13px", 
+                cursor: "pointer", 
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px",
+                transition: "all 0.2s"
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.12)"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.3)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.05)"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.15)"; }}
+            >
+              🔁 Replay
+            </button>
+          </div>
         </div>
-        <div style={{ display: "flex", gap: "12px", width: "100%", marginTop: "6px" }}>
-          <button 
-            onClick={() => {
-              const targetLink = mailboxLink || `/mailbox?ref=${parentLetterId}`;
-              window.location.href = targetLink;
-            }}
-            className="glowing-mailbox-btn"
-            style={{ 
-              flex: 1.2, 
-              padding: "12px", 
-              borderRadius: "8px", 
-              background: "linear-gradient(135deg, #ff4b72, #9c6cfa)", 
-              border: "1px solid rgba(255, 255, 255, 0.2)", 
-              color: "#fff", 
-              fontWeight: "bold", 
-              fontSize: "14px", 
-              cursor: "pointer", 
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "6px",
-              boxShadow: "0 0 15px rgba(255, 75, 114, 0.4), 0 0 25px rgba(156, 108, 250, 0.3)",
-              transition: "all 0.3s ease"
-            }}
-          >
-            📬 Mailbox
-          </button>
-          <button 
-            onClick={handleReplay}
-            style={{ 
-              flex: 1, 
-              padding: "12px", 
-              borderRadius: "8px", 
-              background: "rgba(255, 255, 255, 0.05)", 
-              border: "1px solid rgba(255, 255, 255, 0.15)", 
-              color: "#fff", 
-              fontWeight: "bold", 
-              fontSize: "14px", 
-              cursor: "pointer", 
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "6px",
-              transition: "all 0.2s"
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.12)"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.3)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.05)"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.15)"; }}
-          >
-            🔁 Replay
-          </button>
-        </div>
+
       </div>
       {PdfHiddenTarget}
     </>
