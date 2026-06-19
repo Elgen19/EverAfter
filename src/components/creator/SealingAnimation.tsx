@@ -291,6 +291,21 @@ export default function SealingAnimation({
             transform: scale(0.42) !important;
           }
         }
+        @media (max-width: 768px) {
+          .sealing-animation-container:not(.sealing-animation-container-inline) .sealing-animation-inner-scaler {
+            transform: scale(0.75) !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .sealing-animation-container:not(.sealing-animation-container-inline) .sealing-animation-inner-scaler {
+            transform: scale(0.58) !important;
+          }
+        }
+        @media (max-width: 360px) {
+          .sealing-animation-container:not(.sealing-animation-container-inline) .sealing-animation-inner-scaler {
+            transform: scale(0.48) !important;
+          }
+        }
         @keyframes fadeInStudioOverlay {
           from { opacity: 0; }
           to { opacity: 1; }
@@ -371,6 +386,19 @@ export default function SealingAnimation({
         }
       `}</style>
 
+      {/* 3D Scaling Animation Wrapper for Mobile */}
+      <div 
+        className="sealing-animation-inner-scaler"
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transformStyle: "preserve-3d",
+          pointerEvents: "none"
+        }}
+      >
       {/* 3D Folding Letter Paper (Only visible before tucking is complete) */}
       {stage <= 4 && (
         <div 
@@ -773,6 +801,7 @@ export default function SealingAnimation({
             </span>
           ))}
         </div>
+      </div>
       </div>
 
       {/* Animation Status Title */}

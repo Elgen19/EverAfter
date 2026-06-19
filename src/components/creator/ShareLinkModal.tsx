@@ -98,7 +98,7 @@ export default function ShareLinkModal({
         {editId ? (
           <>
             <div>
-              <h2 style={{ fontSize: "32px", fontWeight: "normal", fontFamily: "var(--font-allura), var(--font-sacramento), var(--font-great-vibes), cursive", color: "var(--accent-rose)", marginBottom: "8px" }}>
+              <h2 style={{ fontSize: "32px", fontWeight: "normal", fontFamily: "var(--font-cursive)", color: "var(--accent-rose)", marginBottom: "8px" }}>
                 Changes Saved!
               </h2>
               <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.5" }}>
@@ -114,7 +114,7 @@ export default function ShareLinkModal({
         ) : (
           <>
             <div>
-              <h2 style={{ fontSize: "32px", fontWeight: "normal", fontFamily: "var(--font-allura), var(--font-sacramento), var(--font-great-vibes), cursive", color: "var(--accent-rose)", marginBottom: "8px" }}>
+              <h2 style={{ fontSize: "32px", fontWeight: "normal", fontFamily: "var(--font-cursive)", color: "var(--accent-rose)", marginBottom: "8px" }}>
                 {isWriteback ? "Write Back Sealed!" : "Letter Sealed!"}
               </h2>
               <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.5" }}>

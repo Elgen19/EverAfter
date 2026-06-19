@@ -79,6 +79,10 @@ export const metadata: Metadata = {
   },
   verification: {
     google: "xiBtB2kEv1o3uoA372KzftN7hx5CkqkSv1VpKWLZhx4",
+  },
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
   }
 };
 
