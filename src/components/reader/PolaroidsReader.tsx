@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Caveat } from "next/font/google";
 import { PolaroidItem } from "@/utils/encoding";
+
+const caveat = Caveat({
+  subsets: ["latin"],
+  variable: "--font-caveat-google",
+  display: "swap",
+});
 
 interface PolaroidsReaderProps {
   polaroids: PolaroidItem[];
@@ -31,6 +38,9 @@ export default function PolaroidsReader({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
 
+  // Hover tilt states
+  const [hoverOffset, setHoverOffset] = useState({ rx: 0, ry: 0 });
+
   const [entryComplete, setEntryComplete] = useState(false);
 
   // Initialize and filter out any empty records
@@ -53,6 +63,20 @@ export default function PolaroidsReader({
       setAnimateIn(false);
     }
   }, [isStandalone, isSheetExpanded]);
+
+  const handleMouseMoveHover = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isDragging || slidingIndex !== null || swipeDirection !== null) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    const rx = (y / (rect.height / 2)) * -6; // max 6deg vertical rotation
+    const ry = (x / (rect.width / 2)) * 6;   // max 6deg horizontal rotation
+    setHoverOffset({ rx, ry });
+  };
+
+  const handleMouseLeaveHover = () => {
+    setHoverOffset({ rx: 0, ry: 0 });
+  };
 
   // Trigger staggered swoosh sounds and settle the entry Complete state
   useEffect(() => {
@@ -232,6 +256,10 @@ export default function PolaroidsReader({
     }
   };
 
+  const currentItem = items[items.length - 1];
+  const originalIndex = polaroids.findIndex(p => p.imageUrl === currentItem?.imageUrl);
+  const displayIndex = originalIndex !== -1 ? originalIndex + 1 : 1;
+
   if (items.length === 0) {
     return (
       <div className="glass" style={{ maxWidth: "480px", padding: "40px", textAlign: "center" }}>
@@ -245,6 +273,7 @@ export default function PolaroidsReader({
 
   return (
     <div 
+      className={`${caveat.variable}`}
       style={{ 
         display: "flex", 
         flexDirection: "column", 
@@ -252,16 +281,17 @@ export default function PolaroidsReader({
         justifyContent: "center", 
         width: "100%", 
         maxWidth: "460px",
-        padding: "0 20px"
+        padding: "0 20px",
+        position: "relative"
       }}
     >
       <style>{`
         .polaroid-card-container {
-          perspective: 1000px;
           position: relative;
           width: 270px;
-          height: 320px;
+          height: 330px;
           margin-bottom: 24px;
+          perspective: 1000px;
         }
         .polaroid-card {
           position: absolute;
@@ -269,19 +299,38 @@ export default function PolaroidsReader({
           height: 100%;
           border-radius: 8px;
           background-color: #ffffff;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-          padding: 12px 12px 36px 12px;
+          background-image: radial-gradient(rgba(0,0,0,0.03) 1px, transparent 0px), radial-gradient(rgba(0,0,0,0.02) 1px, transparent 0px);
+          background-size: 4px 4px;
+          background-position: 0 0, 2px 2px;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.12), inset 0 0 10px rgba(0,0,0,0.03);
+          padding: 12px 12px 42px 12px;
           transform-style: preserve-3d;
           transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, z-index 0.3s ease;
           cursor: pointer;
           touch-action: none;
         }
         .polaroid-card:hover {
-          box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+          box-shadow: 0 16px 36px rgba(0,0,0,0.28);
+        }
+        .polaroid-tape {
+          position: absolute;
+          top: -16px;
+          left: 50%;
+          transform: translateX(-50%) rotate(-2deg);
+          width: 80px;
+          height: 24px;
+          background-color: rgba(226, 184, 87, 0.28);
+          backdrop-filter: blur(1.5px);
+          -webkit-backdrop-filter: blur(1.5px);
+          box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+          border-left: 1.5px dashed rgba(255,255,255,0.4);
+          border-right: 1.5px dashed rgba(255,255,255,0.4);
+          z-index: 50;
+          pointer-events: none;
         }
         .polaroid-front {
           position: absolute;
-          inset: 12px 12px 36px 12px;
+          inset: 12px 12px 42px 12px;
           backface-visibility: hidden;
           -webkit-backface-visibility: hidden;
           display: flex;
@@ -290,7 +339,7 @@ export default function PolaroidsReader({
         }
         .polaroid-image {
           width: 100%;
-          height: 272px;
+          height: 236px;
           border-radius: 4px;
           background-color: #efefef;
           background-size: cover;
@@ -300,14 +349,14 @@ export default function PolaroidsReader({
         .polaroid-caption-wrapper {
           flex: 1;
           display: flex;
-          alignItems: center;
-          justifyContent: center;
+          align-items: center;
+          justify-content: center;
           text-align: center;
         }
         .polaroid-caption {
-          font-family: var(--font-cursive);
-          font-size: 14px;
-          color: #4f4f4f;
+          font-family: var(--font-caveat-google), var(--font-cursive), cursive;
+          font-size: 22px;
+          color: #2b2b2b;
           max-width: 100%;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -333,6 +382,26 @@ export default function PolaroidsReader({
           box-shadow: inset 0 0 15px rgba(0,0,0,0.06);
           border: 1px solid rgba(0,0,0,0.03);
         }
+        .polaroid-postmark {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          width: 52px;
+          height: 52px;
+          border: 1px dashed rgba(255, 75, 114, 0.3);
+          border-radius: 50%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          font-size: 6px;
+          color: rgba(255, 75, 114, 0.45);
+          font-weight: bold;
+          transform: rotate(18deg);
+          pointer-events: none;
+          letter-spacing: 0.5px;
+          line-height: 1.2;
+        }
         .polaroid-back-header {
           font-size: 11px;
           text-transform: uppercase;
@@ -345,10 +414,10 @@ export default function PolaroidsReader({
           width: 80%;
         }
         .polaroid-back-text {
-          font-family: var(--font-cursive);
-          font-size: 15px;
-          color: #3b3b3b;
-          line-height: 1.6;
+          font-family: var(--font-caveat-google), var(--font-cursive), cursive;
+          font-size: 22px;
+          color: #2b2b2b;
+          line-height: 1.4;
           margin: 0;
           padding: 0 10px;
           word-break: break-word;
@@ -364,6 +433,44 @@ export default function PolaroidsReader({
           text-align: center;
           animation: pulse-hint 2s ease-in-out infinite;
         }
+        .desktop-nav-arrows {
+          position: absolute;
+          top: 50%;
+          left: -80px;
+          right: -80px;
+          transform: translateY(-50%);
+          display: flex;
+          justify-content: space-between;
+          pointer-events: none;
+          z-index: 100;
+          width: 430px;
+        }
+        .nav-arrow-btn {
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          background-color: rgba(255, 255, 255, 0.08);
+          color: #fff;
+          font-size: 24px;
+          font-weight: 300;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          pointer-events: auto;
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+          padding-bottom: 4px;
+        }
+        .nav-arrow-btn:hover {
+          background-color: rgba(255, 75, 114, 0.15);
+          border-color: rgba(255, 75, 114, 0.45);
+          transform: scale(1.1);
+          box-shadow: 0 6px 20px rgba(255, 75, 114, 0.25);
+        }
         @keyframes pulse-hint {
           0%, 100% { opacity: 0.5; }
           50% { opacity: 1; }
@@ -371,22 +478,25 @@ export default function PolaroidsReader({
         @media (max-width: 480px) {
           .polaroid-card-container {
             width: 220px;
-            height: 270px;
+            height: 280px;
           }
           .polaroid-card {
-            padding: 10px 10px 30px 10px;
+            padding: 10px 10px 36px 10px;
           }
           .polaroid-front {
-            inset: 10px 10px 30px 10px;
+            inset: 10px 10px 36px 10px;
           }
           .polaroid-image {
-            height: 230px;
+            height: 194px;
           }
           .polaroid-caption {
-            font-size: 12px;
+            font-size: 18px;
           }
           .polaroid-back-text {
-            font-size: 13px;
+            font-size: 18px;
+          }
+          .desktop-nav-arrows {
+            display: none;
           }
         }
       `}</style>
@@ -432,24 +542,52 @@ export default function PolaroidsReader({
             transformStr = "translateX(220px) rotate(16deg) scale(1.05)";
           } else if (isFlipped) {
             // Flip the top card
-            transformStr = "rotateY(180deg) scale(1.05) translateY(-20px)";
+            transformStr = `rotateY(180deg) scale(1.05) translateY(-20px) rotateX(${hoverOffset.rx}deg) rotateY(${-hoverOffset.ry}deg)`;
           } else if (isTop) {
             // Top card sits flat and slightly scaled up
-            transformStr = "rotateY(0deg) scale(1.05) translateY(-20px)";
+            transformStr = `rotateY(0deg) scale(1.05) translateY(-20px) rotateX(${hoverOffset.rx}deg) rotateY(${hoverOffset.ry}deg)`;
           } else {
             // Underneath cards remain staggered
             transformStr = `rotateY(0deg) rotate(${rotation}) translate(${offsetX}, calc(${offsetY} - 20px))`;
           }
 
-          // Top card drag handlers, background cards click handlers
-          const cardHandlers = (isTop && items.length > 1) ? {
-            onMouseDown: handleMouseDown,
-            onMouseMove: handleMouseMove,
-            onMouseUp: handleMouseUp,
-            onMouseLeave: handleMouseLeave,
-            onTouchStart: handleTouchStart,
-            onTouchMove: handleTouchMove,
-            onTouchEnd: handleTouchEnd,
+          // Unified top card drag, hover-tilt, click handlers
+          const cardHandlers = isTop ? {
+            onMouseDown: (e: React.MouseEvent<HTMLDivElement>) => {
+              if (items.length > 1) handleMouseDown(e);
+            },
+            onMouseMove: (e: React.MouseEvent<HTMLDivElement>) => {
+              if (items.length > 1) handleMouseMove(e);
+              handleMouseMoveHover(e);
+            },
+            onMouseUp: () => {
+              if (items.length > 1) handleMouseUp();
+              else {
+                setFlippedIndex(flippedIndex === topIndex ? null : topIndex);
+                playSwooshSound();
+              }
+              handleMouseLeaveHover();
+            },
+            onMouseLeave: () => {
+              if (items.length > 1) handleMouseLeave();
+              handleMouseLeaveHover();
+            },
+            onTouchStart: (e: React.TouchEvent) => {
+              if (items.length > 1) handleTouchStart(e);
+            },
+            onTouchMove: (e: React.TouchEvent) => {
+              if (items.length > 1) handleTouchMove(e);
+            },
+            onTouchEnd: () => {
+              if (items.length > 1) handleTouchEnd();
+              else {
+                setFlippedIndex(flippedIndex === topIndex ? null : topIndex);
+                playSwooshSound();
+              }
+            },
+            onClick: (e: React.MouseEvent) => {
+              e.stopPropagation();
+            }
           } : {
             onClick: () => handleCardClick(index),
           };
@@ -472,17 +610,28 @@ export default function PolaroidsReader({
               {...cardHandlers}
               title={isTop ? (items.length > 1 ? "Drag left/right to browse, click to flip" : "Click to flip") : "Click to browse"}
             >
+              {isSheetExpanded && (
+                <div className="polaroid-tape" />
+              )}
+
               {/* Front side - Only photo, no words */}
               <div className="polaroid-front">
                 <div 
                   className="polaroid-image"
                   style={{ backgroundImage: `url(${item.imageUrl})` }}
                 />
-                <div className="polaroid-caption-wrapper" />
+                <div className="polaroid-caption-wrapper">
+                  <span className="polaroid-caption">{item.caption || "💖"}</span>
+                </div>
               </div>
 
               {/* Back side - Words / Caption */}
               <div className="polaroid-back">
+                <div className="polaroid-postmark">
+                  <span>EVERAFTER</span>
+                  <span style={{ fontSize: "10px", margin: "2px 0" }}>❤️</span>
+                  <span>POSTAL</span>
+                </div>
                 <div className="polaroid-back-header">Memory Details</div>
                 <p className="polaroid-back-text">
                   {item.caption || "Sealed inside EverAfter... 💖"}
@@ -491,6 +640,53 @@ export default function PolaroidsReader({
             </div>
           );
         })}
+      </div>
+
+      {/* Desktop glassmorphism navigation arrows */}
+      {entryComplete && items.length > 1 && (
+        <div className="desktop-nav-arrows">
+          <button
+            onClick={() => triggerSwipe("left")}
+            className="nav-arrow-btn"
+            style={{ marginRight: "10px" }}
+            aria-label="Previous Photo"
+          >
+            ‹
+          </button>
+          <button
+            onClick={() => triggerSwipe("right")}
+            className="nav-arrow-btn"
+            aria-label="Next Photo"
+          >
+            ›
+          </button>
+        </div>
+      )}
+
+      {/* Pill-shaped photo counter */}
+      <div
+        style={{
+          marginTop: "16px",
+          padding: "6px 14px",
+          borderRadius: "20px",
+          background: "rgba(255, 255, 255, 0.08)",
+          border: "1px solid rgba(255, 255, 255, 0.15)",
+          backdropFilter: "blur(8px)",
+          color: "#fff",
+          fontSize: "11px",
+          fontWeight: 600,
+          opacity: entryComplete ? 0.9 : 0,
+          transform: entryComplete ? "translateY(0)" : "translateY(10px)",
+          transition: "opacity 0.6s ease, transform 0.6s ease",
+          pointerEvents: entryComplete ? "auto" : "none",
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+          boxShadow: "0 4px 10px rgba(0,0,0,0.15)"
+        }}
+      >
+        <span>📸</span>
+        <span>Photo {displayIndex} of {polaroids.length}</span>
       </div>
 
       {/* Interaction Hint */}
