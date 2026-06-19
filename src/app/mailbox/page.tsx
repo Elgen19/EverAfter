@@ -984,38 +984,6 @@ function MailboxContent() {
                       }}>
                         "{letter.title}"
                       </div>
-
-                      {/* Stamp-like Postmark Badge */}
-                      <div style={{
-                        position: "absolute",
-                        top: "28px",
-                        right: "36px",
-                        background: letter.isWriteback
-                          ? (letter.read ? "rgba(156, 108, 250, 0.95)" : "rgba(123, 44, 191, 0.95)")
-                          : letter.read 
-                            ? "rgba(40, 167, 69, 0.9)" 
-                            : "rgba(217, 38, 76, 0.95)",
-                        border: isCurrentRef ? "2px solid var(--accent-gold)" : "1px solid rgba(255,255,255,0.15)",
-                        borderRadius: "4px",
-                        padding: "4px 8px",
-                        fontSize: "9px",
-                        fontFamily: "var(--font-ui)",
-                        fontWeight: "bold",
-                        color: "#fff",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2)",
-                        transform: "rotate(6deg)",
-                        zIndex: 7,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.5px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "4px"
-                      }}>
-                        {letter.isWriteback 
-                          ? (letter.read ? "Read 📖" : "Sent Reply ✉")
-                          : (letter.read ? "Opened 📖" : "Unread ✉")
-                        }
-                      </div>
                     </div>
                     
                     {/* Layer 3: Rotating/Folding Flap */}
@@ -1027,6 +995,38 @@ function MailboxContent() {
                         undefined
                       }
                     />
+
+                    {/* Stamp-like Postmark Badge */}
+                    <div style={{
+                      position: "absolute",
+                      top: "28px",
+                      right: "36px",
+                      background: letter.isWriteback
+                        ? (letter.read ? "rgba(156, 108, 250, 0.95)" : "rgba(123, 44, 191, 0.95)")
+                        : letter.read 
+                          ? "rgba(40, 167, 69, 0.9)" 
+                          : "rgba(217, 38, 76, 0.95)",
+                      border: isCurrentRef ? "2px solid var(--accent-gold)" : "1px solid rgba(255,255,255,0.15)",
+                      borderRadius: "4px",
+                      padding: "4px 8px",
+                      fontSize: "9px",
+                      fontFamily: "var(--font-ui)",
+                      fontWeight: "bold",
+                      color: "#fff",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2)",
+                      transform: "rotate(6deg)",
+                      zIndex: 7,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px"
+                    }}>
+                      {letter.isWriteback 
+                        ? (letter.read ? "Read 📖" : "Sent Reply ✉")
+                        : (letter.read ? "Opened 📖" : "Unread ✉")
+                      }
+                    </div>
 
                     {/* Wax Seal */}
                     <div 
