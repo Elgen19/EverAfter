@@ -791,9 +791,6 @@ export default function Envelope({
         >
           <div
             style={{
-              transform: isSheetExpanded ? "scale(1) translateY(-20px)" : "scale(0.05) translateY(180px)",
-              opacity: isSheetExpanded ? 1 : 0,
-              transition: "transform 1.1s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.8s ease",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
@@ -804,6 +801,7 @@ export default function Envelope({
               polaroids={polaroids || []}
               theme={theme}
               onComplete={() => handleClose()}
+              isSheetExpanded={isSheetExpanded}
             />
           </div>
         </div>

@@ -7,12 +7,14 @@ interface PolaroidsReaderProps {
   polaroids: PolaroidItem[];
   theme: string;
   onComplete: () => void;
+  isSheetExpanded?: boolean;
 }
 
 export default function PolaroidsReader({
   polaroids,
   theme,
   onComplete,
+  isSheetExpanded = false,
 }: PolaroidsReaderProps) {
   const [items, setItems] = useState<PolaroidItem[]>([]);
   const [topIndex, setTopIndex] = useState<number>(0);
@@ -26,20 +28,41 @@ export default function PolaroidsReader({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
 
+  const [entryComplete, setEntryComplete] = useState(false);
+
   // Initialize and filter out any empty records
   useEffect(() => {
     if (polaroids && Array.isArray(polaroids)) {
       const filtered = polaroids.filter(p => p.imageUrl && p.imageUrl.trim() !== "");
       setItems(filtered);
       setTopIndex(filtered.length - 1);
-
-      // Play a swoosh sound when the photos spring out!
-      const timer = setTimeout(() => {
-        playSwooshSound();
-      }, 150); // Delay slightly to align with the spring action starting
-      return () => clearTimeout(timer);
     }
   }, [polaroids]);
+
+  // Trigger staggered swoosh sounds and settle the entry Complete state
+  useEffect(() => {
+    if (isSheetExpanded && items.length > 0) {
+      // Play staggered swoosh sound for each card shooting out of the envelope
+      const soundTimers = items.map((_, index) => {
+        return setTimeout(() => {
+          playSwooshSound();
+        }, index * 150 + 150); // aligned with card entry delay + 150ms buffer
+      });
+
+      // Mark entry complete once all cards are fully settled
+      const settleDelay = Math.max(0, items.length - 1) * 150 + 1100;
+      const settleTimer = setTimeout(() => {
+        setEntryComplete(true);
+      }, settleDelay);
+
+      return () => {
+        soundTimers.forEach((t) => clearTimeout(t));
+        clearTimeout(settleTimer);
+      };
+    } else {
+      setEntryComplete(false);
+    }
+  }, [isSheetExpanded, items.length]);
 
   // Synthesize paper swoosh/rustle sound using Web Audio API
   const playSwooshSound = () => {
@@ -376,7 +399,10 @@ export default function PolaroidsReader({
 
           // Build dynamic transformations
           let transformStr = "";
-          if (isTop && (isDragging || swipeDirection !== null)) {
+          if (!isSheetExpanded) {
+            // Tucked inside the envelope pocket
+            transformStr = "scale(0.05) translateY(240px) rotate(0deg)";
+          } else if (isTop && (isDragging || swipeDirection !== null)) {
             // Top card is active, dragging, or swiping
             const rotateVal = dragOffset.x * 0.05;
             const flipRotation = isFlipped ? "rotateY(180deg)" : "rotateY(0deg)";
@@ -386,13 +412,13 @@ export default function PolaroidsReader({
             transformStr = "translateX(220px) rotate(16deg) scale(1.05)";
           } else if (isFlipped) {
             // Flip the top card
-            transformStr = "rotateY(180deg) scale(1.05) translate(0, 0)";
+            transformStr = "rotateY(180deg) scale(1.05) translateY(-20px)";
           } else if (isTop) {
             // Top card sits flat and slightly scaled up
-            transformStr = "rotateY(0deg) scale(1.05) translate(0, 0)";
+            transformStr = "rotateY(0deg) scale(1.05) translateY(-20px)";
           } else {
             // Underneath cards remain staggered
-            transformStr = `rotateY(0deg) rotate(${rotation}) translate(${offsetX}, ${offsetY})`;
+            transformStr = `rotateY(0deg) rotate(${rotation}) translate(${offsetX}, calc(${offsetY} - 20px))`;
           }
 
           // Top card drag handlers, background cards click handlers
@@ -415,8 +441,12 @@ export default function PolaroidsReader({
               style={{
                 transform: transformStr,
                 zIndex: isSliding ? 40 : isTop ? 30 : 10 + index,
-                pointerEvents: slidingIndex !== null && !isDragging ? "none" : "auto",
-                transition: isTop && isDragging ? "none" : undefined
+                pointerEvents: (slidingIndex !== null && !isDragging) || !isSheetExpanded ? "none" : "auto",
+                transition: isTop && isDragging ? "none" : (
+                  isSheetExpanded
+                    ? `transform 1.1s cubic-bezier(0.34, 1.56, 0.64, 1) ${index * 150}ms, box-shadow 0.3s ease, z-index 0.3s ease`
+                    : `transform 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0ms, box-shadow 0.3s ease, z-index 0.3s ease`
+                )
               }}
               {...cardHandlers}
               title={isTop ? (items.length > 1 ? "Drag left/right to browse, click to flip" : "Click to flip") : "Click to browse"}
@@ -443,7 +473,15 @@ export default function PolaroidsReader({
       </div>
 
       {/* Interaction Hint */}
-      <span className="polaroid-hint">
+      <span 
+        className="polaroid-hint"
+        style={{
+          opacity: entryComplete ? 0.7 : 0,
+          transform: entryComplete ? "translateY(0)" : "translateY(10px)",
+          transition: "opacity 0.6s ease, transform 0.6s ease",
+          pointerEvents: entryComplete ? "auto" : "none"
+        }}
+      >
         {items.length > 1
           ? interacted
             ? "✨ Swipe left/right to browse, click top card to flip"
@@ -466,7 +504,10 @@ export default function PolaroidsReader({
           fontWeight: "bold",
           cursor: "pointer",
           boxShadow: "0 4px 15px rgba(255, 75, 114, 0.3)",
-          transition: "all 0.3s ease"
+          opacity: entryComplete ? 1 : 0,
+          transform: entryComplete ? "translateY(0)" : "translateY(10px)",
+          transition: "opacity 0.6s ease, transform 0.6s ease, background-color 0.2s, box-shadow 0.2s",
+          pointerEvents: entryComplete ? "auto" : "none"
         }}
       >
         Continue Journey ➔
