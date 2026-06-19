@@ -1279,33 +1279,36 @@ button:hover .quiz-option-badge {
     width: 100% !important;
   }
   .thankyou-card {
-    padding: 16px 16px !important;
-    gap: 12px !important;
+    width: 95% !important;
+    max-width: 440px !important;
+    padding: 24px 20px !important;
+    gap: 20px !important;
+    margin: auto !important;
   }
   .thankyou-card button {
-    padding: 8px 12px !important;
-    font-size: 12px !important;
+    padding: 11px 16px !important;
+    font-size: 13px !important;
   }
   .thankyou-emoji {
-    font-size: 32px !important;
-    margin-bottom: 0 !important;
+    font-size: 48px !important;
+    margin-bottom: 4px !important;
   }
   .thankyou-title {
-    font-size: 20px !important;
+    font-size: 26px !important;
   }
   .thankyou-desc {
-    font-size: 12px !important;
-    margin: 4px 0 0 0 !important;
+    font-size: 13.5px !important;
+    margin: 8px 0 0 0 !important;
     padding: 0 !important;
   }
   .thankyou-signature {
-    font-size: 13px !important;
-    padding: 4px 10px !important;
+    font-size: 16px !important;
+    padding: 6px 12px !important;
     margin-top: 0 !important;
   }
   .thankyou-preview-sheet {
     padding: 16px 12px !important;
-    max-height: 160px !important;
+    max-height: 260px !important;
   }
   .style-picker-options-grid {
     display: grid !important;
@@ -1314,23 +1317,23 @@ button:hover .quiz-option-badge {
     width: 100% !important;
   }
   .style-picker-opt-card {
-    padding: 6px 8px !important;
-    gap: 8px !important;
+    padding: 8px 10px !important;
+    gap: 10px !important;
   }
   .style-picker-opt-icon {
-    width: 24px !important;
-    height: 24px !important;
-    font-size: 11px !important;
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 12px !important;
   }
   .style-picker-opt-name {
-    font-size: 12px !important;
+    font-size: 13px !important;
   }
   .style-picker-opt-desc {
     display: none !important;
   }
   .style-picker-preview {
-    height: 110px !important;
-    padding: 8px 12px !important;
+    height: 150px !important;
+    padding: 12px 16px !important;
   }
   .studio-preview-mode-header {
     flex-direction: column !important;
@@ -1445,10 +1448,14 @@ button:hover .quiz-option-badge {
     padding: 10px 5px !important;
   }
   .letter-reader-container {
-    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
     min-height: 100vh !important;
-    overflow-y: auto !important;
-    padding-top: 100px !important;
+    height: auto !important;
+    padding: 16px 12px !important;
+    box-sizing: border-box !important;
   }
   .stationery-sheet {
     padding: 12px 8px !important;
