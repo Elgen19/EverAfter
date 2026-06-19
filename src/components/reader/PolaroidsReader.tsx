@@ -8,6 +8,7 @@ interface PolaroidsReaderProps {
   theme: string;
   onComplete: () => void;
   isSheetExpanded?: boolean;
+  isStandalone?: boolean;
 }
 
 export default function PolaroidsReader({
@@ -15,7 +16,9 @@ export default function PolaroidsReader({
   theme,
   onComplete,
   isSheetExpanded = false,
+  isStandalone = false,
 }: PolaroidsReaderProps) {
+  const [animateIn, setAnimateIn] = useState(false);
   const [items, setItems] = useState<PolaroidItem[]>([]);
   const [topIndex, setTopIndex] = useState<number>(0);
   const [slidingIndex, setSlidingIndex] = useState<number | null>(null);
@@ -38,6 +41,18 @@ export default function PolaroidsReader({
       setTopIndex(filtered.length - 1);
     }
   }, [polaroids]);
+
+  // Trigger entry animation flag in standalone mode
+  useEffect(() => {
+    if (isStandalone && isSheetExpanded) {
+      const timer = setTimeout(() => {
+        setAnimateIn(true);
+      }, 50);
+      return () => clearTimeout(timer);
+    } else {
+      setAnimateIn(false);
+    }
+  }, [isStandalone, isSheetExpanded]);
 
   // Trigger staggered swoosh sounds and settle the entry Complete state
   useEffect(() => {
@@ -399,9 +414,14 @@ export default function PolaroidsReader({
 
           // Build dynamic transformations
           let transformStr = "";
-          if (!isSheetExpanded) {
-            // Tucked inside the envelope pocket
-            transformStr = "scale(0.05) translateY(240px) rotate(0deg)";
+          if (!isSheetExpanded || (isStandalone && !animateIn)) {
+            if (isStandalone) {
+              const rotDeg = index * 6 - ((items.length - 1) * 3);
+              transformStr = `translateY(360px) scale(0.6) rotate(${rotDeg}deg)`;
+            } else {
+              // Tucked inside the envelope pocket
+              transformStr = "scale(0.05) translateY(240px) rotate(0deg)";
+            }
           } else if (isTop && (isDragging || swipeDirection !== null)) {
             // Top card is active, dragging, or swiping
             const rotateVal = dragOffset.x * 0.05;
@@ -440,12 +460,13 @@ export default function PolaroidsReader({
               className="polaroid-card"
               style={{
                 transform: transformStr,
+                opacity: (!isSheetExpanded || (isStandalone && !animateIn)) ? 0 : 1,
                 zIndex: isSliding ? 40 : isTop ? 30 : 10 + index,
                 pointerEvents: (slidingIndex !== null && !isDragging) || !isSheetExpanded ? "none" : "auto",
                 transition: isTop && isDragging ? "none" : (
                   isSheetExpanded
-                    ? `transform 1.1s cubic-bezier(0.34, 1.56, 0.64, 1) ${index * 150}ms, box-shadow 0.3s ease, z-index 0.3s ease`
-                    : `transform 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0ms, box-shadow 0.3s ease, z-index 0.3s ease`
+                    ? `transform 1.1s cubic-bezier(0.34, 1.56, 0.64, 1) ${index * 150}ms, opacity 0.8s ease ${index * 150}ms, box-shadow 0.3s ease, z-index 0.3s ease`
+                    : `transform 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0ms, opacity 0.6s ease 0ms, box-shadow 0.3s ease, z-index 0.3s ease`
                 )
               }}
               {...cardHandlers}

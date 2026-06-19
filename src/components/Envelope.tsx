@@ -66,6 +66,13 @@ interface CustomCSSProperties extends React.CSSProperties {
   "--rot"?: string;
 }
 
+const previewCardsConfig = [
+  { left: "-180px", right: "auto", top: "-220px", rotate: -12, delay: 0.5 },
+  { left: "auto", right: "-180px", top: "-220px", rotate: 12, delay: 0.65 },
+  { left: "-200px", right: "auto", top: "50px", rotate: -22, delay: 0.8 },
+  { left: "auto", right: "-200px", top: "50px", rotate: 22, delay: 0.95 },
+];
+
 interface EnvelopeProps {
   recipient: string;
   sender: string;
@@ -123,6 +130,38 @@ export default function Envelope({
   // Map legacy state to expanded sub-view
   const isFullView = (isSheetExpanded && activeSheet === "letter") || forceHideEnvelope;
 
+  // Synthesize paper swoosh sound using Web Audio API
+  const playSwooshSound = () => {
+    if (typeof window === "undefined") return;
+    try {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      const duration = 0.22;
+      const bufferSize = ctx.sampleRate * duration;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      const filter = ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(1400, ctx.currentTime);
+      filter.frequency.exponentialRampToValueAtTime(350, ctx.currentTime + duration);
+      const gainNode = ctx.createGain();
+      gainNode.gain.setValueAtTime(0.04, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      noise.connect(filter);
+      filter.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      noise.start();
+    } catch (err) {
+      console.log("Web Audio API blocked or not supported:", err);
+    }
+  };
+
   // Trigger sheet expanded view when envelope opens or activeStep changes
   useEffect(() => {
     let timer1: NodeJS.Timeout;
@@ -143,6 +182,12 @@ export default function Envelope({
             timer2 = setTimeout(() => {
               setForceHideEnvelope(true);
             }, 1100);
+          } else if (activeStep === "envelope" && !isAdjacentToPolaroids && polaroids && polaroids.length > 0) {
+            // Play staggered swoosh sounds for preview cards when they spring out
+            polaroids.slice(0, 4).forEach((_, idx) => {
+              const delay = (previewCardsConfig[idx]?.delay || 0.5) * 1000;
+              setTimeout(() => playSwooshSound(), delay);
+            });
           }
         }, 3000); // Flap rotation (1.2s) + letter slide out (1.8s)
       } else {
@@ -159,6 +204,12 @@ export default function Envelope({
           setActiveSheet("letter");
           timer1 = setTimeout(() => {
             setIsSheetExpanded(true);
+            if (!isAdjacentToPolaroids && polaroids && polaroids.length > 0) {
+              polaroids.slice(0, 4).forEach((_, idx) => {
+                const delay = (previewCardsConfig[idx]?.delay || 0.5) * 1000;
+                setTimeout(() => playSwooshSound(), delay);
+              });
+            }
           }, 450); // Pause for dramatic anticipation before slide-up
         }
       }
@@ -173,7 +224,7 @@ export default function Envelope({
       clearTimeout(timer1);
       clearTimeout(timer2);
     };
-  }, [isOpen, activeStep, isFirstOpen]);
+  }, [isOpen, activeStep, isFirstOpen, isAdjacentToPolaroids, polaroids]);
 
   const handleOpen = () => {
     if (isOpen || isBreaking) return;
@@ -488,6 +539,68 @@ export default function Envelope({
             padding: "20px",
           }}
         >
+          {/* Scattered preview polaroid cards when not adjacent */}
+          {!isAdjacentToPolaroids && polaroids && polaroids.length > 0 && (
+            <div 
+              style={{ 
+                position: "absolute", 
+                width: "100%", 
+                maxWidth: "680px", 
+                height: "0px", 
+                overflow: "visible", 
+                pointerEvents: "none", 
+                zIndex: 1 
+              }}
+            >
+              {polaroids.slice(0, 4).map((p, idx) => {
+                const config = previewCardsConfig[idx];
+                if (!config) return null;
+
+                return (
+                  <div
+                    key={p.imageUrl || idx}
+                    style={{
+                      position: "absolute",
+                      left: config.left,
+                      right: config.right,
+                      top: config.top,
+                      width: "150px",
+                      height: "180px",
+                      padding: "8px 8px 24px 8px",
+                      backgroundColor: "#fff",
+                      borderRadius: "6px",
+                      boxShadow: "0 10px 25px rgba(0,0,0,0.25)",
+                      transform: isSheetExpanded 
+                        ? `rotate(${config.rotate}deg) scale(1) translateY(0)` 
+                        : `rotate(0deg) scale(0.05) translateY(420px)`,
+                      opacity: isSheetExpanded ? 0.9 : 0,
+                      transition: isSheetExpanded
+                        ? `transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) ${config.delay}s, opacity 0.8s ease ${config.delay}s`
+                        : "transform 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0s, opacity 0.6s ease 0s",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "120px",
+                        borderRadius: "3px",
+                        backgroundImage: `url(${p.imageUrl})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        border: "1px solid rgba(0,0,0,0.05)",
+                      }}
+                    />
+                    <div style={{ fontFamily: "var(--font-cursive)", fontSize: "11px", color: "#4f4f4f", textAlign: "center", marginTop: "8px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {p.caption || "❤️"}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+
           {/* The beautiful letter paper page */}
           <div
             className={`stationery-sheet ${themeClass} ${hasBackdrop ? "has-backdrop" : ""}`}

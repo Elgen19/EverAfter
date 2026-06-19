@@ -607,8 +607,8 @@ function LetterReader() {
           />
         )}
 
-        {/* Step: Unified Envelope / Polaroid Stack */}
-        {(currentStep === "envelope" || (currentStep === "polaroids" && data.polaroids?.enabled)) && (
+        {/* Step: Unified Envelope / Polaroid Stack (Adjacent) or Envelope (Non-Adjacent) */}
+        {(currentStep === "envelope" || (currentStep === "polaroids" && envelopeAdjacency.isAdjacent)) && (
           <Envelope
             recipient={data.recipient}
             sender={data.sender}
@@ -630,6 +630,27 @@ function LetterReader() {
               handleNextStep();
             }}
           />
+        )}
+
+        {/* Step: Polaroid Photo Stack - Non-adjacent fallback */}
+        {!envelopeAdjacency.isAdjacent && currentStep === "polaroids" && data.polaroids && (
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              animation: "float-up-intro 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
+            }}
+          >
+            <PolaroidsReader
+              polaroids={data.polaroids.items}
+              theme={data.theme}
+              onComplete={handleNextStep}
+              isSheetExpanded={true} // Always expanded in standalone mode
+              isStandalone={true}
+            />
+          </div>
         )}
 
         {/* Step: Audio Message */}
