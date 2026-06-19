@@ -35,8 +35,8 @@ export default function SendLaterCreator({
       </div>
 
       {sendLaterEnabled && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px", paddingLeft: "20px", borderLeft: "2px solid var(--accent-rose)" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+        <div className="creator-accordion-content">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "12px" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <label style={{ fontSize: "11px", color: "var(--text-muted)" }}>Release Date</label>
               <input 

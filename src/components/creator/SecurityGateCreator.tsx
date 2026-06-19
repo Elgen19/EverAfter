@@ -61,10 +61,10 @@ export default function SecurityGateCreator({
       </div>
 
       {securityEnabled && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px", paddingLeft: "20px", borderLeft: "2px solid var(--accent-rose)" }}>
+        <div className="creator-accordion-content">
           
           {/* Mode selector */}
-          <div style={{ display: "flex", gap: "8px" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
             {[
               { id: "boolean", name: "Secret Yes/No Gate" },
               { id: "date", name: "Anniversary Date Lock" },
@@ -126,7 +126,7 @@ export default function SecurityGateCreator({
             <label style={{ fontSize: "11px", color: "var(--text-muted)" }}>Correct Answer</label>
             
             {securityType === "boolean" && (
-              <div style={{ display: "flex", gap: "8px" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {["yes", "no"].map((val) => (
                   <button
                     key={val}

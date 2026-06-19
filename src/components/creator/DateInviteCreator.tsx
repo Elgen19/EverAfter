@@ -178,7 +178,7 @@ export default function DateInviteCreator({
       </div>
 
       {dateInviteEnabled && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px", paddingLeft: "20px", borderLeft: "2px solid var(--accent-rose)" }}>
+        <div className="creator-accordion-content">
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <label style={{ fontSize: "11px", color: "var(--text-muted)" }}>Invitation Prompt</label>
             <input 
@@ -358,6 +358,7 @@ export default function DateInviteCreator({
           <div style={{ marginTop: "8px", borderTop: "1px solid rgba(255, 255, 255, 0.06)", paddingTop: "12px" }}>
             <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "bold" }}>INVITATION PREVIEW</span>
             <div 
+             className="ticket-preview-card"
              style={{ 
                 display: "flex", 
                 flexDirection: "column", 
@@ -365,7 +366,6 @@ export default function DateInviteCreator({
                 backgroundColor: "rgba(25, 12, 22, 0.95)",
                 border: "1.5px solid var(--accent-gold)", // gold border
                 borderRadius: "16px",
-                padding: "16px 20px 20px 20px",
                 boxShadow: "0 15px 40px rgba(0,0,0,0.5)",
                 width: "100%",
                 height: "100%",
@@ -397,7 +397,7 @@ export default function DateInviteCreator({
 
                 {/* Ticket Body / Proposal Details */}
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px", textAlign: "left", fontSize: "13px", padding: "0 6px" }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: "6px" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: "8px", borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: "6px" }}>
                     <div>
                       <span style={{ color: "var(--text-muted)", fontSize: "10px", textTransform: "uppercase", display: "block" }}>Host</span>
                       <strong style={{ color: "#fff" }}>{sender || "Sender Name"}</strong>

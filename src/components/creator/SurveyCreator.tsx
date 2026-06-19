@@ -46,7 +46,7 @@ export default function SurveyCreator({
       </div>
 
       {surveyEnabled && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px", paddingLeft: "20px", borderLeft: "2px solid var(--accent-rose)" }}>
+        <div className="creator-accordion-content">
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <label style={{ fontSize: "11px", color: "var(--text-muted)" }}>Survey Question</label>
             <input 
@@ -127,7 +127,7 @@ export default function SurveyCreator({
               </div>
               
               {(surveyType === "emoji" || surveyType === "both") && (
-                <div style={{ display: "flex", justifyContent: "space-around", margin: "10px 0" }}>
+                <div style={{ display: "flex", justifyContent: "space-around", flexWrap: "wrap", gap: "6px", margin: "10px 0" }}>
                   {[
                     { char: "🥹", label: "Touched" },
                     { char: "🥰", label: "Loved" },

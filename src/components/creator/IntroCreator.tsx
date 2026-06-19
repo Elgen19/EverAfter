@@ -76,7 +76,7 @@ export default function IntroCreator({
       </div>
 
       {introEnabled && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px", paddingLeft: "20px", borderLeft: "2px solid var(--accent-rose)" }}>
+        <div className="creator-accordion-content">
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px" }}>
               <span style={{ color: "var(--text-muted)" }}>Statement Text (Required)</span>

@@ -24,7 +24,13 @@ import AudioMessageCreator from "@/components/creator/AudioMessageCreator";
 
 function CreateLetterStudio() {
   const form = useLetterForm();
-  const [activeTab, setActiveTab] = useState<"write" | "design" | "addons" | "preview">("write");
+  const [activeTab, setActiveTab] = useState<"write" | "design" | "addons" | "flow" | "preview">("write");
+  const [pendingSelection, setPendingSelection] = useState<{
+    type: "theme" | "backdrop" | "envelope";
+    id: string;
+    name: string;
+    desc: string;
+  } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,6 +136,7 @@ function CreateLetterStudio() {
             { id: "write", label: "Write", icon: "✍️" },
             { id: "design", label: "Design", icon: "🎨" },
             { id: "addons", label: "Add-ons", icon: "🌟" },
+            { id: "flow", label: "Flow", icon: "🔄" },
             { id: "preview", label: "Preview", icon: "👁️" }
           ] as const).map((tab) => (
             <button
@@ -184,7 +191,7 @@ function CreateLetterStudio() {
               )}
 
               {/* Greeting & Farewell */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
                 {(["Letter Greeting Prefix", "Letter Farewell / Sign-off"] as const).map((label, i) => (
                   <div key={label} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                     <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>{label}</label>
@@ -225,22 +232,24 @@ function CreateLetterStudio() {
               </div>
 
               {/* Mobile next button */}
-              <div className="mobile-only" style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px" }}>
+              <div className="mobile-only" style={{ marginTop: "16px" }}>
                 <button
                   type="button"
                   onClick={() => setActiveTab("design")}
                   style={{
-                    padding: "12px 20px",
-                    borderRadius: "10px",
+                    width: "100%",
+                    padding: "16px",
+                    borderRadius: "12px",
                     backgroundColor: "var(--accent-purple)",
                     backgroundImage: "linear-gradient(135deg, #9c6cfa, #7c4bf5)",
                     border: "none",
                     color: "#fff",
                     fontWeight: 600,
-                    fontSize: "14px",
+                    fontSize: "15px",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
+                    justifyContent: "center",
                     gap: "8px"
                   }}
                 >
@@ -260,7 +269,14 @@ function CreateLetterStudio() {
                 <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>Stationery Style</label>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                   {THEMES.map((t) => (
-                    <button key={t.id} type="button" onClick={() => form.setTheme(t.id)}
+                    <button key={t.id} type="button" 
+                      onClick={() => {
+                        if (window.innerWidth < 992) {
+                          setPendingSelection({ type: "theme", id: t.id, name: t.name, desc: t.desc });
+                        } else {
+                          form.setTheme(t.id);
+                        }
+                      }}
                       style={{ padding: "12px", borderRadius: "10px", border: form.theme === t.id ? "1.5px solid var(--accent-rose)" : "1px solid var(--border-card)", background: form.theme === t.id ? "rgba(255, 75, 114, 0.08)" : "transparent", color: form.theme === t.id ? "#fff" : "var(--text-muted)", textAlign: "left", cursor: "pointer" }}
                     >
                       <div style={{ fontSize: "13px", fontWeight: "bold", marginBottom: "2px" }}>{t.name}</div>
@@ -275,7 +291,14 @@ function CreateLetterStudio() {
                 <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>Letter Page Backdrop</label>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                   {BACKDROPS.map((b) => (
-                    <button key={b.id} type="button" onClick={() => form.setBackdrop(b.id)}
+                    <button key={b.id} type="button" 
+                      onClick={() => {
+                        if (window.innerWidth < 992) {
+                          setPendingSelection({ type: "backdrop", id: b.id, name: b.name, desc: b.desc });
+                        } else {
+                          form.setBackdrop(b.id);
+                        }
+                      }}
                       style={{ padding: "12px", borderRadius: "10px", border: form.backdrop === b.id ? "1.5px solid var(--accent-rose)" : "1px solid var(--border-card)", background: form.backdrop === b.id ? "rgba(255, 75, 114, 0.08)" : "transparent", color: form.backdrop === b.id ? "#fff" : "var(--text-muted)", textAlign: "left", cursor: "pointer", transition: "all 0.2s ease" }}
                     >
                       <div style={{ fontSize: "13px", fontWeight: "bold", marginBottom: "2px" }}>{b.name}</div>
@@ -294,7 +317,14 @@ function CreateLetterStudio() {
                     { id: "vintage-white", label: "✉ Vintage Lace", desc: "Elegant white linen envelope with a ruby red wax seal" },
                     { id: "celestial-blue", label: "✨ Starry Night", desc: "Midnight blue constellation envelope with a blush heart wax seal" },
                   ].map((env) => (
-                    <button key={env.id} type="button" onClick={() => form.setEnvelopeStyle(env.id)}
+                    <button key={env.id} type="button" 
+                      onClick={() => {
+                        if (window.innerWidth < 992) {
+                          setPendingSelection({ type: "envelope", id: env.id, name: env.label, desc: env.desc });
+                        } else {
+                          form.setEnvelopeStyle(env.id);
+                        }
+                      }}
                       style={{ padding: "12px", borderRadius: "10px", border: form.envelopeStyle === env.id ? "1.5px solid var(--accent-rose)" : "1px solid var(--border-card)", background: form.envelopeStyle === env.id ? "rgba(255, 75, 114, 0.08)" : "transparent", color: form.envelopeStyle === env.id ? "#fff" : "var(--text-muted)", textAlign: "left", cursor: "pointer", transition: "all 0.2s ease" }}
                     >
                       <div style={{ fontSize: "13px", fontWeight: "bold", marginBottom: "2px" }}>{env.label}</div>
@@ -304,22 +334,22 @@ function CreateLetterStudio() {
                 </div>
               </div>
 
-              <MusicCreator music={form.music} setMusic={form.setMusic} musicType={form.musicType} setMusicType={form.setMusicType} musicUrl={form.musicUrl} setMusicUrl={form.setMusicUrl} />
-
               {/* Mobile Design tab step buttons */}
-              <div className="mobile-only" style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "8px" }}>
+              <div className="mobile-only" style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "16px" }}>
                 <button
                   type="button"
                   onClick={() => setActiveTab("write")}
                   style={{
-                    padding: "12px 20px",
-                    borderRadius: "10px",
+                    flex: 1,
+                    padding: "16px",
+                    borderRadius: "12px",
                     backgroundColor: "rgba(255,255,255,0.05)",
                     border: "1px solid var(--border-card)",
                     color: "var(--text-muted)",
                     fontWeight: 500,
                     fontSize: "14px",
-                    cursor: "pointer"
+                    cursor: "pointer",
+                    textAlign: "center"
                   }}
                 >
                   Back to Write
@@ -328,8 +358,9 @@ function CreateLetterStudio() {
                   type="button"
                   onClick={() => setActiveTab("addons")}
                   style={{
-                    padding: "12px 20px",
-                    borderRadius: "10px",
+                    flex: 1,
+                    padding: "16px",
+                    borderRadius: "12px",
                     backgroundColor: "var(--accent-purple)",
                     backgroundImage: "linear-gradient(135deg, #9c6cfa, #7c4bf5)",
                     border: "none",
@@ -339,7 +370,8 @@ function CreateLetterStudio() {
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
-                    gap: "8px"
+                    justifyContent: "center",
+                    gap: "6px"
                   }}
                 >
                   Continue to Add-ons 🌟
@@ -350,10 +382,12 @@ function CreateLetterStudio() {
             {/* --- Section 3: Add-ons & Customizations --- */}
             <div className={`studio-section ${activeTab === "addons" ? "" : "hidden-mobile"}`} style={{ borderTop: "none", paddingTop: "0" }}>
               <h2 className="mobile-only" style={{ fontSize: "18px", fontWeight: 600, borderBottom: "1px solid var(--border-card)", paddingBottom: "12px", color: "var(--text-main)" }}>
-                Add-ons & Sequence Flow
+                Add-ons & Background Music
               </h2>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <MusicCreator music={form.music} setMusic={form.setMusic} musicType={form.musicType} setMusicType={form.setMusicType} musicUrl={form.musicUrl} setMusicUrl={form.setMusicUrl} />
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px", borderTop: "1px solid var(--border-card)", paddingTop: "20px" }}>
                 <h3 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-main)", marginBottom: "4px" }}>Optional Customizations</h3>
                 <SecurityGateCreator securityEnabled={form.securityEnabled} setSecurityEnabled={form.setSecurityEnabled} securityType={form.securityType} setSecurityType={form.setSecurityType} securityQuestion={form.securityQuestion} setSecurityQuestion={form.setSecurityQuestion} securityAnswer={form.securityAnswer} setSecurityAnswer={form.setSecurityAnswer} securityChoices={form.securityChoices} setSecurityChoices={form.setSecurityChoices} securityConfirmed={form.securityConfirmed} setSecurityConfirmed={form.setSecurityConfirmed} showAlert={form.showRomanticAlert} />
                 <IntroCreator introEnabled={form.introEnabled} setIntroEnabled={form.setIntroEnabled} introText={form.introText} setIntroText={form.setIntroText} introAnimation={form.introAnimation} setIntroAnimation={form.setIntroAnimation} introConfirmed={form.introConfirmed} setIntroConfirmed={form.setIntroConfirmed} showAlert={form.showRomanticAlert} />
@@ -370,13 +404,64 @@ function CreateLetterStudio() {
                 <SendLaterCreator sendLaterEnabled={form.sendLaterEnabled} setSendLaterEnabled={form.setSendLaterEnabled} sendLaterDate={form.sendLaterDate} setSendLaterDate={form.setSendLaterDate} sendLaterTime={form.sendLaterTime} setSendLaterTime={form.setSendLaterTime} />
               </div>
 
+              {/* Mobile Add-ons tab step buttons */}
+              <div className="mobile-only" style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "16px" }}>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("design")}
+                  style={{
+                    flex: 1,
+                    padding: "16px",
+                    borderRadius: "12px",
+                    backgroundColor: "rgba(255,255,255,0.05)",
+                    border: "1px solid var(--border-card)",
+                    color: "var(--text-muted)",
+                    fontWeight: 500,
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    textAlign: "center"
+                  }}
+                >
+                  Back to Design
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("flow")}
+                  style={{
+                    flex: 1,
+                    padding: "16px",
+                    borderRadius: "12px",
+                    backgroundColor: "var(--accent-purple)",
+                    backgroundImage: "linear-gradient(135deg, #9c6cfa, #7c4bf5)",
+                    border: "none",
+                    color: "#fff",
+                    fontWeight: 600,
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px"
+                  }}
+                >
+                  Go to Flow 🔄
+                </button>
+              </div>
+            </div>
+
+            {/* --- Section 4: Flow --- */}
+            <div className={`studio-section ${activeTab === "flow" ? "" : "hidden-mobile"}`} style={{ borderTop: "none", paddingTop: "0" }}>
+              <h2 className="mobile-only" style={{ fontSize: "18px", fontWeight: 600, borderBottom: "1px solid var(--border-card)", paddingBottom: "12px", color: "var(--text-main)" }}>
+                Timeline Flow Sequence
+              </h2>
+              
+              <div style={{ background: "rgba(156, 108, 250, 0.05)", border: "1px solid rgba(156, 108, 250, 0.2)", borderRadius: "10px", padding: "14px", fontSize: "12px", color: "var(--text-muted)", lineHeight: "1.5" }}>
+                ℹ️ <strong>Love Letter Journey Flow:</strong> Rearrange the timeline flow of the recipient's love letter journey. Drag or use the arrows (▲/▼) below to reorder steps. Your recipient will experience your customized gates, date invitations, and audio messages in this exact sequence before opening the envelope!
+              </div>
+
               {/* Step orderer */}
-              <div style={{ borderTop: "1px solid var(--border-card)", paddingTop: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
-                <div>
-                  <h3 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-main)" }}>Customization Sequence Flow</h3>
-                  <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "4px" }}>Rearrange the timeline flow of the recipient's love letter journey.</p>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "8px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "20px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   {form.activeSteps.map((stepId, idx) => (
                     <div key={stepId} className="customizer-step-item">
                       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -399,30 +484,33 @@ function CreateLetterStudio() {
                 </div>
               </div>
 
-              {/* Mobile Add-ons tab step buttons */}
-              <div className="mobile-only" style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "8px" }}>
+              {/* Mobile Flow tab step buttons */}
+              <div className="mobile-only" style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "16px" }}>
                 <button
                   type="button"
-                  onClick={() => setActiveTab("design")}
+                  onClick={() => setActiveTab("addons")}
                   style={{
-                    padding: "12px 20px",
-                    borderRadius: "10px",
+                    flex: 1,
+                    padding: "16px",
+                    borderRadius: "12px",
                     backgroundColor: "rgba(255,255,255,0.05)",
                     border: "1px solid var(--border-card)",
                     color: "var(--text-muted)",
                     fontWeight: 500,
                     fontSize: "14px",
-                    cursor: "pointer"
+                    cursor: "pointer",
+                    textAlign: "center"
                   }}
                 >
-                  Back to Design
+                  Back to Add-ons
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab("preview")}
                   style={{
-                    padding: "12px 20px",
-                    borderRadius: "10px",
+                    flex: 1,
+                    padding: "16px",
+                    borderRadius: "12px",
                     backgroundColor: "var(--accent-purple)",
                     backgroundImage: "linear-gradient(135deg, #9c6cfa, #7c4bf5)",
                     border: "none",
@@ -432,7 +520,8 @@ function CreateLetterStudio() {
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
-                    gap: "8px"
+                    justifyContent: "center",
+                    gap: "6px"
                   }}
                 >
                   Preview Letter 👁️
@@ -442,7 +531,7 @@ function CreateLetterStudio() {
 
             {/* Submit */}
             <button type="submit"
-              className={activeTab === "addons" ? "" : "hidden-mobile"}
+              className={activeTab === "flow" ? "" : "hidden-mobile"}
               style={{ width: "100%", padding: "16px", borderRadius: "12px", backgroundColor: "var(--accent-rose)", backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)", border: "none", color: "#fff", fontWeight: 600, fontSize: "15px", cursor: "pointer", boxShadow: "0 8px 20px rgba(255, 75, 114, 0.25)", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", transition: "all 0.2s", marginTop: "12px" }}
               onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
               onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
@@ -589,6 +678,47 @@ function CreateLetterStudio() {
             form.setShowModal(true);
           }}
         />
+      )}
+
+      {/* Design card selection confirmation modal */}
+      {pendingSelection && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          zIndex: 1100,
+          backgroundColor: "rgba(11, 7, 17, 0.85)",
+          backdropFilter: "blur(12px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "20px"
+        }}>
+          <div className="glass animate-reveal" style={{ width: "100%", maxWidth: "400px", padding: "30px", display: "flex", flexDirection: "column", gap: "20px" }}>
+            <h3 style={{ fontSize: "18px", fontWeight: "bold", color: "#fff", borderBottom: "1px solid var(--border-card)", paddingBottom: "10px" }}>
+              Confirm {pendingSelection.type === "theme" ? "Stationery Style" : pendingSelection.type === "backdrop" ? "Backdrop" : "Envelope Style"}
+            </h3>
+            <div>
+              <strong style={{ color: "var(--accent-rose)", fontSize: "16px" }}>{pendingSelection.name}</strong>
+              <p style={{ color: "var(--text-muted)", fontSize: "13px", marginTop: "8px", lineHeight: "1.5" }}>{pendingSelection.desc}</p>
+            </div>
+            <div style={{ display: "flex", gap: "12px", marginTop: "10px" }}>
+              <button type="button" onClick={() => setPendingSelection(null)} style={{ flex: 1, padding: "12px", borderRadius: "10px", backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid var(--border-card)", color: "var(--text-muted)", fontWeight: 500, cursor: "pointer" }}>
+                Cancel
+              </button>
+              <button type="button" 
+                onClick={() => {
+                  if (pendingSelection.type === "theme") form.setTheme(pendingSelection.id);
+                  else if (pendingSelection.type === "backdrop") form.setBackdrop(pendingSelection.id);
+                  else if (pendingSelection.type === "envelope") form.setEnvelopeStyle(pendingSelection.id);
+                  setPendingSelection(null);
+                }} 
+                style={{ flex: 1, padding: "12px", borderRadius: "10px", backgroundColor: "var(--accent-rose)", border: "none", color: "#fff", fontWeight: 600, cursor: "pointer" }}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

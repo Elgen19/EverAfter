@@ -191,7 +191,7 @@ export default function AudioMessageCreator({
       </div>
 
       {audioEnabled && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px", paddingLeft: "20px", borderLeft: "2px solid var(--accent-rose)" }}>
+        <div className="creator-accordion-content">
           
           {/* Custom Message Title Input */}
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
