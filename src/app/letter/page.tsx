@@ -607,8 +607,8 @@ function LetterReader() {
           />
         )}
 
-        {/* Step: Unified Envelope / Polaroid Adjacent Stack */}
-        {envelopeAdjacency.isAdjacent && (currentStep === "envelope" || currentStep === "polaroids") && (
+        {/* Step: Unified Envelope / Polaroid Stack */}
+        {(currentStep === "envelope" || (currentStep === "polaroids" && data.polaroids?.enabled)) && (
           <Envelope
             recipient={data.recipient}
             sender={data.sender}
@@ -624,42 +624,11 @@ function LetterReader() {
             polaroids={data.polaroids?.items}
             activeStep={currentStep}
             onStepComplete={handleNextStep}
-            isAdjacentToPolaroids={true}
+            isAdjacentToPolaroids={envelopeAdjacency.isAdjacent}
             polaroidsFirst={envelopeAdjacency.polaroidsFirst}
             onClose={() => {
               handleNextStep();
             }}
-          />
-        )}
-
-        {/* Step: Envelope (Core) - Non-adjacent fallback */}
-        {!envelopeAdjacency.isAdjacent && currentStep === "envelope" && (
-          <Envelope
-            recipient={data.recipient}
-            sender={data.sender}
-            content={data.content}
-            theme={data.theme}
-            sealSymbol={data.sealSymbol}
-            sealColor={data.sealColor}
-            envelopeStyle={data.envelopeStyle}
-            greeting={data.greeting}
-            farewell={data.farewell}
-            backdrop={data.backdrop}
-            isOnlyStep={activeSteps.length === 1}
-            onClose={() => {
-              setTimeout(() => {
-                handleNextStep();
-              }, 2400); // 800ms close + 1500ms retract + buffer
-            }}
-          />
-        )}
-
-        {/* Step: Polaroid Photo Stack - Non-adjacent fallback */}
-        {!envelopeAdjacency.isAdjacent && currentStep === "polaroids" && data.polaroids && (
-          <PolaroidsReader
-            polaroids={data.polaroids.items}
-            theme={data.theme}
-            onComplete={handleNextStep}
           />
         )}
 
