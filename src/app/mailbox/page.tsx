@@ -444,30 +444,13 @@ function MailboxContent() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            pointerEvents: "all"
+            pointerEvents: "all",
+            background: "rgba(16, 9, 7, 0.95)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            animation: "fade-in-btn 0.5s ease-out forwards",
           }}
         >
-          {/* Radial Blinding Flare */}
-          <div 
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: "radial-gradient(circle at 50% 50%, rgba(255, 253, 240, 0.95) 0%, rgba(255, 240, 210, 0.8) 35%, rgba(226, 184, 87, 0.4) 65%, #100907 100%)",
-              animation: "dramatic-bright-flash 1.6s cubic-bezier(0.25, 1, 0.3, 1) forwards",
-            }}
-          />
-          {/* Supernova Expansion Shockwave Ring */}
-          <div 
-            style={{
-              position: "absolute",
-              width: "100px",
-              height: "100px",
-              borderRadius: "50%",
-              border: "8px solid rgba(255, 255, 255, 0.95)",
-              boxShadow: "0 0 80px 40px rgba(226, 184, 87, 0.85), inset 0 0 40px 20px rgba(255, 255, 255, 0.95)",
-              animation: "supernova-shockwave 1.6s cubic-bezier(0.1, 0.8, 0.1, 1) forwards",
-            }}
-          />
           
           {/* Preparing your letter screen inside transition overlay */}
           <div style={{

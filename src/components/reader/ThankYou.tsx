@@ -22,6 +22,7 @@ interface ThankYouProps {
   showMailboxButton?: boolean;
   mailboxLink?: string;
   replyToId?: string;
+  onReplay?: () => void;
 }
 
 const STYLE_OPTIONS = [
@@ -54,9 +55,18 @@ export default function ThankYou({
   recipientUid = "",
   showMailboxButton = false,
   mailboxLink = "",
-  replyToId = ""
+  replyToId = "",
+  onReplay
 }: ThankYouProps) {
   const [showStylePicker, setShowStylePicker] = useState(false);
+
+  const handleReplay = () => {
+    if (onReplay) {
+      onReplay();
+    } else if (typeof window !== "undefined") {
+      window.location.reload();
+    }
+  };
   const [selectedStyle, setSelectedStyle] = useState<LetterStyle>("vintage");
   const [showFullPreview, setShowFullPreview] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
@@ -266,33 +276,57 @@ export default function ThankYou({
             >Original Letter ↩</button>
           )}
         </div>
-        <button 
-          onClick={() => {
-            const targetLink = mailboxLink || `/mailbox?ref=${parentLetterId}`;
-            window.location.href = targetLink;
-          }}
-          className="glowing-mailbox-btn"
-          style={{ 
-            width: "100%", 
-            padding: "12px", 
-            borderRadius: "8px", 
-            background: "linear-gradient(135deg, #ff4b72, #9c6cfa)", 
-            border: "1px solid rgba(255, 255, 255, 0.2)", 
-            color: "#fff", 
-            fontWeight: "bold", 
-            fontSize: "14px", 
-            cursor: "pointer", 
-            marginTop: "6px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "6px",
-            boxShadow: "0 0 15px rgba(255, 75, 114, 0.6), 0 0 25px rgba(156, 108, 250, 0.4)",
-            transition: "all 0.3s ease"
-          }}
-        >
-          📬 View Mailbox
-        </button>
+        <div style={{ display: "flex", gap: "12px", width: "100%", marginTop: "6px" }}>
+          <button 
+            onClick={() => {
+              const targetLink = mailboxLink || `/mailbox?ref=${parentLetterId}`;
+              window.location.href = targetLink;
+            }}
+            className="glowing-mailbox-btn"
+            style={{ 
+              flex: 1.2, 
+              padding: "12px", 
+              borderRadius: "8px", 
+              background: "linear-gradient(135deg, #ff4b72, #9c6cfa)", 
+              border: "1px solid rgba(255, 255, 255, 0.2)", 
+              color: "#fff", 
+              fontWeight: "bold", 
+              fontSize: "14px", 
+              cursor: "pointer", 
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "6px",
+              boxShadow: "0 0 15px rgba(255, 75, 114, 0.4), 0 0 25px rgba(156, 108, 250, 0.3)",
+              transition: "all 0.3s ease"
+            }}
+          >
+            📬 Mailbox
+          </button>
+          <button 
+            onClick={handleReplay}
+            style={{ 
+              flex: 1, 
+              padding: "12px", 
+              borderRadius: "8px", 
+              background: "rgba(255, 255, 255, 0.05)", 
+              border: "1px solid rgba(255, 255, 255, 0.15)", 
+              color: "#fff", 
+              fontWeight: "bold", 
+              fontSize: "14px", 
+              cursor: "pointer", 
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "6px",
+              transition: "all 0.2s"
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.12)"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.3)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.05)"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.15)"; }}
+          >
+            🔁 Replay
+          </button>
+        </div>
       </div>
       {PdfHiddenTarget}
     </>

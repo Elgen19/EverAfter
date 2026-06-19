@@ -689,6 +689,10 @@ function LetterReader() {
             showMailboxButton={showMailboxButton}
             mailboxLink={`/mailbox?ref=${dbData?.replyToId || id}`}
             replyToId={dbData?.replyToId || ""}
+            onReplay={() => {
+              setCurrentStepIndex(0);
+              setVisibleStepIndex(0);
+            }}
             onExit={() => {
               if (typeof window !== "undefined") {
                 window.close();
