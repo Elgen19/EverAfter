@@ -126,6 +126,7 @@ export default function Envelope({
   const [isSheetExpanded, setIsSheetExpanded] = useState(false);
   const [isFirstOpen, setIsFirstOpen] = useState(true);
   const [forceHideEnvelope, setForceHideEnvelope] = useState(false);
+  const [showPreviewCards, setShowPreviewCards] = useState(false);
 
   // Map legacy state to expanded sub-view
   const isFullView = (isSheetExpanded && activeSheet === "letter") || forceHideEnvelope;
@@ -166,6 +167,7 @@ export default function Envelope({
   useEffect(() => {
     let timer1: NodeJS.Timeout;
     let timer2: NodeJS.Timeout;
+    let previewTimer: NodeJS.Timeout;
 
     if (isOpen) {
       if (isFirstOpen) {
@@ -188,6 +190,10 @@ export default function Envelope({
               const delay = (previewCardsConfig[idx]?.delay || 0.5) * 1000;
               setTimeout(() => playSwooshSound(), delay);
             });
+            setShowPreviewCards(true);
+            previewTimer = setTimeout(() => {
+              setShowPreviewCards(false);
+            }, 3000);
           }
         }, 3000); // Flap rotation (1.2s) + letter slide out (1.8s)
       } else {
@@ -209,6 +215,10 @@ export default function Envelope({
                 const delay = (previewCardsConfig[idx]?.delay || 0.5) * 1000;
                 setTimeout(() => playSwooshSound(), delay);
               });
+              setShowPreviewCards(true);
+              previewTimer = setTimeout(() => {
+                setShowPreviewCards(false);
+              }, 3000);
             }
           }, 450); // Pause for dramatic anticipation before slide-up
         }
@@ -218,11 +228,13 @@ export default function Envelope({
       setActiveSheet("none");
       setIsFirstOpen(true);
       setForceHideEnvelope(false);
+      setShowPreviewCards(false);
     }
 
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
+      clearTimeout(previewTimer);
     };
   }, [isOpen, activeStep, isFirstOpen, isAdjacentToPolaroids, polaroids]);
 
@@ -571,11 +583,11 @@ export default function Envelope({
                       backgroundColor: "#fff",
                       borderRadius: "6px",
                       boxShadow: "0 10px 25px rgba(0,0,0,0.25)",
-                      transform: isSheetExpanded 
+                      transform: showPreviewCards 
                         ? `translateX(${config.tx}) translateY(${config.ty}) rotate(${config.rotate}deg) scale(1)` 
                         : `translateX(0px) translateY(200px) rotate(0deg) scale(0.05)`,
-                      opacity: isSheetExpanded ? 0.95 : 0,
-                      transition: isSheetExpanded
+                      opacity: showPreviewCards ? 0.95 : 0,
+                      transition: showPreviewCards
                         ? `transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) ${config.delay}s, opacity 0.8s ease ${config.delay}s`
                         : "transform 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0s, opacity 0.6s ease 0s",
                       pointerEvents: "none",
