@@ -21,6 +21,7 @@ interface ThankYouProps {
   recipientUid?: string;
   showMailboxButton?: boolean;
   mailboxLink?: string;
+  replyToId?: string;
 }
 
 const STYLE_OPTIONS = [
@@ -52,7 +53,8 @@ export default function ThankYou({
   parentLetterId = "",
   recipientUid = "",
   showMailboxButton = false,
-  mailboxLink = ""
+  mailboxLink = "",
+  replyToId = ""
 }: ThankYouProps) {
   const [showStylePicker, setShowStylePicker] = useState(false);
   const [selectedStyle, setSelectedStyle] = useState<LetterStyle>("vintage");
@@ -254,6 +256,13 @@ export default function ThankYou({
               onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
               onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
             >✍️ Write Back</button>
+          )}
+          {isWriteback && replyToId && (
+            <button onClick={() => { window.location.href = `/letter?id=${replyToId}`; }}
+              style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "linear-gradient(135deg, #e2b857 0%, #b38f36 100%)", border: "none", color: "#fff", fontWeight: 600, fontSize: "13px", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", boxShadow: "0 4px 10px rgba(226, 184, 87, 0.2)" }}
+              onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
+            >Original Letter ↩</button>
           )}
         </div>
         {showMailboxButton && mailboxLink && (

@@ -601,6 +601,7 @@ export function useLetterForm() {
               userId: queryRecipientUid || user?.uid || "",
               senderEmail: user?.email || null,
               isWriteback: isWriteback,
+              replyToId: isWriteback ? (queryReplyToId || null) : null,
               read: false,
               readAt: null,
               ...initialSanitizedData

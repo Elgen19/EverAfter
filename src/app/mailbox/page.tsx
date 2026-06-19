@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useState, useEffect, useRef } from "react";
+import React, { Suspense, useState, useEffect, useRef, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/utils/firebase";
@@ -17,6 +17,8 @@ interface MailboxLetter {
   theme: string;
   envelopeStyle: string;
   link: string;
+  isWriteback?: boolean;
+  replyToId?: string;
 }
 
 function MailboxContent() {
@@ -29,6 +31,23 @@ function MailboxContent() {
   const [letters, setLetters] = useState<MailboxLetter[]>([]);
   const [refLetter, setRefLetter] = useState<any>(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isTransitioningToLetter, setIsTransitioningToLetter] = useState(false);
+  const [activeTab, setActiveTab] = useState<"all" | "received" | "sent">("all");
+
+  const displayedLetters = useMemo(() => {
+    if (activeTab === "received") {
+      return letters.filter((l) => !l.isWriteback);
+    }
+    if (activeTab === "sent") {
+      return letters.filter((l) => l.isWriteback);
+    }
+    return letters;
+  }, [letters, activeTab]);
+
+  // Reset active index when changing tabs
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [activeTab]);
 
   // Scroll tracking states & refs
   const containerRef = useRef<HTMLDivElement>(null);
@@ -39,7 +58,7 @@ function MailboxContent() {
   // Manual non-passive event listeners to successfully preventDefault and block body scrolling
   useEffect(() => {
     const container = containerRef.current;
-    if (!container || letters.length === 0) return;
+    if (!container || displayedLetters.length === 0) return;
 
     const handleWheelPassive = (e: WheelEvent) => {
       e.preventDefault(); // blocks native browser body scrolling!
@@ -47,7 +66,7 @@ function MailboxContent() {
       if (now - lastWheelTime.current < 250) return; // 250ms cooldown
 
       if (e.deltaY > 10) {
-        setActiveIndex(prev => Math.min(letters.length - 1, prev + 1));
+        setActiveIndex(prev => Math.min(displayedLetters.length - 1, prev + 1));
         lastWheelTime.current = now;
       } else if (e.deltaY < -10) {
         setActiveIndex(prev => Math.max(0, prev - 1));
@@ -66,20 +85,20 @@ function MailboxContent() {
       container.removeEventListener("wheel", handleWheelPassive);
       container.removeEventListener("touchmove", handleTouchMovePassive);
     };
-  }, [letters]);
+  }, [displayedLetters]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (letters.length === 0) return;
+    if (displayedLetters.length === 0) return;
     const touchEndY = e.changedTouches[0].clientY;
     const diff = touchStartY.current - touchEndY;
 
     if (Math.abs(diff) > 40) { // 40px threshold for swipes
       if (diff > 0) {
-        setActiveIndex(prev => Math.min(letters.length - 1, prev + 1));
+        setActiveIndex(prev => Math.min(displayedLetters.length - 1, prev + 1));
       } else {
         setActiveIndex(prev => Math.max(0, prev - 1));
       }
@@ -88,11 +107,11 @@ function MailboxContent() {
 
   // Keyboard navigation
   useEffect(() => {
-    if (letters.length === 0) return;
+    if (displayedLetters.length === 0) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowDown" || e.key === "PageDown") {
         e.preventDefault();
-        setActiveIndex(prev => Math.min(letters.length - 1, prev + 1));
+        setActiveIndex(prev => Math.min(displayedLetters.length - 1, prev + 1));
       } else if (e.key === "ArrowUp" || e.key === "PageUp") {
         e.preventDefault();
         setActiveIndex(prev => Math.max(0, prev - 1));
@@ -100,7 +119,7 @@ function MailboxContent() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [letters]);
+  }, [displayedLetters]);
 
   useEffect(() => {
     if (!refId) {
@@ -141,8 +160,22 @@ function MailboxContent() {
 
         setIsAuthorized(true);
 
-        const userId = refData.userId;
-        const email = refData.email;
+        let userId = refData.userId;
+        let email = refData.email;
+
+        if (refData.isWriteback) {
+          if (refData.replyToId) {
+            const parentDocRef = doc(db, "letters", refData.replyToId);
+            const parentDocSnap = await getDoc(parentDocRef);
+            if (parentDocSnap.exists()) {
+              const parentData = parentDocSnap.data();
+              userId = parentData.userId || userId;
+              email = parentData.email || email;
+            }
+          } else if (refData.senderEmail) {
+            email = refData.senderEmail;
+          }
+        }
 
         if (!userId || !email) {
           setError("Incomplete letter metadata. Cannot retrieve letterbox.");
@@ -158,6 +191,8 @@ function MailboxContent() {
 
         const querySnapshot = await getDocs(q);
         const fetchedLetters: MailboxLetter[] = [];
+        const letterIds: string[] = [];
+
         querySnapshot.forEach((docSnap) => {
           const data = docSnap.data();
           let isFuture = false;
@@ -177,10 +212,41 @@ function MailboxContent() {
               read: data.read || false,
               theme: data.theme || "scroll",
               envelopeStyle: data.envelopeStyle || "vintage-rose",
-              link: data.link || `/letter?id=${docSnap.id}`
+              link: data.link || `/letter?id=${docSnap.id}`,
+              isWriteback: false,
+              replyToId: ""
             });
+            letterIds.push(docSnap.id);
           }
         });
+
+        // Query for writebacks that reply to any of these letters
+        if (letterIds.length > 0) {
+          const wbQuery = query(
+            collection(db, "letters"),
+            where("userId", "==", userId),
+            where("isWriteback", "==", true)
+          );
+          const wbSnapshot = await getDocs(wbQuery);
+          wbSnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            if (data.replyToId && letterIds.includes(data.replyToId)) {
+              fetchedLetters.push({
+                id: docSnap.id,
+                title: data.title || "Write Back",
+                sender: data.sender || "My Love",
+                recipient: data.recipient || "Yours Truly",
+                timestamp: data.timestamp || Date.now(),
+                read: data.read || false,
+                theme: data.theme || "scroll",
+                envelopeStyle: data.envelopeStyle || "vintage-rose",
+                link: data.link || `/letter?id=${docSnap.id}`,
+                isWriteback: true,
+                replyToId: data.replyToId
+              });
+            }
+          });
+        }
 
         fetchedLetters.sort((a, b) => b.timestamp - a.timestamp);
         setLetters(fetchedLetters);
@@ -197,12 +263,12 @@ function MailboxContent() {
 
   // Focus the active reference letter on page load
   useEffect(() => {
-    if (letters.length === 0 || !refId) return;
-    const index = letters.findIndex(l => l.id === refId);
+    if (displayedLetters.length === 0 || !refId) return;
+    const index = displayedLetters.findIndex(l => l.id === refId);
     if (index !== -1) {
       setActiveIndex(index);
     }
-  }, [letters, refId]);
+  }, [displayedLetters, refId]);
 
   if (error) {
     return (
@@ -367,6 +433,79 @@ function MailboxContent() {
           Unlocking envelopes
         </div>
       </div>
+
+      {/* Dramatic Page Transition Overlay */}
+      {isTransitioningToLetter && (
+        <div 
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 999999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            pointerEvents: "all"
+          }}
+        >
+          {/* Radial Blinding Flare */}
+          <div 
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "radial-gradient(circle at 50% 50%, #ffffff 0%, #fffcf5 35%, #ffdca8 65%, #100907 100%)",
+              animation: "dramatic-bright-flash 1.6s cubic-bezier(0.25, 1, 0.3, 1) forwards",
+            }}
+          />
+          {/* Supernova Expansion Shockwave Ring */}
+          <div 
+            style={{
+              position: "absolute",
+              width: "100px",
+              height: "100px",
+              borderRadius: "50%",
+              border: "8px solid rgba(255, 255, 255, 0.95)",
+              boxShadow: "0 0 80px 40px rgba(226, 184, 87, 0.85), inset 0 0 40px 20px rgba(255, 255, 255, 0.95)",
+              animation: "supernova-shockwave 1.6s cubic-bezier(0.1, 0.8, 0.1, 1) forwards",
+            }}
+          />
+          {/* Bursting Sparkling Hearts & Gold Dust Particles */}
+          <div style={{ position: "absolute", width: "100%", height: "100%", overflow: "hidden", pointerEvents: "none" }}>
+            {[...Array(30)].map((_, i) => {
+              const angle = (i * 360) / 30 + Math.random() * 15;
+              const velocity = 120 + Math.random() * 280;
+              const rad = (angle * Math.PI) / 180;
+              const tx = `${Math.cos(rad) * velocity}px`;
+              const ty = `${Math.sin(rad) * velocity}px`;
+              const scale = 0.6 + Math.random() * 1.2;
+              const delay = Math.random() * 0.12;
+              const isHeart = i % 3 === 0;
+              return (
+                <div
+                  key={i}
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%) scale(0)",
+                    fontSize: isHeart ? `${18 + Math.random() * 18}px` : `${12 + Math.random() * 12}px`,
+                    color: isHeart ? "#ff4b72" : "#e2b857",
+                    textShadow: "0 0 10px rgba(255,255,255,0.9)",
+                    filter: "drop-shadow(0 0 12px rgba(226, 184, 87, 0.85))",
+                    animation: "spark-fly 1.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards",
+                    animationDelay: `${delay}s`,
+                    ["--tx" as any]: tx,
+                    ["--ty" as any]: ty,
+                    ["--scale" as any]: scale,
+                  } as React.CSSProperties}
+                >
+                  {isHeart ? "💖" : "✨"}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <style>{`
         :root {
           --slot-height: 170px;
@@ -458,6 +597,54 @@ function MailboxContent() {
           0%, 100% { opacity: 0.7; transform: translateY(0); }
           50% { opacity: 1; transform: translateY(-2px); }
         }
+        @keyframes dramatic-bright-flash {
+          0% {
+            transform: scale(0.3);
+            opacity: 0;
+            filter: blur(10px);
+          }
+          15% {
+            opacity: 1;
+            filter: blur(0);
+          }
+          75% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        @keyframes supernova-shockwave {
+          0% {
+            transform: scale(0.1);
+            opacity: 1;
+            border-width: 20px;
+          }
+          50% {
+            opacity: 1;
+            border-width: 8px;
+          }
+          100% {
+            transform: scale(25);
+            opacity: 0;
+            border-width: 0.1px;
+          }
+        }
+        @keyframes spark-fly {
+          0% {
+            transform: translate(-50%, -50%) scale(0) rotate(0deg);
+            opacity: 0;
+          }
+          10% {
+            opacity: 1;
+          }
+          100% {
+            transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(var(--scale)) rotate(360deg);
+            opacity: 0;
+          }
+        }
       `}</style>
 
       {/* Top Left Floating Back Button */}
@@ -546,6 +733,71 @@ function MailboxContent() {
         <div style={{ width: "80px", height: "1px", background: "linear-gradient(to right, transparent, var(--accent-gold), transparent)", marginTop: "10px" }} />
       </header>
 
+      {/* Tab Selector */}
+      <div style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "rgba(20, 15, 30, 0.45)",
+        border: "1px solid rgba(255, 255, 255, 0.05)",
+        borderRadius: "30px",
+        padding: "4px",
+        margin: "16px auto 0 auto",
+        backdropFilter: "blur(12px)",
+        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+        zIndex: 50,
+        position: "relative",
+        flexShrink: 0
+      }}>
+        {([
+          { id: "all", label: "All Messages", icon: "✨" },
+          { id: "received", label: `From ${senderName}`, icon: "✉" },
+          { id: "sent", label: "My Replies", icon: "✍" }
+        ] as const).map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 18px",
+                borderRadius: "26px",
+                border: "none",
+                background: isActive 
+                  ? "linear-gradient(135deg, rgba(156, 108, 250, 0.8) 0%, rgba(255, 75, 114, 0.8) 100%)" 
+                  : "transparent",
+                color: isActive ? "#fff" : "var(--text-muted)",
+                fontWeight: 600,
+                fontSize: "12px",
+                cursor: "pointer",
+                transition: "all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)",
+                boxShadow: isActive ? "0 4px 12px rgba(255, 75, 114, 0.25)" : "none",
+                outline: "none"
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.color = "#fff";
+                  e.currentTarget.style.background = "rgba(255, 255, 255, 0.03)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.color = "var(--text-muted)";
+                  e.currentTarget.style.background = "transparent";
+                }
+              }}
+            >
+              <span>{tab.icon}</span>
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+
       {/* Letters Stack - Virtual vertically sliding track for centering envelopes without scroll gaps */}
       <div 
         ref={containerRef}
@@ -578,7 +830,7 @@ function MailboxContent() {
             willChange: "transform"
           }}
         >
-        {letters.map((letter, index) => {
+        {displayedLetters.map((letter, index) => {
           const isCurrentRef = letter.id === refId;
           const isActive = index === activeIndex;
 
@@ -612,7 +864,17 @@ function MailboxContent() {
               }}
             >
               <div
-                onClick={() => router.push(getRelativeLink(letter.link))}
+                onClick={() => {
+                  if (isTransitioningToLetter) return;
+                  setIsTransitioningToLetter(true);
+                  let targetLink = getRelativeLink(letter.link);
+                  if (letter.isWriteback) {
+                    targetLink += targetLink.includes("?") ? "&preview=true" : "?preview=true";
+                  }
+                  setTimeout(() => {
+                    router.push(targetLink);
+                  }, 1200);
+                }}
                 className={isActive ? "active-envelope-shake" : ""}
                 style={{
                   pointerEvents: "auto",
@@ -721,19 +983,31 @@ function MailboxContent() {
                         position: "absolute",
                         top: "28px",
                         right: "36px",
-                        border: isCurrentRef ? "1.5px dashed var(--accent-rose)" : "1.5px dashed rgba(255,255,255,0.15)",
+                        background: letter.isWriteback
+                          ? (letter.read ? "rgba(156, 108, 250, 0.95)" : "rgba(123, 44, 191, 0.95)")
+                          : letter.read 
+                            ? "rgba(40, 167, 69, 0.9)" 
+                            : "rgba(217, 38, 76, 0.95)",
+                        border: isCurrentRef ? "2px solid var(--accent-gold)" : "1px solid rgba(255,255,255,0.15)",
                         borderRadius: "4px",
-                        padding: "3px 6px",
-                        fontSize: "10px",
+                        padding: "4px 8px",
+                        fontSize: "9px",
                         fontFamily: "var(--font-ui)",
                         fontWeight: "bold",
-                        color: isCurrentRef ? "var(--accent-rose)" : nameColor,
+                        color: "#fff",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2)",
                         transform: "rotate(6deg)",
                         zIndex: 7,
                         textTransform: "uppercase",
-                        letterSpacing: "0.5px"
+                        letterSpacing: "0.5px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px"
                       }}>
-                        {isCurrentRef ? "Current" : letter.read ? "Opened" : "Unread"}
+                        {letter.isWriteback 
+                          ? (letter.read ? "Read 📖" : "Sent Reply ✉")
+                          : (letter.read ? "Opened 📖" : "Unread ✉")
+                        }
                       </div>
                     </div>
                     
@@ -785,12 +1059,45 @@ function MailboxContent() {
           );
         })}
         </div>
+
+        {displayedLetters.length === 0 && (
+          <div 
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+              width: "100%",
+              color: "var(--text-muted)",
+              gap: "12px",
+              padding: "40px",
+              textAlign: "center",
+              animation: "fade-in-btn 0.5s ease-out forwards",
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 10
+            }}
+          >
+            <div style={{ fontSize: "48px" }}>🕊️</div>
+            <div style={{ fontSize: "16px", fontWeight: 600, color: "#fff" }}>
+              {activeTab === "sent" ? "No replies written yet" : "No letters found"}
+            </div>
+            <div style={{ fontSize: "12px", maxWidth: "320px", lineHeight: "1.4" }}>
+              {activeTab === "sent" 
+                ? "When you read a letter, click 'Write Back' to seal and send a response!"
+                : "This chest is waiting to be filled with memories."}
+            </div>
+          </div>
+        )}
       </div>
 
       <footer style={{ textAlign: "center", flexShrink: 0, padding: "12px 0 20px 0" }}>
-        {letters[activeIndex] && (
+        {displayedLetters[activeIndex] && (
           <div 
-            key={letters[activeIndex].id}
+            key={displayedLetters[activeIndex].id}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -821,7 +1128,7 @@ function MailboxContent() {
                 color: "var(--accent-gold)",
                 textShadow: "0 1px 2px rgba(0,0,0,0.3)"
               }}>
-                {new Date(letters[activeIndex].timestamp).toLocaleDateString(undefined, {
+                {new Date(displayedLetters[activeIndex].timestamp).toLocaleDateString(undefined, {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric'
@@ -831,23 +1138,95 @@ function MailboxContent() {
 
             <div style={{ width: "1px", height: "14px", backgroundColor: "rgba(226, 184, 87, 0.2)" }} />
 
-            <span style={{
-              fontFamily: "var(--font-ui)",
-              fontSize: "10px",
-              letterSpacing: "0.5px",
-              textTransform: "uppercase",
-              fontWeight: 700,
-              padding: "2px 8px",
-              borderRadius: "4px",
-              backgroundColor: letters[activeIndex].read ? "rgba(40, 167, 69, 0.15)" : "rgba(255, 75, 114, 0.15)",
-              color: letters[activeIndex].read ? "#28a745" : "#ff4b72",
-              border: letters[activeIndex].read ? "1px solid rgba(40, 167, 69, 0.3)" : "1px solid rgba(255, 75, 114, 0.3)",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "4px"
-            }}>
-              {letters[activeIndex].read ? "Opened 📖" : "Unread ✉"}
-            </span>
+            <button
+              onClick={() => {
+                if (isTransitioningToLetter) return;
+                setIsTransitioningToLetter(true);
+                let targetLink = getRelativeLink(displayedLetters[activeIndex].link);
+                if (displayedLetters[activeIndex].isWriteback) {
+                  targetLink += targetLink.includes("?") ? "&preview=true" : "?preview=true";
+                }
+                setTimeout(() => {
+                  router.push(targetLink);
+                }, 1200);
+              }}
+              style={{
+                background: displayedLetters[activeIndex].isWriteback 
+                  ? "linear-gradient(135deg, #9c6cfa 0%, #7b2cbf 100%)" 
+                  : "linear-gradient(135deg, #ff4b72 0%, #ff758f 100%)",
+                border: "none",
+                borderRadius: "6px",
+                padding: "6px 14px",
+                color: "#fff",
+                fontWeight: 700,
+                fontSize: "12px",
+                cursor: "pointer",
+                boxShadow: "0 4px 15px rgba(0,0,0,0.25)",
+                transition: "all 0.3s ease",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.05)";
+                e.currentTarget.style.boxShadow = displayedLetters[activeIndex].isWriteback
+                  ? "0 6px 20px rgba(156,108,250,0.45)"
+                  : "0 6px 20px rgba(255,75,114,0.45)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow = "0 4px 15px rgba(0,0,0,0.25)";
+              }}
+            >
+              {displayedLetters[activeIndex].isWriteback ? "View Writeback 🔍" : "Read Letter 📖"}
+            </button>
+
+            {displayedLetters[activeIndex].isWriteback && displayedLetters[activeIndex].replyToId && (
+              <>
+                <div style={{ width: "1px", height: "14px", backgroundColor: "rgba(226, 184, 87, 0.2)", marginLeft: "8px", marginRight: "8px" }} />
+                <button
+                  onClick={() => {
+                    const parentId = displayedLetters[activeIndex].replyToId;
+                    if (activeTab !== "all") {
+                      setActiveTab("all");
+                    }
+                    const parentIndex = letters.findIndex((l) => l.id === parentId);
+                    if (parentIndex !== -1) {
+                      setActiveIndex(parentIndex);
+                    }
+                  }}
+                  style={{
+                    background: "rgba(226, 184, 87, 0.15)",
+                    border: "1px solid rgba(226, 184, 87, 0.3)",
+                    borderRadius: "6px",
+                    padding: "6px 14px",
+                    color: "var(--accent-gold)",
+                    fontWeight: 700,
+                    fontSize: "12px",
+                    cursor: "pointer",
+                    boxShadow: "0 4px 15px rgba(0,0,0,0.15)",
+                    transition: "all 0.3s ease",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "scale(1.05)";
+                    e.currentTarget.style.background = "rgba(226, 184, 87, 0.25)";
+                    e.currentTarget.style.boxShadow = "0 6px 20px rgba(226,184,87,0.3)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "scale(1)";
+                    e.currentTarget.style.background = "rgba(226, 184, 87, 0.15)";
+                    e.currentTarget.style.boxShadow = "0 4px 15px rgba(0,0,0,0.15)";
+                  }}
+                  title="Scroll to the original letter this reply references"
+                >
+                  Original Letter ↩
+                </button>
+              </>
+            )}
+
           </div>
         )}
       </footer>

@@ -184,14 +184,61 @@ function LetterReader() {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [visibleStepIndex, setVisibleStepIndex] = useState(0);
-  const [triggerFlash, setTriggerFlash] = useState(false);
+  const [triggerFlash, setTriggerFlash] = useState(true);
+
+  // Automatically reset the blinding flash after it triggers
+  useEffect(() => {
+    if (triggerFlash) {
+      const timer = setTimeout(() => {
+        setTriggerFlash(false);
+      }, 2200);
+      return () => clearTimeout(timer);
+    }
+  }, [triggerFlash]);
 
   if (fetchingDb) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "80vh", flexDirection: "column", gap: "16px" }}>
-        <div style={{ width: "40px", height: "40px", borderRadius: "50%", border: "3px solid rgba(255, 75, 114, 0.1)", borderTopColor: "var(--accent-rose)", animation: "spin 1s linear infinite" }} />
-        <div style={{ color: "var(--text-muted)", fontSize: "14px" }}>
-          {preview ? "Preparing your letter..." : "Loading letter..."}
+      <div style={{ 
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "center", 
+        height: "100vh", 
+        width: "100vw",
+        flexDirection: "column", 
+        gap: "24px",
+        background: "radial-gradient(circle at 50% 50%, #ffffff 0%, #fffcf5 35%, #ffdca8 65%, #100907 100%)",
+        position: "fixed",
+        inset: 0,
+        zIndex: 99999
+      }}>
+        {/* Pulsing golden wax seal/heart lock */}
+        <div style={{
+          position: "relative",
+          width: "100px",
+          height: "100px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
+          <div style={{
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            borderRadius: "50%",
+            border: "3px solid rgba(226, 184, 87, 0.6)",
+            boxShadow: "0 0 30px rgba(226, 184, 87, 0.55), inset 0 0 15px rgba(226, 184, 87, 0.35)",
+            animation: "pulse-keyhole 1.5s ease-in-out infinite"
+          }} />
+          <span style={{ fontSize: "36px", zIndex: 2, filter: "drop-shadow(0 0 8px rgba(226, 184, 87, 0.65))" }}>💖</span>
+        </div>
+        <div style={{ 
+          color: "#7a5c18", 
+          fontSize: "18px", 
+          fontWeight: 600,
+          fontFamily: "var(--font-cursive)",
+          textShadow: "0 1px 2px rgba(255,255,255,0.85)"
+        }}>
+          {preview ? "Preparing your letter..." : "Decrypting letter..."}
         </div>
       </div>
     );
@@ -260,9 +307,6 @@ function LetterReader() {
 
       if (nextStepId === "envelope" && unlockingNewStep) {
         setTriggerFlash(true);
-        setTimeout(() => {
-          setTriggerFlash(false);
-        }, 2200);
       }
 
       setIsTransitioning(true);
@@ -591,7 +635,8 @@ function LetterReader() {
             parentLetterId={id}
             recipientUid={dbData?.userId || ""}
             showMailboxButton={showMailboxButton}
-            mailboxLink={`/mailbox?ref=${id}`}
+            mailboxLink={`/mailbox?ref=${dbData?.replyToId || id}`}
+            replyToId={dbData?.replyToId || ""}
             onExit={() => {
               if (typeof window !== "undefined") {
                 window.close();
@@ -613,9 +658,47 @@ export default function LetterPage() {
   return (
     <div style={{ height: "100vh", padding: "0px", overflow: "hidden" }}>
       <Suspense fallback={
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "80vh", flexDirection: "column", gap: "16px" }}>
-          <div style={{ width: "40px", height: "40px", borderRadius: "50%", border: "3px solid rgba(255, 75, 114, 0.1)", borderTopColor: "var(--accent-rose)", animation: "spin 1s linear infinite" }} />
-          <div style={{ color: "var(--text-muted)", fontSize: "14px" }}>Decrypting letter...</div>
+        <div style={{ 
+          display: "flex", 
+          alignItems: "center", 
+          justifyContent: "center", 
+          height: "100vh", 
+          width: "100vw",
+          flexDirection: "column", 
+          gap: "24px",
+          background: "radial-gradient(circle at 50% 50%, #ffffff 0%, #fffcf5 35%, #ffdca8 65%, #100907 100%)",
+          position: "fixed",
+          inset: 0,
+          zIndex: 99999
+        }}>
+          <div style={{
+            position: "relative",
+            width: "100px",
+            height: "100px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}>
+            <div style={{
+              position: "absolute",
+              width: "100%",
+              height: "100%",
+              borderRadius: "50%",
+              border: "3px solid rgba(226, 184, 87, 0.6)",
+              boxShadow: "0 0 30px rgba(226, 184, 87, 0.55), inset 0 0 15px rgba(226, 184, 87, 0.35)",
+              animation: "pulse-keyhole 1.5s ease-in-out infinite"
+            }} />
+            <span style={{ fontSize: "36px", zIndex: 2, filter: "drop-shadow(0 0 8px rgba(226, 184, 87, 0.65))" }}>💖</span>
+          </div>
+          <div style={{ 
+            color: "#7a5c18", 
+            fontSize: "18px", 
+            fontWeight: 600,
+            fontFamily: "var(--font-cursive)",
+            textShadow: "0 1px 2px rgba(255,255,255,0.85)"
+          }}>
+            Decrypting letter...
+          </div>
         </div>
       }>
         <LetterReader />
