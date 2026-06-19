@@ -71,7 +71,7 @@ export default function RecipientSetupPage() {
       <FloatingHearts />
 
       <main 
-        className="glass animate-reveal"
+        className="glass animate-reveal recipient-setup-card"
         style={{
           width: "100%",
           maxWidth: "460px",
@@ -121,7 +121,7 @@ export default function RecipientSetupPage() {
             </div>
           )}
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <label style={{ fontSize: "11px", color: "var(--text-muted)" }}>First Name</label>
               <input

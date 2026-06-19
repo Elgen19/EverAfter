@@ -140,7 +140,7 @@ export default function ThankYou({
     return (
       <>
         <div className="animate-reveal hide-scrollbar thankyou-card" style={{ width: "100%", maxWidth: "800px", padding: "32px", textAlign: "center", display: "flex", flexDirection: "column", gap: "24px", background: "rgba(20, 15, 30, 0.85)", border: `1.5px solid ${colors.border}`, borderRadius: "20px", boxShadow: `0 15px 40px rgba(0, 0, 0, 0.5), 0 0 15px ${colors.shadow}`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", color: "#fff", boxSizing: "border-box", animation: "float-up-intro 0.6s ease" }}>
-          <h3 style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: colors.accent, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive" }}>
+          <h3 className="thankyou-title" style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: colors.accent, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive" }}>
             🔍 Full Letter Preview ({STYLE_OPTIONS.find(s => s.id === selectedStyle)?.name})
           </h3>
           <div className="thankyou-preview-sheet" style={{ width: "100%", maxHeight: "50vh", overflowY: "auto", borderRadius: "12px", padding: "40px", boxSizing: "border-box", textAlign: "left", position: "relative", boxShadow: "inset 0 4px 20px rgba(0,0,0,0.15), 0 10px 30px rgba(0,0,0,0.25)", fontFamily: getBodyFont(selectedStyle), ...getPreviewStyle(selectedStyle) }}>
@@ -175,20 +175,21 @@ export default function ThankYou({
       <>
         <div className="animate-reveal hide-scrollbar thankyou-card style-picker-card" style={{ width: "100%", maxWidth: "720px", padding: "32px", textAlign: "center", display: "flex", flexDirection: "column", gap: "24px", background: "rgba(20, 15, 30, 0.85)", border: `1.5px solid ${colors.border}`, borderRadius: "20px", boxShadow: `0 15px 40px rgba(0, 0, 0, 0.5), 0 0 15px ${colors.shadow}`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", color: "#fff", boxSizing: "border-box", animation: "float-up-intro 0.6s ease" }}>
           <style>{`@media (max-width: 640px) { .style-picker-split { flex-direction: column-reverse !important; } .style-picker-options, .style-picker-preview { width: 100% !important; } }`}</style>
-          <h3 style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: colors.accent, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive" }}>
+          <h3 className="thankyou-title" style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: colors.accent, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive" }}>
             🎨 Choose Letter Style & Preview
           </h3>
           <div className="style-picker-split" style={{ display: "flex", gap: "24px", width: "100%", boxSizing: "border-box" }}>
             {/* Style options list */}
-            <div className="style-picker-options" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "10px", width: "50%" }}>
+            <div className="style-picker-options style-picker-options-grid" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "10px", width: "50%" }}>
               {STYLE_OPTIONS.map((styleOpt) => (
                 <div key={styleOpt.id} onClick={() => setSelectedStyle(styleOpt.id as LetterStyle)}
+                  className="style-picker-opt-card"
                   style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", borderRadius: "8px", border: selectedStyle === styleOpt.id ? `2px solid ${colors.accent}` : "1.5px solid rgba(255, 255, 255, 0.08)", background: selectedStyle === styleOpt.id ? "rgba(255, 255, 255, 0.04)" : "rgba(255, 255, 255, 0.01)", cursor: "pointer", transition: "all 0.2s", textAlign: "left" }}
                 >
-                  <div style={{ width: "32px", height: "32px", borderRadius: "6px", backgroundColor: styleOpt.bg, border: `1.5px solid ${styleOpt.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", color: styleOpt.color, fontSize: "13px", fontFamily: styleOpt.font, flexShrink: 0 }}>Aa</div>
+                  <div className="style-picker-opt-icon" style={{ width: "32px", height: "32px", borderRadius: "6px", backgroundColor: styleOpt.bg, border: `1.5px solid ${styleOpt.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", color: styleOpt.color, fontSize: "13px", fontFamily: styleOpt.font, flexShrink: 0 }}>Aa</div>
                   <div style={{ flexGrow: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: "13px", fontWeight: "bold", color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{styleOpt.name}</div>
-                    <div style={{ fontSize: "10px", color: "var(--text-muted)", marginTop: "2px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{styleOpt.desc}</div>
+                    <div className="style-picker-opt-name" style={{ fontSize: "13px", fontWeight: "bold", color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{styleOpt.name}</div>
+                    <div className="style-picker-opt-desc" style={{ fontSize: "10px", color: "var(--text-muted)", marginTop: "2px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{styleOpt.desc}</div>
                   </div>
                 </div>
               ))}
@@ -230,17 +231,17 @@ export default function ThankYou({
   return (
     <>
       <div className="animate-reveal hide-scrollbar thankyou-card" style={{ width: "100%", maxWidth: "500px", padding: "50px 30px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "28px", animation: "float-up-intro 0.6s ease", background: "rgba(20, 15, 30, 0.85)", border: `1.5px solid ${colors.border}`, borderRadius: "20px", boxShadow: `0 15px 40px rgba(0, 0, 0, 0.5), 0 0 15px ${colors.shadow}`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", color: "#fff", boxSizing: "border-box" }}>
-        <div style={{ fontSize: "64px", marginBottom: "8px", animation: "heartbeat-survey 1.5s infinite ease-in-out" }}>💌</div>
+        <div className="thankyou-emoji" style={{ fontSize: "64px", marginBottom: "8px", animation: "heartbeat-survey 1.5s infinite ease-in-out" }}>💌</div>
         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-          <h2 style={{ fontSize: "36px", fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive", color: colors.accent, margin: 0, textShadow: "0 2px 8px rgba(0, 0, 0, 0.3)" }}>Thank You for Reading</h2>
-          <p style={{ fontSize: "15px", color: "var(--text-muted)", lineHeight: "1.6", margin: "12px 0 0 0", padding: "0 10px" }}>
+          <h2 className="thankyou-title" style={{ fontSize: "36px", fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive", color: colors.accent, margin: 0, textShadow: "0 2px 8px rgba(0, 0, 0, 0.3)" }}>Thank You for Reading</h2>
+          <p className="thankyou-desc" style={{ fontSize: "15px", color: "var(--text-muted)", lineHeight: "1.6", margin: "12px 0 0 0", padding: "0 10px" }}>
             {isWriteback
               ? "Thank you for reading this response. Every word was written with sincerity, warmth, and care in return for your original letter. Thank you for keeping the dialogue alive and preserving these precious memories."
               : "Every word in this letter was written with sincerity, warmth, and care. Thank you for sharing in these moments and preserving these memories."}
           </p>
         </div>
         {sender && recipient && (
-          <div style={{ fontSize: "20px", fontStyle: "italic", fontFamily: "var(--font-cursive)", color: "#fff", opacity: 0.9, marginTop: "10px", padding: "10px 20px", borderTop: "1px solid rgba(255, 255, 255, 0.08)", borderBottom: "1px solid rgba(255, 255, 255, 0.08)", width: "100%", boxSizing: "border-box" }}>
+          <div className="thankyou-signature" style={{ fontSize: "20px", fontStyle: "italic", fontFamily: "var(--font-cursive)", color: "#fff", opacity: 0.9, marginTop: "10px", padding: "10px 20px", borderTop: "1px solid rgba(255, 255, 255, 0.08)", borderBottom: "1px solid rgba(255, 255, 255, 0.08)", width: "100%", boxSizing: "border-box" }}>
             From {sender} to {recipient} with love
           </div>
         )}
