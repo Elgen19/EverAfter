@@ -118,15 +118,19 @@ export default function Envelope({
   const [activeSheet, setActiveSheet] = useState<"letter" | "polaroids" | "none">("none");
   const [isSheetExpanded, setIsSheetExpanded] = useState(false);
   const [isFirstOpen, setIsFirstOpen] = useState(true);
+  const [forceHideEnvelope, setForceHideEnvelope] = useState(false);
 
   // Map legacy state to expanded sub-view
-  const isFullView = isSheetExpanded && activeSheet === "letter";
+  const isFullView = (isSheetExpanded && activeSheet === "letter") || forceHideEnvelope;
 
   // Trigger sheet expanded view when envelope opens or activeStep changes
   useEffect(() => {
+    let timer1: NodeJS.Timeout;
+    let timer2: NodeJS.Timeout;
+
     if (isOpen) {
       if (isFirstOpen) {
-        const timer = setTimeout(() => {
+        timer1 = setTimeout(() => {
           if (activeStep === "polaroids") {
             setActiveSheet("polaroids");
           } else {
@@ -134,29 +138,41 @@ export default function Envelope({
           }
           setIsSheetExpanded(true);
           setIsFirstOpen(false);
+
+          if (activeStep === "polaroids") {
+            timer2 = setTimeout(() => {
+              setForceHideEnvelope(true);
+            }, 1100);
+          }
         }, 3000); // Flap rotation (1.2s) + letter slide out (1.8s)
-        return () => clearTimeout(timer);
       } else {
         // If it's a step transition (already opened)
         if (activeStep === "polaroids") {
           setActiveSheet("polaroids");
-          const timer = setTimeout(() => {
+          timer1 = setTimeout(() => {
             setIsSheetExpanded(true);
+            timer2 = setTimeout(() => {
+              setForceHideEnvelope(true);
+            }, 1100);
           }, 450); // Pause for dramatic anticipation before slide-up
-          return () => clearTimeout(timer);
         } else if (activeStep === "envelope") {
           setActiveSheet("letter");
-          const timer = setTimeout(() => {
+          timer1 = setTimeout(() => {
             setIsSheetExpanded(true);
           }, 450); // Pause for dramatic anticipation before slide-up
-          return () => clearTimeout(timer);
         }
       }
     } else {
       setIsSheetExpanded(false);
       setActiveSheet("none");
       setIsFirstOpen(true);
+      setForceHideEnvelope(false);
     }
+
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
   }, [isOpen, activeStep, isFirstOpen]);
 
   const handleOpen = () => {
@@ -196,6 +212,8 @@ export default function Envelope({
   const handleClose = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     
+    // Immediately bring back the envelope for polaroids transition
+    setForceHideEnvelope(false);
     setIsSheetExpanded(false);
     
     const closeDuration = activeSheet === "polaroids" ? 1000 : 800;
