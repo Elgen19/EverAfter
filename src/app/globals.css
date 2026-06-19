@@ -10,6 +10,7 @@
   --font-cormorant: var(--font-cormorant-google), serif;
   --font-libre-baskerville: var(--font-libre-baskerville-google), serif;
   --font-allura: var(--font-allura-google), cursive;
+  --envelope-min-height: 500px;
 
   /* Creator Studio Color Palette (Dark Theme / Glassmorphism) */
   --bg-studio: #0b0711;
@@ -1265,9 +1266,29 @@ button:hover .quiz-option-badge {
 
 @media (max-width: 600px) {
   .envelope-container {
-    transform: scale(0.65);
-    height: 220px;
-    margin: -20px auto;
+    transform: scale(calc(100vw / 620)) !important;
+    transform-origin: center center;
+    height: calc(330px * (100vw / 620)) !important;
+    margin: 10px auto !important;
+  }
+  .style-picker-buttons {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .style-picker-buttons button {
+    width: 100% !important;
+  }
+  .thankyou-card {
+    padding: 20px 16px !important;
+    gap: 16px !important;
+  }
+  .thankyou-preview-sheet {
+    padding: 16px 12px !important;
+  }
+  .studio-preview-mode-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
   }
   .stationery-scroll-container {
     padding: 32px 20px 24px 20px !important;
@@ -1336,12 +1357,20 @@ button:hover .quiz-option-badge {
   }
 }
 
+.letter-reader-container {
+  height: 100vh;
+  overflow: hidden;
+}
+
 /* --- Mobile Responsiveness for EverAfter Studio --- */
 .mobile-only, .mobile-flex-only {
   display: none !important;
 }
 
 @media (max-width: 991px) {
+  :root {
+    --envelope-min-height: 380px;
+  }
   .hidden-mobile {
     display: none !important;
   }
@@ -1367,6 +1396,30 @@ button:hover .quiz-option-badge {
   /* Reduce padding on the preview wrapper so it takes up less margins */
   .studio-preview-wrapper {
     padding: 10px 5px !important;
+  }
+  .letter-reader-container {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+    padding-top: 100px !important;
+  }
+  .stationery-sheet {
+    padding: 12px 8px !important;
+  }
+  .theme-scroll.stationery-sheet {
+    padding: 12px 12px !important;
+  }
+  .theme-blush.stationery-sheet {
+    padding: 12px 10px !important;
+  }
+  .theme-royal.stationery-sheet {
+    padding: 12px 10px !important;
+  }
+  .stationery-scroll-container {
+    padding: 12px 10px !important;
+  }
+  .theme-royal .stationery-scroll-container {
+    padding: 12px 8px !important;
   }
 }
 
@@ -1442,6 +1495,9 @@ button:hover .quiz-option-badge {
 }
 
 @media (max-width: 480px) {
+  :root {
+    --envelope-min-height: 280px;
+  }
   .date-lock-container {
     gap: 8px !important;
     padding: 12px 8px !important;

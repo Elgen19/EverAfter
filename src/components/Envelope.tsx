@@ -213,13 +213,13 @@ export default function Envelope({
 
   return (
     <div 
-      className={`${playfair.variable} ${allura.variable} ${cinzelDec.variable} ${cormorant.variable} ${geist.variable} ${geistMono.variable} ${libreBaskerville.variable}`}
+      className={`envelope-outer-wrapper ${playfair.variable} ${allura.variable} ${cinzelDec.variable} ${cormorant.variable} ${geist.variable} ${geistMono.variable} ${libreBaskerville.variable}`}
       style={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        minHeight: "500px",
+        minHeight: "var(--envelope-min-height, 500px)",
         position: "relative",
         gap: "24px",
       }}

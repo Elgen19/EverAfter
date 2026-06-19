@@ -113,7 +113,7 @@ export default function StationeryPreview({
 
         {/* Letter content */}
         <div
-          className="hide-scrollbar"
+          className="hide-scrollbar stationery-scroll-container"
           style={{
             padding: theme === "royal" ? "36px 24px 24px 24px" : "40px 40px 32px 40px",
             display: "flex",

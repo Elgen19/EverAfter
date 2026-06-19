@@ -107,13 +107,28 @@ function CreateLetterStudio() {
           .studio-preview-wrapper { flex: 1 !important; display: flex !important; align-items: center !important; justify-content: center !important; overflow: hidden !important; }
           .studio-preview-card { width: 100% !important; height: 100% !important; max-height: calc(100vh - 180px) !important; }
         }
+        @media (max-width: 991px) {
+          .studio-preview-card {
+            height: 460px !important;
+          }
+          .studio-preview-envelope-scaler {
+            transform: scale(0.6) !important;
+            transform-origin: center center;
+          }
+        }
+        @media (max-width: 480px) {
+          .studio-preview-envelope-scaler {
+            transform: scale(0.48) !important;
+            transform-origin: center center;
+          }
+        }
       `}</style>
 
       <main className="studio-main" style={{ maxWidth: "1200px", margin: "0 auto", position: "relative", zIndex: 10 }}>
 
         <header className="studio-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px" }}>
           <Link
-            href="/dashboard"
+            href={form.isWriteback ? `/mailbox?ref=${form.queryReplyToId || ""}` : "/dashboard"}
             style={{ color: "var(--text-muted)", fontSize: "14px", display: "flex", alignItems: "center", gap: "8px", transition: "color 0.2s" }}
             onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent-rose)")}
             onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
@@ -122,7 +137,7 @@ function CreateLetterStudio() {
               <line x1="19" y1="12" x2="5" y2="12"></line>
               <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
-            Dashboard
+            {form.isWriteback ? "Mailbox" : "Dashboard"}
           </Link>
           <h1 style={{ fontSize: "36px", fontWeight: "normal", fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive", background: "linear-gradient(to right, #ff4b72, #9c6cfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: "0.5px" }}>
             EverAfter Studio
@@ -548,7 +563,7 @@ function CreateLetterStudio() {
 
           {/* ── Right: Live Preview ── */}
           <div className={`studio-preview-col ${activeTab === "preview" ? "" : "hidden-mobile"}`} style={{ display: "flex", flexDirection: "column", gap: "16px", position: "sticky", top: "20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div className="studio-preview-mode-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ display: "flex", gap: "8px" }}>
                 {(["letter", "envelope"] as const).map((mode) => (
                   <button key={mode} type="button" onClick={() => form.setPreviewMode(mode)}
@@ -566,7 +581,7 @@ function CreateLetterStudio() {
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.2)"}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)"}
                 >🔄 Reset Animation</button>
-                <div style={{ transform: "scale(0.8)" }}>
+                <div className="studio-preview-envelope-scaler" style={{ transform: "scale(0.8)" }}>
                   <Envelope key={form.envelopeResetKey} recipient={form.recipient} sender={form.sender} content={form.content} theme={form.theme} sealSymbol={form.sealSymbol} sealColor={form.sealColor} envelopeStyle={form.envelopeStyle} greeting={form.greeting} farewell={form.farewell} backdrop={form.backdrop} onClose={() => {}} />
                 </div>
               </div>

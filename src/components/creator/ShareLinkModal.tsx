@@ -106,8 +106,8 @@ export default function ShareLinkModal({
               </p>
             </div>
             <div style={{ display: "flex", gap: "12px", width: "100%", marginTop: "12px" }}>
-              <Link href="/dashboard" style={{ flex: 1, padding: "12px", borderRadius: "8px", backgroundColor: "var(--accent-purple)", color: "#fff", fontSize: "13px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(156, 108, 250, 0.25)" }}>
-                Back to Dashboard
+              <Link href={isWriteback ? `/mailbox?ref=${queryReplyToId || editId || ""}` : "/dashboard"} style={{ flex: 1, padding: "12px", borderRadius: "8px", backgroundColor: "var(--accent-purple)", color: "#fff", fontSize: "13px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(156, 108, 250, 0.25)" }}>
+                {isWriteback ? "Return to Mailbox" : "Back to Dashboard"}
               </Link>
             </div>
           </>
@@ -170,8 +170,8 @@ export default function ShareLinkModal({
             {/* Action buttons */}
             <div style={{ display: "flex", gap: "12px", width: "100%", marginTop: "12px" }}>
               {isWriteback ? (
-                <Link href={queryReplyToId ? `/letter?id=${queryReplyToId}` : "/"} style={{ flex: 1, padding: "12px", borderRadius: "8px", border: "1px solid var(--border-card)", background: "transparent", color: "var(--text-main)", fontSize: "13px", fontWeight: 500, cursor: "pointer", transition: "background-color 0.2s", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  Back to the start of the letter
+                <Link href={queryReplyToId ? `/mailbox?ref=${queryReplyToId}` : "/"} style={{ flex: 1, padding: "12px", borderRadius: "8px", border: "1px solid var(--border-card)", background: "transparent", color: "var(--text-main)", fontSize: "13px", fontWeight: 500, cursor: "pointer", transition: "background-color 0.2s", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  Return to Mailbox
                 </Link>
               ) : (
                 <Link href={user ? "/dashboard" : "/"} style={{ flex: 1, padding: "12px", borderRadius: "8px", border: "1px solid var(--border-card)", background: "transparent", color: "var(--text-main)", fontSize: "13px", fontWeight: 500, cursor: "pointer", transition: "background-color 0.2s", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>

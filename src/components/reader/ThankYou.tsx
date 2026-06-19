@@ -139,11 +139,11 @@ export default function ThankYou({
   if (showFullPreview) {
     return (
       <>
-        <div className="animate-reveal hide-scrollbar" style={{ width: "100%", maxWidth: "800px", padding: "32px", textAlign: "center", display: "flex", flexDirection: "column", gap: "24px", background: "rgba(20, 15, 30, 0.85)", border: `1.5px solid ${colors.border}`, borderRadius: "20px", boxShadow: `0 15px 40px rgba(0, 0, 0, 0.5), 0 0 15px ${colors.shadow}`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", color: "#fff", boxSizing: "border-box", animation: "float-up-intro 0.6s ease" }}>
+        <div className="animate-reveal hide-scrollbar thankyou-card" style={{ width: "100%", maxWidth: "800px", padding: "32px", textAlign: "center", display: "flex", flexDirection: "column", gap: "24px", background: "rgba(20, 15, 30, 0.85)", border: `1.5px solid ${colors.border}`, borderRadius: "20px", boxShadow: `0 15px 40px rgba(0, 0, 0, 0.5), 0 0 15px ${colors.shadow}`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", color: "#fff", boxSizing: "border-box", animation: "float-up-intro 0.6s ease" }}>
           <h3 style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: colors.accent, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive" }}>
             🔍 Full Letter Preview ({STYLE_OPTIONS.find(s => s.id === selectedStyle)?.name})
           </h3>
-          <div style={{ width: "100%", maxHeight: "50vh", overflowY: "auto", borderRadius: "12px", padding: "40px", boxSizing: "border-box", textAlign: "left", position: "relative", boxShadow: "inset 0 4px 20px rgba(0,0,0,0.15), 0 10px 30px rgba(0,0,0,0.25)", fontFamily: getBodyFont(selectedStyle), ...getPreviewStyle(selectedStyle) }}>
+          <div className="thankyou-preview-sheet" style={{ width: "100%", maxHeight: "50vh", overflowY: "auto", borderRadius: "12px", padding: "40px", boxSizing: "border-box", textAlign: "left", position: "relative", boxShadow: "inset 0 4px 20px rgba(0,0,0,0.15), 0 10px 30px rgba(0,0,0,0.25)", fontFamily: getBodyFont(selectedStyle), ...getPreviewStyle(selectedStyle) }}>
             {renderDecorations(selectedStyle, false)}
             <div style={{ fontSize: selectedStyle === "minimalist" ? "22px" : "28px", fontFamily: getCursiveFont(selectedStyle), fontWeight: selectedStyle === "minimalist" ? "normal" : "bold", marginBottom: "20px" }}>Dearest {recipient || "My Love"},</div>
             <div style={{ fontSize: selectedStyle === "minimalist" ? "16px" : "18px", lineHeight: "1.8", whiteSpace: "pre-wrap", marginBottom: "40px", letterSpacing: selectedStyle === "royal" ? "0.5px" : "normal" }}>{content}</div>
@@ -151,7 +151,7 @@ export default function ThankYou({
               Yours Truly,<br /><span style={{ fontSize: selectedStyle === "minimalist" ? "22px" : "26px" }}>{sender || "Yours Truly"}</span>
             </div>
           </div>
-          <div style={{ display: "flex", gap: "10px", width: "100%", marginTop: "8px" }}>
+          <div className="style-picker-buttons" style={{ display: "flex", gap: "10px", width: "100%", marginTop: "8px" }}>
             <button onClick={() => { setShowFullPreview(false); setShowStylePicker(true); }}
               style={{ flex: 1, padding: "12px", borderRadius: "6px", background: "none", border: "1px solid rgba(255, 255, 255, 0.15)", color: "var(--text-muted)", fontSize: "13px", cursor: "pointer", transition: "all 0.2s" }}
               onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.35)")}
@@ -173,7 +173,7 @@ export default function ThankYou({
   if (showStylePicker) {
     return (
       <>
-        <div className="animate-reveal hide-scrollbar" style={{ width: "100%", maxWidth: "720px", padding: "32px", textAlign: "center", display: "flex", flexDirection: "column", gap: "24px", background: "rgba(20, 15, 30, 0.85)", border: `1.5px solid ${colors.border}`, borderRadius: "20px", boxShadow: `0 15px 40px rgba(0, 0, 0, 0.5), 0 0 15px ${colors.shadow}`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", color: "#fff", boxSizing: "border-box", animation: "float-up-intro 0.6s ease" }}>
+        <div className="animate-reveal hide-scrollbar thankyou-card style-picker-card" style={{ width: "100%", maxWidth: "720px", padding: "32px", textAlign: "center", display: "flex", flexDirection: "column", gap: "24px", background: "rgba(20, 15, 30, 0.85)", border: `1.5px solid ${colors.border}`, borderRadius: "20px", boxShadow: `0 15px 40px rgba(0, 0, 0, 0.5), 0 0 15px ${colors.shadow}`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", color: "#fff", boxSizing: "border-box", animation: "float-up-intro 0.6s ease" }}>
           <style>{`@media (max-width: 640px) { .style-picker-split { flex-direction: column-reverse !important; } .style-picker-options, .style-picker-preview { width: 100% !important; } }`}</style>
           <h3 style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: colors.accent, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive" }}>
             🎨 Choose Letter Style & Preview
@@ -203,7 +203,7 @@ export default function ThankYou({
               </div>
             </div>
           </div>
-          <div style={{ display: "flex", gap: "10px", width: "100%", marginTop: "8px" }}>
+          <div className="style-picker-buttons" style={{ display: "flex", gap: "10px", width: "100%", marginTop: "8px" }}>
             <button onClick={() => setShowStylePicker(false)}
               style={{ flex: 1, padding: "12px", borderRadius: "6px", background: "none", border: "1px solid rgba(255, 255, 255, 0.15)", color: "var(--text-muted)", fontSize: "13px", cursor: "pointer", transition: "all 0.2s" }}
               onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.35)")}
@@ -229,7 +229,7 @@ export default function ThankYou({
   // ── Main Thank You Card ──
   return (
     <>
-      <div className="animate-reveal hide-scrollbar" style={{ width: "100%", maxWidth: "500px", padding: "50px 30px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "28px", animation: "float-up-intro 0.6s ease", background: "rgba(20, 15, 30, 0.85)", border: `1.5px solid ${colors.border}`, borderRadius: "20px", boxShadow: `0 15px 40px rgba(0, 0, 0, 0.5), 0 0 15px ${colors.shadow}`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", color: "#fff", boxSizing: "border-box" }}>
+      <div className="animate-reveal hide-scrollbar thankyou-card" style={{ width: "100%", maxWidth: "500px", padding: "50px 30px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "28px", animation: "float-up-intro 0.6s ease", background: "rgba(20, 15, 30, 0.85)", border: `1.5px solid ${colors.border}`, borderRadius: "20px", boxShadow: `0 15px 40px rgba(0, 0, 0, 0.5), 0 0 15px ${colors.shadow}`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", color: "#fff", boxSizing: "border-box" }}>
         <div style={{ fontSize: "64px", marginBottom: "8px", animation: "heartbeat-survey 1.5s infinite ease-in-out" }}>💌</div>
         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
           <h2 style={{ fontSize: "36px", fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive", color: colors.accent, margin: 0, textShadow: "0 2px 8px rgba(0, 0, 0, 0.3)" }}>Thank You for Reading</h2>
@@ -244,7 +244,7 @@ export default function ThankYou({
             From {sender} to {recipient} with love
           </div>
         )}
-        <div style={{ display: "flex", gap: "12px", width: "100%", boxSizing: "border-box" }}>
+        <div className="style-picker-buttons" style={{ display: "flex", gap: "12px", width: "100%", boxSizing: "border-box" }}>
           <button onClick={() => setShowStylePicker(true)}
             style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#fff", fontWeight: 600, fontSize: "13px", cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}

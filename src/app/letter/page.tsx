@@ -135,9 +135,9 @@ function LetterReader() {
     markAsRead();
   }, [id, preview]);
 
-  // Prevent scroll on the recipient page to fit everything on one page
+  // Prevent scroll on the recipient page to fit everything on one page on desktop viewports
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && window.innerWidth >= 992) {
       document.documentElement.style.overflow = "hidden";
       document.documentElement.style.height = "100vh";
       document.body.style.overflow = "hidden";
@@ -341,17 +341,17 @@ function LetterReader() {
 
       return (
         <div 
+          className="letter-reader-container"
           style={{ 
             display: "flex", 
             flexDirection: "column", 
             alignItems: "center", 
             justifyContent: "center", 
-            height: "100vh", 
+            minHeight: "100vh", 
             width: "100%",
             padding: activeSteps.length > 1 ? "var(--page-padding-top, 120px) 20px 20px 20px" : "20px", 
             position: "relative", 
             zIndex: 10,
-            overflow: "hidden"
           }}
         >
           {/* Fixed Full Screen Page Backdrop to prevent any resizing/stretching distortion */}
