@@ -66,13 +66,6 @@ interface CustomCSSProperties extends React.CSSProperties {
   "--rot"?: string;
 }
 
-const previewCardsConfig = [
-  { tx: "-440px", ty: "-220px", rotate: -12, delay: 0.5 },
-  { tx: "440px", ty: "-220px", rotate: 12, delay: 0.65 },
-  { tx: "-460px", ty: "50px", rotate: -22, delay: 0.8 },
-  { tx: "460px", ty: "50px", rotate: 22, delay: 0.95 },
-];
-
 interface EnvelopeProps {
   recipient: string;
   sender: string;
@@ -126,7 +119,6 @@ export default function Envelope({
   const [isSheetExpanded, setIsSheetExpanded] = useState(false);
   const [isFirstOpen, setIsFirstOpen] = useState(true);
   const [forceHideEnvelope, setForceHideEnvelope] = useState(false);
-  const [showPreviewCards, setShowPreviewCards] = useState(false);
 
   // Map legacy state to expanded sub-view
   const isFullView = (isSheetExpanded && activeSheet === "letter") || forceHideEnvelope;
@@ -167,7 +159,6 @@ export default function Envelope({
   useEffect(() => {
     let timer1: NodeJS.Timeout;
     let timer2: NodeJS.Timeout;
-    let previewTimer: NodeJS.Timeout;
 
     if (isOpen) {
       if (isFirstOpen) {
@@ -184,16 +175,6 @@ export default function Envelope({
             timer2 = setTimeout(() => {
               setForceHideEnvelope(true);
             }, 1100);
-          } else if (activeStep === "envelope" && !isAdjacentToPolaroids && polaroids && polaroids.length > 0) {
-            // Play staggered swoosh sounds for preview cards when they spring out
-            polaroids.slice(0, 4).forEach((_, idx) => {
-              const delay = (previewCardsConfig[idx]?.delay || 0.5) * 1000;
-              setTimeout(() => playSwooshSound(), delay);
-            });
-            setShowPreviewCards(true);
-            previewTimer = setTimeout(() => {
-              setShowPreviewCards(false);
-            }, 3000);
           }
         }, 3000); // Flap rotation (1.2s) + letter slide out (1.8s)
       } else {
@@ -210,16 +191,6 @@ export default function Envelope({
           setActiveSheet("letter");
           timer1 = setTimeout(() => {
             setIsSheetExpanded(true);
-            if (!isAdjacentToPolaroids && polaroids && polaroids.length > 0) {
-              polaroids.slice(0, 4).forEach((_, idx) => {
-                const delay = (previewCardsConfig[idx]?.delay || 0.5) * 1000;
-                setTimeout(() => playSwooshSound(), delay);
-              });
-              setShowPreviewCards(true);
-              previewTimer = setTimeout(() => {
-                setShowPreviewCards(false);
-              }, 3000);
-            }
           }, 450); // Pause for dramatic anticipation before slide-up
         }
       }
@@ -228,13 +199,11 @@ export default function Envelope({
       setActiveSheet("none");
       setIsFirstOpen(true);
       setForceHideEnvelope(false);
-      setShowPreviewCards(false);
     }
 
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
-      clearTimeout(previewTimer);
     };
   }, [isOpen, activeStep, isFirstOpen, isAdjacentToPolaroids, polaroids]);
 
@@ -279,7 +248,7 @@ export default function Envelope({
     setForceHideEnvelope(false);
     setIsSheetExpanded(false);
     
-    const closeDuration = activeSheet === "polaroids" ? 1000 : 800;
+    const closeDuration = activeSheet === "polaroids" ? 1200 : 1600;
     
     setTimeout(() => {
       setActiveSheet("none");
@@ -293,7 +262,7 @@ export default function Envelope({
         setIsOpen(false);
         setTimeout(() => {
           if (onClose) onClose();
-        }, 1200); // Wait for flap to close
+        }, 1600); // Wait for flap to close
       }
     }, closeDuration);
   };
@@ -529,7 +498,9 @@ export default function Envelope({
           </div>
         </div>
       </div>
-    </div>      {/* Expanded Full Screen Stationery Sheet (Fade-in portal style) */}
+    </div>
+
+      {/* Expanded Full Screen Stationery Sheet (Fade-in portal style) */}
       {activeSheet === "letter" && (
         <div
           style={{
@@ -547,73 +518,10 @@ export default function Envelope({
             justifyContent: "center",
             opacity: isSheetExpanded ? 1 : 0,
             pointerEvents: isSheetExpanded ? "auto" : "none",
-            transition: "opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+            transition: "opacity 1.4s cubic-bezier(0.4, 0, 0.2, 1)",
             padding: "20px",
           }}
         >
-          {/* Scattered preview polaroid cards when not adjacent */}
-          {!isAdjacentToPolaroids && polaroids && polaroids.length > 0 && (
-            <div 
-              style={{ 
-                position: "absolute", 
-                width: "100%", 
-                maxWidth: "680px", 
-                height: "0px", 
-                overflow: "visible", 
-                pointerEvents: "none", 
-                zIndex: 1 
-              }}
-            >
-              {polaroids.slice(0, 4).map((p, idx) => {
-                const config = previewCardsConfig[idx];
-                if (!config) return null;
-
-                return (
-                  <div
-                    key={p.imageUrl || idx}
-                    style={{
-                      position: "absolute",
-                      left: "50%",
-                      top: "50%",
-                      marginLeft: "-75px",
-                      marginTop: "-90px",
-                      width: "150px",
-                      height: "180px",
-                      padding: "8px 8px 24px 8px",
-                      backgroundColor: "#fff",
-                      borderRadius: "6px",
-                      boxShadow: "0 10px 25px rgba(0,0,0,0.25)",
-                      transform: showPreviewCards 
-                        ? `translateX(${config.tx}) translateY(${config.ty}) rotate(${config.rotate}deg) scale(1)` 
-                        : `translateX(0px) translateY(200px) rotate(0deg) scale(0.05)`,
-                      opacity: showPreviewCards ? 0.95 : 0,
-                      transition: showPreviewCards
-                        ? `transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) ${config.delay}s, opacity 0.8s ease ${config.delay}s`
-                        : "transform 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0s, opacity 0.6s ease 0s",
-                      pointerEvents: "none",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "100%",
-                        height: "120px",
-                        borderRadius: "3px",
-                        backgroundImage: `url(${p.imageUrl})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                        border: "1px solid rgba(0,0,0,0.05)",
-                      }}
-                    />
-                    <div style={{ fontFamily: "var(--font-cursive)", fontSize: "11px", color: "#4f4f4f", textAlign: "center", marginTop: "8px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {p.caption || "❤️"}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-
           {/* The beautiful letter paper page */}
           <div
             className={`stationery-sheet ${themeClass} ${hasBackdrop ? "has-backdrop" : ""}`}
@@ -639,8 +547,8 @@ export default function Envelope({
               flexDirection: "column",
               transform: isSheetExpanded ? "scale(1) translateY(0)" : "scale(0.1) translateY(420px)",
               transition: isSheetExpanded 
-                ? "transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)" 
-                : "transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)",
+                ? "transform 1.6s cubic-bezier(0.25, 1, 0.5, 1)" 
+                : "transform 1.4s cubic-bezier(0.25, 1, 0.5, 1)",
               overflow: "hidden",
             }}
           >
