@@ -337,10 +337,10 @@ export default function Envelope({
         onClick={handleOpen}
         style={{
           transform: isFullView 
-            ? "scale(0.8) translateY(100px)" 
+            ? "var(--envelope-full-transform, scale(0.8) translateY(100px))" 
             : isOpen 
-              ? "translateY(110px) scale(0.95)" 
-              : "scale(1)",
+              ? "var(--envelope-open-transform, translateY(110px) scale(0.95))" 
+              : "var(--envelope-closed-transform, scale(1))",
           opacity: isFullView ? 0 : 1,
           visibility: isFullView ? "hidden" : "visible",
           transition: `transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease, visibility 0s linear ${isFullView ? "0.8s" : "0s"}`,

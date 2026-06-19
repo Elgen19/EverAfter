@@ -255,35 +255,9 @@ export default function ThankYou({
             From {sender} to {recipient} with love
           </div>
         )}
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%", boxSizing: "border-box" }}>
-          {/* Primary Journey Steps */}
-          <div style={{ display: "flex", gap: "12px", width: "100%" }}>
-            <button 
-              onClick={() => {
-                const targetLink = mailboxLink || `/mailbox?ref=${parentLetterId}`;
-                window.location.href = targetLink;
-              }}
-              className="glowing-mailbox-btn"
-              style={{ 
-                flex: 1.2, 
-                padding: "12px", 
-                borderRadius: "8px", 
-                background: "linear-gradient(135deg, #ff4b72, #9c6cfa)", 
-                border: "1px solid rgba(255, 255, 255, 0.2)", 
-                color: "#fff", 
-                fontWeight: "bold", 
-                fontSize: "14px", 
-                cursor: "pointer", 
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "6px",
-                boxShadow: "0 0 15px rgba(255, 75, 114, 0.4), 0 0 25px rgba(156, 108, 250, 0.3)",
-                transition: "all 0.3s ease"
-              }}
-            >
-              📬 Mailbox
-            </button>
+        <div className="thankyou-buttons-container">
+          {/* Horizontal row of 3 buttons (stacked on mobile) */}
+          <div className="thankyou-row-three">
             {!isWriteback && (
               <button onClick={handleWriteBack}
                 style={{ flex: 1, padding: "12px", borderRadius: "8px", background: colors.buttonBg, backgroundImage: theme === "blush" || theme === "royal" ? "none" : "linear-gradient(135deg, #ff4b72, #d9264c)", border: "none", color: "#fff", fontWeight: 600, fontSize: "14px", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", boxShadow: `0 4px 10px ${colors.shadow}` }}
@@ -302,21 +276,17 @@ export default function ThankYou({
                 Original Letter ↩
               </button>
             )}
-          </div>
-
-          {/* Secondary Utilities */}
-          <div style={{ display: "flex", gap: "12px", width: "100%" }}>
             <button onClick={() => setShowStylePicker(true)}
               style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#fff", fontWeight: 600, fontSize: "13px", cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; }}
             >
-              📥 Download Letter
+              📥 Download
             </button>
             <button 
               onClick={handleReplay}
               style={{ 
-                flex: 1, 
+                flex: 1,
                 padding: "12px", 
                 borderRadius: "8px", 
                 background: "rgba(255, 255, 255, 0.05)", 
@@ -337,6 +307,34 @@ export default function ThankYou({
               🔁 Replay
             </button>
           </div>
+
+          {/* Mailbox button below */}
+          <button 
+            onClick={() => {
+              const targetLink = mailboxLink || `/mailbox?ref=${parentLetterId}`;
+              window.location.href = targetLink;
+            }}
+            className="glowing-mailbox-btn thankyou-mailbox-btn"
+            style={{ 
+              padding: "12px", 
+              borderRadius: "8px", 
+              background: "linear-gradient(135deg, #ff4b72, #9c6cfa)", 
+              border: "1px solid rgba(255, 255, 255, 0.2)", 
+              color: "#fff", 
+              fontWeight: "bold", 
+              fontSize: "14px", 
+              cursor: "pointer", 
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "6px",
+              boxShadow: "0 0 15px rgba(255, 75, 114, 0.4), 0 0 25px rgba(156, 108, 250, 0.3)",
+              transition: "all 0.3s ease",
+              width: "100%",
+            }}
+          >
+            📬 Mailbox
+          </button>
         </div>
 
       </div>

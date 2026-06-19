@@ -251,6 +251,9 @@ body {
   cursor: pointer;
   z-index: 10;
   transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  --envelope-full-transform: scale(0.8) translateY(100px);
+  --envelope-open-transform: translateY(110px) scale(0.95);
+  --envelope-closed-transform: scale(1);
 }
 
 .envelope-wrapper:hover {
@@ -1277,6 +1280,11 @@ button:hover .quiz-option-badge {
     height: calc(330px * (100vw / 620)) !important;
     margin: 10px auto !important;
   }
+  .envelope-wrapper {
+    --envelope-full-transform: scale(0.7) translateY(60px) !important;
+    --envelope-open-transform: translateY(40px) scale(0.8) !important;
+    --envelope-closed-transform: scale(0.8) !important;
+  }
   .style-picker-buttons {
     flex-direction: column !important;
     gap: 8px !important;
@@ -1671,6 +1679,38 @@ button:hover .quiz-option-badge {
 }
 .glowing-mailbox-btn {
   animation: pulse-glowing-btn-key 2s infinite ease-in-out;
+}
+
+/* Thank You page responsive button grouping */
+.thankyou-buttons-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.thankyou-row-three {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.thankyou-row-three button {
+  flex: 1 !important;
+}
+
+@media (max-width: 600px) {
+  .thankyou-row-three {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  .thankyou-row-three button {
+    width: 100% !important;
+    flex: none !important;
+  }
 }
 
 
