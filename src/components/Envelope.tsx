@@ -449,7 +449,15 @@ export default function Envelope({
                           theme === "blush" ? "#FFFDF7" :
                           theme === "lavender" ? "#f7f4fc" :
                           theme === "celestial" ? "#090e24" :
-                          "var(--stationery-bg)"
+                          "var(--stationery-bg)",
+              transform: (isOpen && isFirstOpen && activeSheet === "none" && activeStep === "envelope")
+                ? "translateY(-270px) scaleY(1.05) translateZ(3px)" 
+                : "translateY(0) scaleY(1) translateZ(0)",
+              opacity: (isOpen && isFirstOpen && activeSheet === "none" && activeStep === "envelope") ? 1 : 0,
+              visibility: (isOpen && isFirstOpen && activeSheet === "none" && activeStep === "envelope") ? "visible" : "hidden",
+              transition: (isOpen && isFirstOpen && activeSheet === "none" && activeStep === "envelope")
+                ? "transform 2.0s cubic-bezier(0.25, 1, 0.5, 1) 1.5s, opacity 0.8s ease 1.5s, visibility 0s linear 1.5s"
+                : "transform 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0s, opacity 0.6s ease 0s, visibility 0s linear 0.6s"
             }}
           >
             <div style={{ fontSize: "10px", lineHeight: "1.3", opacity: 0.8, overflow: "hidden" }}>
@@ -504,7 +512,9 @@ export default function Envelope({
               display: "flex",
               flexDirection: "column",
               transform: isSheetExpanded ? "scale(1) translateY(0)" : "scale(0.1) translateY(420px)",
-              transition: "transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)",
+              transition: isSheetExpanded 
+                ? "transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)" 
+                : "transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)",
               overflow: "hidden",
             }}
           >
