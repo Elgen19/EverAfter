@@ -1732,12 +1732,12 @@ button:hover .quiz-option-badge {
 
 @media (max-width: 600px) {
   .stationery-sheet-portal {
-    padding-top: 95px !important; /* Clears the user journey progress dots at the top */
-    padding-bottom: 20px !important;
+    padding-top: 108px !important; /* Clears the user journey progress dots at the top */
+    padding-bottom: 16px !important;
     align-items: flex-start !important;
   }
   .stationery-sheet {
-    height: calc(100dvh - 125px) !important; /* Explicit viewport-relative height */
+    height: calc(100dvh - 124px) !important; /* Explicit viewport-relative height matching portal paddings */
     max-height: none !important;
     margin: 0 !important;
   }
