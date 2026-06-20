@@ -503,23 +503,11 @@ export default function Envelope({
       {/* Expanded Full Screen Stationery Sheet (Fade-in portal style) */}
       {activeSheet === "letter" && (
         <div
+          className="stationery-sheet-portal"
           style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 90,
-            background: "transparent",
-            backdropFilter: "none",
-            WebkitBackdropFilter: "none",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
             opacity: isSheetExpanded ? 1 : 0,
             pointerEvents: isSheetExpanded ? "auto" : "none",
             transition: "opacity 1.4s cubic-bezier(0.4, 0, 0.2, 1)",
-            padding: "20px",
           }}
         >
           {/* The beautiful letter paper page */}

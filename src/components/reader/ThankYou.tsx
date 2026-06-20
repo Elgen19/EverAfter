@@ -59,6 +59,7 @@ export default function ThankYou({
   onReplay
 }: ThankYouProps) {
   const [showStylePicker, setShowStylePicker] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const handleReplay = () => {
     if (onReplay) {
@@ -100,6 +101,7 @@ export default function ThankYou({
   };
 
   const handleWriteBack = () => {
+    setIsRedirecting(true);
     window.location.href = `/create?writeback=true&to=${encodeURIComponent(sender)}&from=${encodeURIComponent(recipient)}&replyToId=${parentLetterId}&recipientUid=${recipientUid}`;
   };
 
@@ -268,7 +270,7 @@ export default function ThankYou({
               </button>
             )}
             {isWriteback && replyToId && (
-              <button onClick={() => { window.location.href = `/letter?id=${replyToId}`; }}
+              <button onClick={() => { setIsRedirecting(true); window.location.href = `/letter?id=${replyToId}`; }}
                 style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "linear-gradient(135deg, #e2b857 0%, #b38f36 100%)", border: "none", color: "#fff", fontWeight: 600, fontSize: "14px", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", boxShadow: "0 4px 10px rgba(226, 184, 87, 0.2)" }}
                 onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
                 onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
@@ -311,6 +313,7 @@ export default function ThankYou({
           {/* Mailbox button below */}
           <button 
             onClick={() => {
+              setIsRedirecting(true);
               const targetLink = mailboxLink || `/mailbox?ref=${parentLetterId}`;
               window.location.href = targetLink;
             }}
@@ -339,6 +342,40 @@ export default function ThankYou({
 
       </div>
       {PdfHiddenTarget}
+      
+      {isRedirecting && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "#0b0711",
+          zIndex: 9999,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          animation: "dramatic-slide-up 1.2s cubic-bezier(0.85, 0, 0.15, 1) forwards",
+          pointerEvents: "all"
+        }}>
+          <style>{`
+            @keyframes dramatic-slide-up {
+              0% { transform: translateY(100vh); opacity: 0; }
+              30% { opacity: 1; }
+              100% { transform: translateY(0); opacity: 1; }
+            }
+          `}</style>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "24px", textAlign: "center" }}>
+            <div style={{ fontSize: "80px", animation: "heartbeat-survey 1.0s infinite ease-in-out" }}>✍️</div>
+            <div style={{ fontSize: "28px", fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive", color: "var(--accent-rose)", textShadow: "0 0 10px rgba(255, 75, 114, 0.5)" }}>
+              Preparing your stationery...
+            </div>
+            <div style={{ fontSize: "14px", color: "var(--text-muted)", fontStyle: "italic" }}>
+              Redirecting you to the creation suite
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

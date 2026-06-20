@@ -19,6 +19,35 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<"sent" | "received">("sent");
   const [selectedLinks, setSelectedLinks] = useState<string[]>([]);
 
+  const loveQuotes = [
+    "\"In all the world, there is no heart for me like yours. In all the world, there is no love for you like mine.\" — Maya Angelou",
+    "\"I love you not only for what you are, but for what I am when I am with you.\" — Elizabeth Barrett Browning",
+    "\"Whatever our souls are made of, his and mine are the same.\" — Emily Brontë",
+    "\"I've tried so many times to think of a new way to say it, and it's still I love you.\" — Zelda Fitzgerald",
+    "\"If I had a flower for every time I thought of you... I could walk through my garden forever.\" — Alfred Tennyson",
+    "\"You are my heart, my life, my one and only thought.\" — Arthur Conan Doyle",
+    "\"If you live to be a hundred, I want to live to be a hundred minus one day so I never have to live without you.\" — A.A. Milne",
+    "\"My love for you is a journey; starting at forever, and ending at never.\" — Anonymous",
+    "\"You are, and always have been, my dream.\" — Nicholas Sparks",
+    "\"To love and be loved is to feel the sun from both sides.\" — David Viscott"
+  ];
+
+  const [quoteIdx, setQuoteIdx] = useState(0);
+
+  useEffect(() => {
+    setQuoteIdx(Math.floor(Math.random() * loveQuotes.length));
+    const interval = setInterval(() => {
+      setQuoteIdx((prev) => {
+        let nextIdx;
+        do {
+          nextIdx = Math.floor(Math.random() * loveQuotes.length);
+        } while (nextIdx === prev && loveQuotes.length > 1);
+        return nextIdx;
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => { setSelectedLinks([]); }, [activeTab]);
 
   // Send Email Modal
@@ -246,8 +275,12 @@ export default function DashboardPage() {
           <h1 className="dashboard-hero-title" style={{ fontSize: "52px", fontWeight: "bold", fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive", color: "#ffffff", textShadow: "0 0 15px rgba(255, 75, 114, 0.45)", lineHeight: "1.4", maxWidth: "800px", margin: "0 auto", display: "block" }}>
             {questionText}
           </h1>
-          <p style={{ fontSize: "16px", color: "var(--text-muted)", lineHeight: "1.6", maxWidth: "540px", margin: "0 auto", opacity: 0.95 }}>
-            Create a custom digital message on EverAfter. Select stationery, write your feelings, set release conditions, play background lo-fi music, and seal it with a realistic wax stamp.
+          <p 
+            key={quoteIdx}
+            className="animate-reveal"
+            style={{ fontSize: "16px", color: "var(--text-muted)", fontStyle: "italic", lineHeight: "1.6", maxWidth: "540px", margin: "0 auto", opacity: 0.95, minHeight: "48px" }}
+          >
+            {loveQuotes[quoteIdx]}
           </p>
           <div style={{ marginTop: "12px" }}>
             <button id="btn-create-letter"

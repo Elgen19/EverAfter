@@ -32,7 +32,7 @@ function MailboxContent() {
   const [refLetter, setRefLetter] = useState<any>(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isTransitioningToLetter, setIsTransitioningToLetter] = useState(false);
-  const [activeTab, setActiveTab] = useState<"all" | "received" | "sent">("all");
+  const [activeTab, setActiveTab] = useState<"received" | "sent">("received");
 
   const displayedLetters = useMemo(() => {
     if (activeTab === "received") {
@@ -346,16 +346,7 @@ function MailboxContent() {
   };
 
   return (
-    <div style={{ 
-      height: "100%", 
-      display: "flex", 
-      flexDirection: "column", 
-      justifyContent: "space-between", 
-      padding: "24px 20px 20px 20px", 
-      boxSizing: "border-box",
-      position: "relative", 
-      zIndex: 10 
-    }}>
+    <div className="mailbox-inner-container">
       {/* Dynamic Dramatic Loading Screen Overlay */}
       <div 
         style={{
@@ -748,7 +739,7 @@ function MailboxContent() {
         })}
       </div>
 
-      <header style={{ textAlign: "center", flexShrink: 0 }}>
+      <header className="mailbox-header" style={{ textAlign: "center", flexShrink: 0 }}>
         <div style={{ display: "inline-block", fontSize: "40px", marginBottom: "4px", filter: "drop-shadow(0 2px 6px rgba(226,184,87,0.25))" }}>📬</div>
         <h1 style={{ 
           fontSize: "42px", 
@@ -784,7 +775,6 @@ function MailboxContent() {
         flexShrink: 0
       }}>
         {([
-          { id: "all", label: "All Messages", icon: "✨" },
           { id: "received", label: `From ${senderName}`, icon: "✉" },
           { id: "sent", label: "My Replies", icon: "✍" }
         ] as const).map((tab) => {
@@ -897,199 +887,201 @@ function MailboxContent() {
                 pointerEvents: "none"
               }}
             >
-              <div
-                onClick={() => {
-                  if (isTransitioningToLetter) return;
-                  setIsTransitioningToLetter(true);
-                  let targetLink = getRelativeLink(letter.link);
-                  if (letter.isWriteback) {
-                    targetLink += targetLink.includes("?") ? "&preview=true" : "?preview=true";
-                  }
-                  setTimeout(() => {
-                    router.push(targetLink);
-                  }, 1200);
-                }}
-                className={isActive ? "active-envelope-shake" : ""}
-                style={{
-                  pointerEvents: "auto",
-                  cursor: "pointer",
-                  // Compositor-only translate/scale/rotate changes are buttery smooth and GPU accelerated!
-                  transform: isActive 
-                    ? undefined 
-                    : `scale(0.9) rotate(${rotation}deg)`,
-                  transformOrigin: "center center",
-                  transition: isActive ? undefined : "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-                  ["--rotation" as any]: `${rotation}deg`
-                } as React.CSSProperties}
-              >
-                {/* Envelope Core from Envelope.tsx */}
-                <div className="envelope-container mailbox-envelope-container">
-                  <div 
-                    className={`envelope-wrapper ${themeClass} vintage-rose-style`}
-                    style={{
-                      boxShadow: isActive
-                        ? "0 25px 50px rgba(0,0,0,0.7), 0 0 25px rgba(226, 184, 87, 0.4)"
-                        : isCurrentRef 
-                          ? "0 0 20px rgba(226, 184, 87, 0.3), 0 10px 25px rgba(0,0,0,0.45)" 
-                          : "0 10px 25px rgba(0,0,0,0.45)",
-                      transition: "box-shadow 0.4s ease"
-                    }}
-                  >
+              {Math.abs(index - activeIndex) <= 1 ? (
+                <div
+                  onClick={() => {
+                    if (isTransitioningToLetter) return;
+                    setIsTransitioningToLetter(true);
+                    let targetLink = getRelativeLink(letter.link);
+                    if (letter.isWriteback) {
+                      targetLink += targetLink.includes("?") ? "&preview=true" : "?preview=true";
+                    }
+                    setTimeout(() => {
+                      router.push(targetLink);
+                    }, 1200);
+                  }}
+                  className={isActive ? "active-envelope-shake" : ""}
+                  style={{
+                    pointerEvents: "auto",
+                    cursor: "pointer",
+                    // Compositor-only translate/scale/rotate changes are buttery smooth and GPU accelerated!
+                    transform: isActive 
+                      ? undefined 
+                      : `scale(0.9) rotate(${rotation}deg)`,
+                    transformOrigin: "center center",
+                    transition: isActive ? undefined : "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                    ["--rotation" as any]: `${rotation}deg`
+                  } as React.CSSProperties}
+                >
+                  {/* Envelope Core from Envelope.tsx */}
+                  <div className="envelope-container mailbox-envelope-container">
                     <div 
-                      className="envelope vintage-rose-style"
-                    style={{
-                      "--env-bg-image": isCelestialBlue ? "url(/celestial_envelope_open.png)" :
-                                        isVintageWhite ? "url(/white_envelope_open.png)" : "url(/vintage_envelope_open.png)",
-                      "--env-flap-image": isCelestialBlue ? "url(/celestial_envelope_flap.png)" :
-                                          isVintageWhite ? "url(/white_envelope_flap.png)" : "url(/vintage_envelope_flap.png)",
-                      "--env-bg-pos": isCelestialBlue ? "-81.7px -278px" :
-                                      isVintageWhite ? "-81.7px -278px" : "-81.7px -277.3px",
-                      "--env-flap-pos": isCelestialBlue ? "-81.7px -57.2px" :
-                                        isVintageWhite ? "-81.7px -32.8px" : "-81.7px -211.9px",
-                      border: isCurrentRef ? "2.5px solid var(--accent-gold)" : "none",
-                      borderRadius: "12px"
-                    } as React.CSSProperties}
-                  >
-                    {/* Layer 1: Envelope Back */}
-                    <div className="vintage-envelope-back" />
-
-                    {/* Layer 2: Envelope Front Pocket */}
-                    <div className="vintage-envelope-front-pocket">
-                      {/* Sender Address */}
-                      <div style={{ 
-                        position: "absolute",
-                        bottom: "30px",
-                        left: "35px",
-                        fontFamily: "var(--font-ui)",
-                        fontSize: "12px",
-                        color: textColor,
-                        textAlign: "left",
-                        lineHeight: "1.2",
-                        zIndex: 7,
-                        pointerEvents: "none",
-                        maxWidth: "180px",
-                      }}>
-                        <div style={{ fontSize: "8px", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "2px", color: labelColor }}>From:</div>
-                        <div style={{ fontWeight: "bold", fontSize: "14px", color: nameColor }}>{letter.sender}</div>
-                        <div>123 Romance Avenue</div>
-                      </div>
-
-                      {/* Deliver To Address */}
-                      <div style={{ 
-                        position: "absolute",
-                        bottom: "30px",
-                        right: "35px",
-                        fontFamily: "var(--font-ui)",
-                        fontSize: "12px",
-                        color: textColor,
-                        textAlign: "left",
-                        lineHeight: "1.2",
-                        zIndex: 7,
-                        pointerEvents: "none",
-                        maxWidth: "180px",
-                      }}>
-                        <div style={{ fontSize: "8px", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "2px", color: labelColor }}>Deliver To:</div>
-                        <div style={{ fontWeight: "bold", fontSize: "14px", color: nameColor }}>{letter.recipient}</div>
-                        <div>777 Sweetheart Lane</div>
-                      </div>
-
-                      {/* Handwritten Cursive Title Label */}
-                      <div style={{
-                        position: "absolute",
-                        top: "95px",
-                        left: "50%",
-                        transform: "translateX(-50%)",
-                        width: "80%",
-                        textAlign: "center",
-                        zIndex: 7,
-                        fontFamily: "var(--font-cursive)",
-                        fontSize: "26px",
-                        color: textColor,
-                        textShadow: "0 1px 2px rgba(0,0,0,0.15)",
-                        fontStyle: "italic",
-                        pointerEvents: "none"
-                      }}>
-                        "{letter.title}"
-                      </div>
-                    </div>
-                    
-                    {/* Layer 3: Rotating/Folding Flap */}
-                    <div 
-                      className="vintage-envelope-flap-part" 
-                      style={
-                        isVintageWhite ? { backgroundPosition: "-81.7px -32.8px" } :
-                        isCelestialBlue ? { backgroundPosition: "-81.7px -57.2px" } :
-                        undefined
-                      }
-                    />
-
-                    {/* Stamp-like Postmark Badge */}
-                    <div style={{
-                      position: "absolute",
-                      top: "28px",
-                      right: "36px",
-                      background: letter.isWriteback
-                        ? (letter.read ? "rgba(156, 108, 250, 0.95)" : "rgba(123, 44, 191, 0.95)")
-                        : letter.read 
-                          ? "rgba(40, 167, 69, 0.9)" 
-                          : "rgba(217, 38, 76, 0.95)",
-                      border: isCurrentRef ? "2px solid var(--accent-gold)" : "1px solid rgba(255,255,255,0.15)",
-                      borderRadius: "4px",
-                      padding: "4px 8px",
-                      fontSize: "9px",
-                      fontFamily: "var(--font-ui)",
-                      fontWeight: "bold",
-                      color: "#fff",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2)",
-                      transform: "rotate(6deg) translateZ(3px)",
-                      zIndex: 7,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px"
-                    }}>
-                      {letter.isWriteback 
-                        ? (letter.read ? "Read 📖" : "Sent Reply ✉")
-                        : (letter.read ? "Opened 📖" : "Unread ✉")
-                      }
-                    </div>
-
-                    {/* Wax Seal */}
-                    <div 
-                      className="wax-seal vintage-rose-style"
+                      className={`envelope-wrapper ${themeClass} vintage-rose-style`}
                       style={{
-                        "--seal-color-main": isVintageRose ? "#b38f36" : isCelestialBlue ? "#b76e79" : "#9c1c2e",
-                        "--seal-color-light": isVintageRose ? "#ffd670" : isCelestialBlue ? "#e8b4b8" : "#e2b857",
-                        "--seal-color-dark": isVintageRose ? "#7a5c18" : isCelestialBlue ? "#5c2f45" : "#5c0a18",
-                        "--seal-bg-image": isCelestialBlue ? "url(/vintage_heart_seal.jpg)" :
-                                           isVintageWhite ? "url(/vintage_red_seal.png)" : "url(/vintage_rose_seal.png)",
-                        pointerEvents: "none",
-                        zIndex: 8,
-                        ...(isVintageWhite ? {
-                          width: "112px",
-                          height: "112px",
-                          left: "calc(50% - 56px)",
-                          top: "164px"
-                        } : {}),
-                        ...(isCelestialBlue ? {
-                          width: "106px",
-                          height: "106px",
-                          left: "calc(50% - 53px)",
-                          top: "167px"
-                        } : {})
-                      } as React.CSSProperties}
+                        boxShadow: isActive
+                          ? "0 25px 50px rgba(0,0,0,0.7), 0 0 25px rgba(226, 184, 87, 0.4)"
+                          : isCurrentRef 
+                            ? "0 0 20px rgba(226, 184, 87, 0.3), 0 10px 25px rgba(0,0,0,0.45)" 
+                            : "0 10px 25px rgba(0,0,0,0.45)",
+                        transition: "box-shadow 0.4s ease"
+                      }}
                     >
-                      <div className="wax-seal-quarter top-left" />
-                      <div className="wax-seal-quarter top-right" />
-                      <div className="wax-seal-quarter bottom-left" />
-                      <div className="wax-seal-quarter bottom-right" />
+                      <div 
+                        className="envelope vintage-rose-style"
+                        style={{
+                          "--env-bg-image": isCelestialBlue ? "url(/celestial_envelope_open.png)" :
+                                            isVintageWhite ? "url(/white_envelope_open.png)" : "url(/vintage_envelope_open.png)",
+                          "--env-flap-image": isCelestialBlue ? "url(/celestial_envelope_flap.png)" :
+                                              isVintageWhite ? "url(/white_envelope_flap.png)" : "url(/vintage_envelope_flap.png)",
+                          "--env-bg-pos": isCelestialBlue ? "-81.7px -278px" :
+                                          isVintageWhite ? "-81.7px -278px" : "-81.7px -277.3px",
+                          "--env-flap-pos": isCelestialBlue ? "-81.7px -57.2px" :
+                                            isVintageWhite ? "-81.7px -32.8px" : "-81.7px -211.9px",
+                          border: isCurrentRef ? "2.5px solid var(--accent-gold)" : "none",
+                          borderRadius: "12px"
+                        } as React.CSSProperties}
+                      >
+                        {/* Layer 1: Envelope Back */}
+                        <div className="vintage-envelope-back" />
+
+                        {/* Layer 2: Envelope Front Pocket */}
+                        <div className="vintage-envelope-front-pocket">
+                          {/* Sender Address */}
+                          <div style={{ 
+                            position: "absolute",
+                            bottom: "30px",
+                            left: "35px",
+                            fontFamily: "var(--font-ui)",
+                            fontSize: "12px",
+                            color: textColor,
+                            textAlign: "left",
+                            lineHeight: "1.2",
+                            zIndex: 7,
+                            pointerEvents: "none",
+                            maxWidth: "180px",
+                          }}>
+                            <div style={{ fontSize: "8px", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "2px", color: labelColor }}>From:</div>
+                            <div style={{ fontWeight: "bold", fontSize: "14px", color: nameColor }}>{letter.sender}</div>
+                            <div>123 Romance Avenue</div>
+                          </div>
+
+                          {/* Deliver To Address */}
+                          <div style={{ 
+                            position: "absolute",
+                            bottom: "30px",
+                            right: "35px",
+                            fontFamily: "var(--font-ui)",
+                            fontSize: "12px",
+                            color: textColor,
+                            textAlign: "left",
+                            lineHeight: "1.2",
+                            zIndex: 7,
+                            pointerEvents: "none",
+                            maxWidth: "180px",
+                          }}>
+                            <div style={{ fontSize: "8px", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "2px", color: labelColor }}>Deliver To:</div>
+                            <div style={{ fontWeight: "bold", fontSize: "14px", color: nameColor }}>{letter.recipient}</div>
+                            <div>777 Sweetheart Lane</div>
+                          </div>
+
+                          {/* Handwritten Cursive Title Label */}
+                          <div style={{
+                            position: "absolute",
+                            top: "95px",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            width: "80%",
+                            textAlign: "center",
+                            zIndex: 7,
+                            fontFamily: "var(--font-cursive)",
+                            fontSize: "26px",
+                            color: textColor,
+                            textShadow: "0 1px 2px rgba(0,0,0,0.15)",
+                            fontStyle: "italic",
+                            pointerEvents: "none"
+                          }}>
+                            "{letter.title}"
+                          </div>
+                        </div>
+                        
+                        {/* Layer 3: Rotating/Folding Flap */}
+                        <div 
+                          className="vintage-envelope-flap-part" 
+                          style={
+                            isVintageWhite ? { backgroundPosition: "-81.7px -32.8px" } :
+                            isCelestialBlue ? { backgroundPosition: "-81.7px -57.2px" } :
+                            undefined
+                          }
+                        />
+
+                        {/* Stamp-like Postmark Badge */}
+                        <div style={{
+                          position: "absolute",
+                          top: "28px",
+                          right: "36px",
+                          background: letter.isWriteback
+                            ? (letter.read ? "rgba(156, 108, 250, 0.95)" : "rgba(123, 44, 191, 0.95)")
+                            : letter.read 
+                              ? "rgba(40, 167, 69, 0.9)" 
+                              : "rgba(217, 38, 76, 0.95)",
+                          border: isCurrentRef ? "2.5px solid var(--accent-gold)" : "1px solid rgba(255,255,255,0.15)",
+                          borderRadius: "4px",
+                          padding: "4px 8px",
+                          fontSize: "9px",
+                          fontFamily: "var(--font-ui)",
+                          fontWeight: "bold",
+                          color: "#fff",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2)",
+                          transform: "rotate(6deg) translateZ(3px)",
+                          zIndex: 7,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.5px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px"
+                        }}>
+                          {letter.isWriteback 
+                            ? (letter.read ? "Read 📖" : "Sent Reply ✉")
+                            : (letter.read ? "Opened 📖" : "Unread ✉")
+                          }
+                        </div>
+
+                        {/* Wax Seal */}
+                        <div 
+                          className="wax-seal vintage-rose-style"
+                          style={{
+                            "--seal-color-main": isVintageRose ? "#b38f36" : isCelestialBlue ? "#b76e79" : "#9c1c2e",
+                            "--seal-color-light": isVintageRose ? "#ffd670" : isCelestialBlue ? "#e8b4b8" : "#e2b857",
+                            "--seal-color-dark": isVintageRose ? "#7a5c18" : isCelestialBlue ? "#5c2f45" : "#5c0a18",
+                            "--seal-bg-image": isCelestialBlue ? "url(/vintage_heart_seal.jpg)" :
+                                               isVintageWhite ? "url(/vintage_red_seal.png)" : "url(/vintage_rose_seal.png)",
+                            pointerEvents: "none",
+                            zIndex: 8,
+                            ...(isVintageWhite ? {
+                              width: "112px",
+                              height: "112px",
+                              left: "calc(50% - 56px)",
+                              top: "164px"
+                            } : {}),
+                            ...(isCelestialBlue ? {
+                              width: "106px",
+                              height: "106px",
+                              left: "calc(50% - 53px)",
+                              top: "167px"
+                            } : {})
+                          } as React.CSSProperties}
+                        >
+                          <div className="wax-seal-quarter top-left" />
+                          <div className="wax-seal-quarter top-right" />
+                          <div className="wax-seal-quarter bottom-left" />
+                          <div className="wax-seal-quarter bottom-right" />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              ) : null}
             </div>
-          </div>
           );
         })}
         </div>
@@ -1221,10 +1213,9 @@ function MailboxContent() {
                 <button
                   onClick={() => {
                     const parentId = displayedLetters[activeIndex].replyToId;
-                    if (activeTab !== "all") {
-                      setActiveTab("all");
-                    }
-                    const parentIndex = letters.findIndex((l) => l.id === parentId);
+                    setActiveTab("received");
+                    const receivedLettersList = letters.filter((l) => !l.isWriteback);
+                    const parentIndex = receivedLettersList.findIndex((l) => l.id === parentId);
                     if (parentIndex !== -1) {
                       setActiveIndex(parentIndex);
                     }
@@ -1271,7 +1262,7 @@ function MailboxContent() {
 export default function MailboxPage() {
   return (
     <div style={{ 
-      height: "100vh", 
+      height: "100dvh", 
       width: "100vw",
       position: "relative",
       backgroundColor: "#100907", // Deep warm charcoal

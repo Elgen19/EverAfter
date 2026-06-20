@@ -31,6 +31,7 @@ export default function PolaroidsReader({
   const [slidingIndex, setSlidingIndex] = useState<number | null>(null);
   const [flippedIndex, setFlippedIndex] = useState<number | null>(null);
   const [interacted, setInteracted] = useState<boolean>(false);
+  const lastTouchTimeRef = React.useRef<number>(0);
 
   // Dragging and swiping states
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -65,6 +66,7 @@ export default function PolaroidsReader({
   }, [isStandalone, isSheetExpanded]);
 
   const handleMouseMoveHover = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (Date.now() - lastTouchTimeRef.current < 1000) return;
     if (isDragging || slidingIndex !== null || swipeDirection !== null) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left - rect.width / 2;
@@ -172,6 +174,7 @@ export default function PolaroidsReader({
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (Date.now() - lastTouchTimeRef.current < 1000) return;
     if (slidingIndex !== null || swipeDirection !== null) return;
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
@@ -179,6 +182,7 @@ export default function PolaroidsReader({
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
+    if (Date.now() - lastTouchTimeRef.current < 1000) return;
     if (!isDragging) return;
     const deltaX = e.clientX - dragStart.x;
     const deltaY = e.clientY - dragStart.y;
@@ -211,6 +215,7 @@ export default function PolaroidsReader({
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    lastTouchTimeRef.current = Date.now();
     if (slidingIndex !== null || swipeDirection !== null) return;
     setIsDragging(true);
     setDragStart({ x: e.touches[0].clientX, y: e.touches[0].clientY });
@@ -225,6 +230,7 @@ export default function PolaroidsReader({
   };
 
   const handleTouchEnd = () => {
+    lastTouchTimeRef.current = Date.now();
     if (!isDragging) return;
     setIsDragging(false);
 
@@ -579,13 +585,16 @@ export default function PolaroidsReader({
           // Unified top card drag, hover-tilt, click handlers
           const cardHandlers = isTop ? {
             onMouseDown: (e: React.MouseEvent<HTMLDivElement>) => {
+              if (Date.now() - lastTouchTimeRef.current < 1000) return;
               if (items.length > 1) handleMouseDown(e);
             },
             onMouseMove: (e: React.MouseEvent<HTMLDivElement>) => {
+              if (Date.now() - lastTouchTimeRef.current < 1000) return;
               if (items.length > 1) handleMouseMove(e);
               handleMouseMoveHover(e);
             },
             onMouseUp: () => {
+              if (Date.now() - lastTouchTimeRef.current < 1000) return;
               if (items.length > 1) handleMouseUp();
               else {
                 setFlippedIndex(flippedIndex === topIndex ? null : topIndex);
@@ -594,16 +603,19 @@ export default function PolaroidsReader({
               handleMouseLeaveHover();
             },
             onMouseLeave: () => {
+              if (Date.now() - lastTouchTimeRef.current < 1000) return;
               if (items.length > 1) handleMouseLeave();
               handleMouseLeaveHover();
             },
             onTouchStart: (e: React.TouchEvent) => {
+              lastTouchTimeRef.current = Date.now();
               if (items.length > 1) handleTouchStart(e);
             },
             onTouchMove: (e: React.TouchEvent) => {
               if (items.length > 1) handleTouchMove(e);
             },
             onTouchEnd: () => {
+              lastTouchTimeRef.current = Date.now();
               if (items.length > 1) handleTouchEnd();
               else {
                 setFlippedIndex(flippedIndex === topIndex ? null : topIndex);

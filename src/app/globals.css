@@ -1422,8 +1422,9 @@ button:hover .quiz-option-badge {
 
 @media (max-width: 480px) {
   .dashboard-action-bar {
-    flex-direction: column !important;
-    align-items: stretch !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
     gap: 8px !important;
   }
   .dashboard-tab-btn {
@@ -1710,6 +1711,62 @@ button:hover .quiz-option-badge {
   .thankyou-row-three button {
     width: 100% !important;
     flex: none !important;
+  }
+}
+
+/* Expanded Full Screen Stationery Sheet Portal overlay wrapper */
+.stationery-sheet-portal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 90;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .stationery-sheet-portal {
+    padding-top: 100px !important; /* Clears the user journey progress dots at the top */
+    padding-bottom: 24px !important;
+    align-items: flex-start !important;
+  }
+  .stationery-sheet {
+    max-height: calc(100vh - 170px) !important;
+    height: calc(100% - 20px) !important;
+  }
+}
+
+/* Mailbox root inner container and header responsive styles */
+.mailbox-inner-container {
+  height: 100%; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: space-between; 
+  padding: 24px 20px 20px 20px; 
+  box-sizing: border-box;
+  position: relative; 
+  z-index: 10;
+}
+
+@media (max-width: 600px) {
+  .mailbox-inner-container {
+    padding: 10px 12px 10px 12px !important; /* Reclaims vertical space */
+  }
+  .mailbox-header h1 {
+    font-size: 28px !important;
+  }
+  .mailbox-header p {
+    font-size: 11px !important;
+  }
+  .mailbox-header div {
+    font-size: 24px !important; /* Scale down emoji size */
+    margin-bottom: 0px !important;
   }
 }
 
