@@ -1737,7 +1737,7 @@ button:hover .quiz-option-badge {
     align-items: flex-start !important;
   }
   .stationery-sheet {
-    height: 100% !important;
+    height: calc(100dvh - 125px) !important; /* Explicit viewport-relative height */
     max-height: none !important;
     margin: 0 !important;
   }
