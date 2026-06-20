@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { 
   Playfair_Display, 
   Allura, 
@@ -119,6 +120,11 @@ export default function Envelope({
   const [isSheetExpanded, setIsSheetExpanded] = useState(false);
   const [isFirstOpen, setIsFirstOpen] = useState(true);
   const [forceHideEnvelope, setForceHideEnvelope] = useState(false);
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Map legacy state to expanded sub-view
   const isFullView = (isSheetExpanded && activeSheet === "letter") || forceHideEnvelope;
@@ -501,9 +507,9 @@ export default function Envelope({
     </div>
 
       {/* Expanded Full Screen Stationery Sheet (Fade-in portal style) */}
-      {activeSheet === "letter" && (
+      {activeSheet === "letter" && mounted && createPortal(
         <div
-          className="stationery-sheet-portal"
+          className={`stationery-sheet-portal ${isOnlyStep || !activeStep ? "no-timeline" : ""}`}
           style={{
             opacity: isSheetExpanded ? 1 : 0,
             pointerEvents: isSheetExpanded ? "auto" : "none",
@@ -786,11 +792,12 @@ export default function Envelope({
               </svg>
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Expanded Full Screen Polaroid Stack (Fade-in portal style) */}
-      {activeSheet === "polaroids" && (
+      {activeSheet === "polaroids" && mounted && createPortal(
         <div
           style={{
             position: "fixed",
@@ -826,7 +833,8 @@ export default function Envelope({
               isSheetExpanded={isSheetExpanded}
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {isOnlyStep && isSealBroken && !isOpen && !isFullView && !isBreaking && (

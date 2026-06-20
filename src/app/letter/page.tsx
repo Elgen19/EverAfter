@@ -1,6 +1,7 @@
 "use client";
 
 import React, { Suspense, useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { useSearchParams } from "next/navigation";
 import { decodeLetterData } from "@/utils/encoding";
 import FloatingHearts from "@/components/FloatingHearts";
@@ -42,6 +43,11 @@ function LetterReader() {
 
   const [dbData, setDbData] = useState<any>(null);
   const [fetchingDb, setFetchingDb] = useState(!!id);
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchFromDb = async () => {
@@ -356,6 +362,7 @@ function LetterReader() {
   };
 
   const currentStep = activeSteps[visibleStepIndex];
+  const hasTimeline = activeSteps.filter(id => id !== "thankYou").length > 1 && currentStep !== "thankYou";
 
   // If letter is locked under Send Later scheduler, render lock screen countdown
   if (isLocked && data.sendLaterDate) {
@@ -376,7 +383,7 @@ function LetterReader() {
 
       return (
         <div 
-          className="letter-reader-container"
+          className={`letter-reader-container ${!hasTimeline ? "no-timeline" : ""}`}
           style={{ 
             display: "flex", 
             flexDirection: "column", 
@@ -384,7 +391,7 @@ function LetterReader() {
             justifyContent: "center", 
             minHeight: "100vh", 
             width: "100%",
-            padding: activeSteps.length > 1 ? "var(--page-padding-top, 120px) 20px 20px 20px" : "20px", 
+            padding: hasTimeline ? "var(--page-padding-top, 120px) 20px 20px 20px" : "20px", 
             position: "relative", 
             zIndex: 10,
           }}
@@ -419,8 +426,9 @@ function LetterReader() {
       )}
 
       {/* Progress timeline navigation dots */}
-      {activeSteps.filter(id => id !== "thankYou").length > 1 && currentStep !== "thankYou" && (
+      {mounted && activeSteps.filter(id => id !== "thankYou").length > 1 && currentStep !== "thankYou" && createPortal(
         <div 
+          className="letter-timeline-container"
           style={{ 
             position: "fixed", 
             top: "20px", 
@@ -431,7 +439,7 @@ function LetterReader() {
             justifyContent: "center", 
             width: "calc(100% - 40px)", 
             maxWidth: "440px", 
-            zIndex: 50,
+            zIndex: 150,
             padding: "14px 24px 22px 24px",
             background: "transparent",
             border: "none",
@@ -567,7 +575,8 @@ function LetterReader() {
               );
             })}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Step Transition Frame */}

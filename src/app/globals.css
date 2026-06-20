@@ -1454,6 +1454,7 @@ button:hover .quiz-option-badge {
 @media (max-width: 991px) {
   :root {
     --envelope-min-height: 380px;
+    --page-padding-top: 80px;
   }
   .hidden-mobile {
     display: none !important;
@@ -1488,8 +1489,11 @@ button:hover .quiz-option-badge {
     justify-content: center !important;
     min-height: 100vh !important;
     height: auto !important;
-    padding: 16px 12px !important;
+    padding: var(--page-padding-top, 80px) 12px 16px 12px !important;
     box-sizing: border-box !important;
+  }
+  .letter-reader-container.no-timeline {
+    padding: 16px 12px !important;
   }
   .stationery-sheet {
     padding: 12px 8px !important;
@@ -1731,15 +1735,28 @@ button:hover .quiz-option-badge {
 }
 
 @media (max-width: 600px) {
+  .letter-timeline-container {
+    top: 10px !important;
+    padding: 8px 16px 16px 16px !important;
+  }
   .stationery-sheet-portal {
-    padding-top: 108px !important; /* Clears the user journey progress dots at the top */
+    padding-top: 72px !important; /* Stack the paper immediately below the compact timeline dots */
     padding-bottom: 16px !important;
     align-items: flex-start !important;
   }
-  .stationery-sheet {
-    height: calc(100dvh - 124px) !important; /* Explicit viewport-relative height matching portal paddings */
+  .stationery-sheet-portal.no-timeline {
+    padding-top: 20px !important;
+  }
+  .stationery-sheet-portal .stationery-sheet {
+    height: calc(100dvh - 88px) !important; /* Explicit height matching portal paddings (72 + 16 = 88) */
     max-height: none !important;
     margin: 0 !important;
+  }
+  .stationery-sheet-portal.no-timeline .stationery-sheet {
+    height: calc(100dvh - 36px) !important;
+  }
+  .studio-preview-card {
+    height: 480px !important; /* Scale down preview card height on mobile */
   }
 }
 
