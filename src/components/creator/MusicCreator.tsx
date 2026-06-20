@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import GuestFeatureLockout from "./GuestFeatureLockout";
 
 interface MusicCreatorProps {
   music: boolean;
@@ -9,6 +10,12 @@ interface MusicCreatorProps {
   setMusicType: (val: "synth" | "url") => void;
   musicUrl: string;
   setMusicUrl: (val: string) => void;
+  musicFile: File | null;
+  setMusicFile: (val: File | null) => void;
+  musicFileName: string;
+  setMusicFileName: (val: string) => void;
+  user: any;
+  encodedData: string;
 }
 
 export default function MusicCreator({
@@ -17,163 +24,218 @@ export default function MusicCreator({
   musicType,
   setMusicType,
   musicUrl,
-  setMusicUrl
+  setMusicUrl,
+  musicFile,
+  setMusicFile,
+  musicFileName,
+  setMusicFileName,
+  user,
+  encodedData
 }: MusicCreatorProps) {
-  // Local audio preview players
-  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
-  const previewCtxRef = useRef<AudioContext | null>(null);
-  const previewTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const [playingPreviewId, setPlayingPreviewId] = useState<string | null>(null);
+  const isUploaded = !!(musicFile || musicFileName || (musicUrl && musicUrl.includes("firebasestorage.googleapis.com")));
+  const [selectionMode, setSelectionMode] = useState<"system" | "custom">(isUploaded ? "custom" : "system");
+  const [isPlayingPreview, setIsPlayingPreview] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
 
-  const stopAllPreviews = () => {
-    // Stop HTML Audio
-    if (previewAudioRef.current) {
-      previewAudioRef.current.pause();
-      previewAudioRef.current = null;
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const previewTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Automatically set type to url when music is enabled
+  useEffect(() => {
+    if (music && musicType !== "url") {
+      setMusicType("url");
     }
-    // Stop Web Audio Synth
-    if (previewCtxRef.current) {
-      try {
-        previewCtxRef.current.close();
-      } catch {}
-      previewCtxRef.current = null;
+    // Set default system music URL on load if no custom file exists and URL is empty
+    if (music && selectionMode === "system" && !musicUrl) {
+      setMusicUrl("/cant_help_falling_in_love.mp3");
+    }
+  }, [music, musicType, setMusicType, selectionMode, musicUrl, setMusicUrl]);
+
+  const startPreview = (url: string) => {
+    stopPreview();
+    if (!url) return;
+
+    try {
+      const audio = new Audio(url);
+      audio.volume = 0.35;
+      audioRef.current = audio;
+      setIsPlayingPreview(true);
+
+      audio.play().then(() => {
+        // Auto stop after 20 seconds
+        previewTimerRef.current = setTimeout(() => {
+          stopPreview();
+        }, 20000);
+      }).catch(err => {
+        console.error("Preview play failed:", err);
+        stopPreview();
+      });
+
+      audio.addEventListener("ended", () => {
+        stopPreview();
+      });
+    } catch (err) {
+      console.error("Failed to play preview:", err);
+      stopPreview();
+    }
+  };
+
+  const stopPreview = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
     }
     if (previewTimerRef.current) {
       clearTimeout(previewTimerRef.current);
       previewTimerRef.current = null;
     }
-    setPlayingPreviewId(null);
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+    setIsPlayingPreview(false);
   };
 
-  const playUrlPreview = (url: string, id: string) => {
-    stopAllPreviews();
-    setPlayingPreviewId(id);
-    
-    const audio = new Audio(url);
-    audio.volume = 0.35;
-    audio.loop = false; // Just play a preview snippet
-    previewAudioRef.current = audio;
-
-    audio.play().then(() => {
-      // Auto stop preview after 10 seconds
-      previewTimerRef.current = setTimeout(() => {
-        stopAllPreviews();
-      }, 10000);
-    }).catch(err => {
-      console.error("Preview play failed:", err);
-      stopAllPreviews();
-    });
-  };
-
-  const playSynthPreview = (id: string) => {
-    stopAllPreviews();
-    setPlayingPreviewId(id);
-
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContextClass) return;
-
-    const ctx = new AudioContextClass();
-    previewCtxRef.current = ctx;
-
-    const masterGain = ctx.createGain();
-    masterGain.gain.setValueAtTime(0.12, ctx.currentTime);
-    masterGain.connect(ctx.destination);
-
-    const delay = ctx.createDelay();
-    delay.delayTime.value = 0.4;
-    const delayFeedback = ctx.createGain();
-    delayFeedback.gain.value = 0.3;
-    delay.connect(delayFeedback);
-    delayFeedback.connect(delay);
-    delayFeedback.connect(masterGain);
-
-    const playNote = (freq: number, start: number, duration: number, type: OscillatorType = "sine", volume = 0.5) => {
-      if (ctx.state === "closed") return;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      const filter = ctx.createBiquadFilter();
-
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, start);
-
-      filter.type = "lowpass";
-      filter.frequency.setValueAtTime(800, start);
-
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(masterGain);
-      gain.connect(delay);
-
-      gain.gain.setValueAtTime(0, start);
-      gain.gain.linearRampToValueAtTime(volume, start + 0.1);
-      gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
-
-      osc.start(start);
-      osc.stop(start + duration + 0.1);
-    };
-
-    const now = ctx.currentTime;
-    // Cmaj9 chord notes
-    const chords = [130.81, 196.00, 246.94, 293.66, 329.63];
-    chords.forEach((freq, idx) => {
-      playNote(freq, now, 3.5, idx === 0 ? "triangle" : "sine", idx === 0 ? 0.3 : 0.2);
-    });
-
-    // Melodic bells
-    const bells = [329.63, 392.00, 440.00, 523.25, 659.25];
-    bells.forEach((freq, idx) => {
-      playNote(freq, now + 0.5 + idx * 0.6, 1.5, "sine", 0.15);
-    });
-
-    // Auto stop preview after 4 seconds
-    previewTimerRef.current = setTimeout(() => {
-      stopAllPreviews();
-    }, 4500);
-  };
-
-  // Handle preview playing when soundtrack is clicked
-  const handleTrackSelect = (track: { id: string; type: string; url: string }) => {
-    if (track.id === "custom") {
-      setMusicType("url");
-      const currentIsPreset = musicUrl === "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" || 
-                             musicUrl === "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" || 
-                             musicUrl === "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3";
-      if (currentIsPreset || !musicUrl) {
-        setMusicUrl("");
-      }
-      stopAllPreviews();
+  const togglePreview = () => {
+    if (isPlayingPreview) {
+      stopPreview();
     } else {
-      setMusicType(track.type as "synth" | "url");
-      setMusicUrl(track.url);
-      
-      // Play Preview!
-      if (track.type === "synth") {
-        playSynthPreview(track.id);
-      } else if (track.url) {
-        playUrlPreview(track.url, track.id);
+      let previewUrl = "";
+      if (selectionMode === "system") {
+        previewUrl = "/cant_help_falling_in_love.mp3";
+      } else {
+        if (musicFile) {
+          const objUrl = URL.createObjectURL(musicFile);
+          objectUrlRef.current = objUrl;
+          previewUrl = objUrl;
+        } else if (musicUrl) {
+          previewUrl = musicUrl;
+        }
+      }
+      if (previewUrl) {
+        startPreview(previewUrl);
       }
     }
   };
 
-  // Stop preview on unmount or if music is toggled off
+  const handleSelectionModeChange = (mode: "system" | "custom") => {
+    stopPreview();
+    setSelectionMode(mode);
+    if (mode === "system") {
+      setMusicFile(null);
+      setMusicFileName("");
+      setMusicUrl("/cant_help_falling_in_love.mp3");
+    } else {
+      // If switching to custom, only clear musicUrl if they haven't uploaded an audio file already
+      const hasUpload = !!(musicFile || musicFileName || (musicUrl && musicUrl.includes("firebasestorage.googleapis.com")));
+      if (!hasUpload) {
+        setMusicUrl("");
+      }
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setMusicFile(null);
+    setMusicFileName("");
+    setMusicUrl("");
+    stopPreview();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      if (file.size <= 10 * 1024 * 1024) {
+        setMusicFile(file);
+        setMusicFileName(file.name);
+        setMusicType("url");
+        if (musicUrl && !musicUrl.includes("firebasestorage.googleapis.com")) {
+          setMusicUrl("");
+        }
+      } else {
+        alert("File size exceeds 10MB limit.");
+      }
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith("audio/")) {
+        if (file.size <= 10 * 1024 * 1024) {
+          setMusicFile(file);
+          setMusicFileName(file.name);
+          setMusicType("url");
+          if (musicUrl && !musicUrl.includes("firebasestorage.googleapis.com")) {
+            setMusicUrl("");
+          }
+        } else {
+          alert("File size exceeds 10MB limit.");
+        }
+      } else {
+        alert("Please upload an audio file (MP3, WAV, OGG).");
+      }
+    }
+  };
+
+  const handleUploadClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const getDisplayFileName = () => {
+    if (musicFileName) return musicFileName;
+    if (musicFile) return musicFile.name;
+    if (musicUrl && musicUrl.includes("firebasestorage.googleapis.com")) {
+      try {
+        const decodedUrl = decodeURIComponent(musicUrl);
+        const parts = decodedUrl.split("/");
+        const lastPart = parts[parts.length - 1];
+        const nameWithParams = lastPart.split("?")[0];
+        const filename = nameWithParams.split("background_music")[1] || nameWithParams;
+        return filename.startsWith("_") ? filename.substring(1) : "background_music.mp3";
+      } catch {
+        return "Uploaded Background Music.mp3";
+      }
+    }
+    return "Uploaded Audio";
+  };
+
+  const hasUploadedFile = !!(musicFile || musicFileName || (musicUrl && musicUrl.includes("firebasestorage.googleapis.com")));
+
+  // Stop preview on unmount or if music toggled off
   useEffect(() => {
     if (!music) {
-      stopAllPreviews();
+      stopPreview();
     }
   }, [music]);
 
   useEffect(() => {
-    return () => stopAllPreviews();
+    return () => stopPreview();
   }, []);
 
   return (
-    <div 
-      style={{ 
-        display: "flex", 
+    <div
+      style={{
+        display: "flex",
         flexDirection: "column",
         gap: "12px",
-        background: "rgba(255,255,255,0.02)", 
-        padding: "16px", 
+        background: "rgba(255,255,255,0.02)",
+        padding: "16px",
         borderRadius: "10px",
         border: "1px solid var(--border-card)"
       }}
@@ -196,7 +258,7 @@ export default function MusicCreator({
             position: "relative",
           }}
         >
-          <div 
+          <div
             style={{
               width: "18px",
               height: "18px",
@@ -212,101 +274,242 @@ export default function MusicCreator({
       </div>
 
       {music && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px", borderTop: "1px solid rgba(255,255,255,0.04)", paddingTop: "12px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px", borderTop: "1px solid rgba(255,255,255,0.04)", paddingTop: "12px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <label style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "bold" }}>Select Soundtrack</label>
-            {playingPreviewId && (
-              <span style={{ fontSize: "10px", color: "var(--accent-rose)", animation: "pulse 1.5s infinite" }}>
-                🔊 Playing Preview...
-              </span>
-            )}
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            {[
-              { id: "synth", name: "🔔 Bells Synthesizer (Bells Synth)", type: "synth", url: "" },
-              { id: "track1", name: "🌊 Breezy Chillwave (System Track 1)", type: "url", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
-              { id: "track2", name: "🎷 Smooth Jazz-Vibe (System Track 2)", type: "url", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
-              { id: "track3", name: "💭 Dreamy Ambient (System Track 3)", type: "url", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" },
-              { id: "custom", name: "🔗 Custom Music Link (URL)", type: "url", url: "custom" }
-            ].map((track) => {
-              const isSelected = track.id === "custom" 
-                ? (musicType === "url" && musicUrl !== "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" && musicUrl !== "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" && musicUrl !== "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3")
-                : (track.type === "synth" ? musicType === "synth" : (musicType === "url" && musicUrl === track.url));
-
-              const isPlaying = playingPreviewId === track.id;
-
-              return (
-                <button
-                  key={track.id}
-                  type="button"
-                  onClick={() => handleTrackSelect(track)}
-                  style={{
-                    padding: "10px 12px",
-                    borderRadius: "6px",
-                    fontSize: "12px",
-                    textAlign: "left",
-                    backgroundColor: isSelected ? "rgba(255, 75, 114, 0.15)" : "rgba(255, 255, 255, 0.03)",
-                    border: "1px solid " + (isPlaying ? "var(--accent-rose)" : (isSelected ? "var(--accent-rose)" : "var(--border-card)")),
-                    color: isSelected ? "#fff" : "var(--text-muted)",
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center"
-                  }}
-                >
-                  <span>{track.name}</span>
-                  {isPlaying && <span>🎵</span>}
-                </button>
-              );
-            })}
-          </div>
-
-          {(musicType === "url" && 
-            musicUrl !== "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" && 
-            musicUrl !== "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" && 
-            musicUrl !== "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3"
-          ) && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "4px" }}>
-              <label style={{ fontSize: "11px", color: "var(--text-muted)" }}>Paste Audio Link (MP3 / WAV / OGG)</label>
-              <div style={{ display: "flex", gap: "8px" }}>
+            
+            {/* System Soundtrack Option Card */}
+            <div
+              onClick={() => handleSelectionModeChange("system")}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px",
+                padding: "12px",
+                borderRadius: "8px",
+                backgroundColor: selectionMode === "system" ? "rgba(255, 75, 114, 0.06)" : "rgba(255, 255, 255, 0.01)",
+                border: selectionMode === "system" ? "1px solid var(--accent-rose)" : "1px solid var(--border-card)",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ fontSize: "16px" }}>🎹</span>
+                  <div>
+                    <div style={{ fontSize: "13px", fontWeight: "600", color: "#fff" }}>
+                      Can't Help Falling in Love (Piano)
+                    </div>
+                    <div style={{ fontSize: "10px", color: "var(--text-muted)" }}>
+                      Classic romantic melody fallback
+                    </div>
+                  </div>
+                </div>
                 <input
-                  type="url"
-                  value={musicUrl}
-                  onChange={(e) => setMusicUrl(e.target.value)}
-                  placeholder="https://example.com/soundtrack.mp3"
-                  style={{
-                    flex: 1,
-                    backgroundColor: "rgba(0,0,0,0.2)",
-                    border: "1px solid var(--border-card)",
-                    borderRadius: "6px",
-                    padding: "8px 12px",
-                    color: "#fff",
-                    fontSize: "13px",
-                    outline: "none",
-                  }}
+                  type="radio"
+                  name="selectionMode"
+                  checked={selectionMode === "system"}
+                  onChange={() => {}} // handled by click on parent div
+                  style={{ cursor: "pointer" }}
                 />
+              </div>
+              
+              {selectionMode === "system" && (
                 <button
                   type="button"
-                  onClick={() => {
-                    if (musicUrl.trim()) {
-                      playUrlPreview(musicUrl, "custom");
-                    }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    togglePreview();
                   }}
                   style={{
-                    padding: "8px 12px",
+                    alignSelf: "flex-start",
+                    marginTop: "4px",
+                    padding: "6px 12px",
                     borderRadius: "6px",
-                    backgroundColor: "var(--accent-purple)",
+                    backgroundColor: isPlayingPreview ? "var(--accent-rose)" : "rgba(255, 255, 255, 0.08)",
+                    border: "1px solid rgba(255, 255, 255, 0.15)",
                     color: "#fff",
-                    border: "none",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    cursor: "pointer"
+                    fontSize: "11px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px"
                   }}
                 >
-                  Preview
+                  {isPlayingPreview ? "⏹ Stop Preview" : "▶ Play Preview"}
                 </button>
+              )}
+            </div>
+
+            {/* Custom Upload Option Card */}
+            <div
+              onClick={() => handleSelectionModeChange("custom")}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px",
+                padding: "12px",
+                borderRadius: "8px",
+                backgroundColor: selectionMode === "custom" ? "rgba(255, 75, 114, 0.06)" : "rgba(255, 255, 255, 0.01)",
+                border: selectionMode === "custom" ? "1px solid var(--accent-rose)" : "1px solid var(--border-card)",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ fontSize: "16px" }}>📤</span>
+                  <div>
+                    <div style={{ fontSize: "13px", fontWeight: "600", color: "#fff" }}>
+                      Upload Custom Soundtrack
+                    </div>
+                    <div style={{ fontSize: "10px", color: "var(--text-muted)" }}>
+                      Upload your own MP3, WAV, or OGG file
+                    </div>
+                  </div>
+                </div>
+                <input
+                  type="radio"
+                  name="selectionMode"
+                  checked={selectionMode === "custom"}
+                  onChange={() => {}} // handled by click on parent div
+                  style={{ cursor: "pointer" }}
+                />
               </div>
+            </div>
+          </div>
+
+          {selectionMode === "custom" && (
+            <div style={{ marginTop: "4px" }}>
+              {!user ? (
+                <GuestFeatureLockout
+                  featureName="Background Music Upload"
+                  featureIcon="🎵"
+                  featureDesc="Upload your own custom MP3, WAV, or OGG tracks to set the perfect romantic atmosphere when they open your letter."
+                  encodedData={encodedData}
+                />
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {hasUploadedFile ? (
+                    // Display uploaded file info
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "10px",
+                        padding: "12px",
+                        borderRadius: "8px",
+                        backgroundColor: "rgba(255, 75, 114, 0.06)",
+                        border: "1px solid rgba(255, 75, 114, 0.2)",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px" }}>
+                        <span style={{ fontSize: "20px" }}>🎵</span>
+                        <div
+                          style={{
+                            fontSize: "12.5px",
+                            color: "#fff",
+                            fontWeight: "500",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            flex: 1
+                          }}
+                        >
+                          {getDisplayFileName()}
+                        </div>
+                      </div>
+
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            togglePreview();
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: "8px 12px",
+                            borderRadius: "6px",
+                            backgroundColor: isPlayingPreview ? "var(--accent-rose)" : "rgba(255, 255, 255, 0.08)",
+                            border: "1px solid rgba(255, 255, 255, 0.15)",
+                            color: "#fff",
+                            fontSize: "12px",
+                            fontWeight: "bold",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "6px",
+                            transition: "all 0.2s"
+                          }}
+                        >
+                          {isPlayingPreview ? "⏹ Stop Preview" : "▶ Play Preview"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleRemoveFile}
+                          style={{
+                            padding: "8px 12px",
+                            borderRadius: "6px",
+                            backgroundColor: "rgba(220, 38, 38, 0.15)",
+                            border: "1px solid rgba(220, 38, 38, 0.3)",
+                            color: "#f87171",
+                            fontSize: "12px",
+                            fontWeight: "bold",
+                            cursor: "pointer",
+                            transition: "all 0.2s"
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    // Drag and drop zone
+                    <>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        accept="audio/*"
+                        onChange={handleFileChange}
+                        style={{ display: "none" }}
+                      />
+                      <div
+                        onClick={handleUploadClick}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: "24px 16px",
+                          borderRadius: "8px",
+                          border: isDragOver ? "1.5px dashed var(--accent-rose)" : "1px dashed rgba(255, 255, 255, 0.15)",
+                          backgroundColor: isDragOver ? "rgba(255, 75, 114, 0.04)" : "rgba(255, 255, 255, 0.01)",
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          textAlign: "center",
+                          gap: "8px"
+                        }}
+                      >
+                        <div style={{ fontSize: "28px" }}>📤</div>
+                        <div>
+                          <div style={{ fontSize: "13px", fontWeight: "600", color: "#fff" }}>
+                            Click to browse or drag file here
+                          </div>
+                          <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "4px" }}>
+                            Supports MP3, WAV, or OGG (Max 10MB)
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

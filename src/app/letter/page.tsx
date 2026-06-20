@@ -30,6 +30,23 @@ const BACKDROP_IMAGES: Record<string, string> = {
   vintage_library: "/vintage_library.png",
 };
 
+const getBackdropOverlay = (theme: string) => {
+  switch (theme) {
+    case "celestial":
+      return "rgba(9, 14, 36, 0.45)";
+    case "royal":
+      return "rgba(247, 241, 227, 0.35)";
+    case "scroll":
+      return "rgba(237, 220, 185, 0.35)";
+    case "blush":
+      return "rgba(255, 253, 247, 0.4)";
+    case "lavender":
+      return "rgba(247, 244, 252, 0.4)";
+    default:
+      return "transparent";
+  }
+};
+
 function LetterReader() {
   const searchParams = useSearchParams();
   const d = searchParams.get("d") || "";
@@ -71,6 +88,13 @@ function LetterReader() {
   }, [id]);
 
   const data = dbData || decodedData;
+
+  const isGuestExpired = useMemo(() => {
+    if (!id && decodedData?.timestamp) {
+      return Date.now() - decodedData.timestamp > 24 * 60 * 60 * 1000;
+    }
+    return false;
+  }, [id, decodedData]);
 
   // Scheduled Send Lock state
   const [isLocked, setIsLocked] = useState(false);
@@ -327,6 +351,143 @@ function LetterReader() {
     );
   }
 
+  // Check if guest link is expired (>24 hours)
+  if (isGuestExpired) {
+    const upgradeUrl = `/login?redirect=/create&d=${d}`;
+    return (
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100vh",
+        width: "100vw",
+        padding: "20px",
+        background: "#100907",
+        backgroundImage: "radial-gradient(circle at 50% 30%, rgba(255, 75, 114, 0.08) 0%, transparent 65%)",
+        position: "fixed",
+        inset: 0,
+        zIndex: 99999
+      }}>
+        <FloatingHearts />
+        <main
+          className="glass animate-reveal"
+          style={{
+            width: "100%",
+            maxWidth: "440px",
+            padding: "40px 30px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "24px",
+            textAlign: "center",
+            boxShadow: "0 20px 50px rgba(0, 0, 0, 0.4)",
+            borderRadius: "16px",
+            position: "relative",
+            zIndex: 10
+          }}
+        >
+          <div style={{
+            width: "64px",
+            height: "64px",
+            borderRadius: "50%",
+            backgroundColor: "rgba(255, 75, 114, 0.1)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "32px",
+            boxShadow: "0 0 20px rgba(255, 75, 114, 0.25)",
+            border: "1.5px solid rgba(255, 75, 114, 0.15)",
+            animation: "pulse-keyhole 2s ease-in-out infinite"
+          }}>
+            ⏳
+          </div>
+
+          <div>
+            <h2 style={{
+              fontSize: "24px",
+              fontWeight: 700,
+              background: "linear-gradient(to right, #ff4b72, #9c6cfa)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              fontFamily: "var(--font-cursive, serif)",
+              letterSpacing: "0.5px"
+            }}>
+              A Fleeting Memory...
+            </h2>
+            <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6", marginTop: "12px" }}>
+              Guest love letters are like whispers in the wind—they expire after 24 hours to protect their intimacy. This letter has faded.
+            </p>
+            <p style={{ fontSize: "12px", color: "var(--text-muted)", opacity: 0.8, lineHeight: "1.5", marginTop: "8px" }}>
+              Are you the creator of this letter? Create a free EverAfter account to restore, save, and keep your love letters forever!
+            </p>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%" }}>
+            <Link
+              href={upgradeUrl}
+              style={{
+                width: "100%",
+                padding: "12px",
+                borderRadius: "8px",
+                background: "var(--accent-rose)",
+                backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)",
+                color: "#fff",
+                fontWeight: 600,
+                fontSize: "14px",
+                textDecoration: "none",
+                boxShadow: "0 4px 15px rgba(255, 75, 114, 0.25)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px"
+              }}
+            >
+              Sign Up to Restore & Save
+            </Link>
+            <Link
+              href={`${upgradeUrl}&login=true`}
+              style={{
+                width: "100%",
+                padding: "12px",
+                borderRadius: "8px",
+                background: "rgba(255, 255, 255, 0.05)",
+                border: "1px solid var(--border-card)",
+                color: "var(--text-muted)",
+                fontWeight: 500,
+                fontSize: "14px",
+                textDecoration: "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+            >
+              Log In to Account
+            </Link>
+            <Link
+              href="/create"
+              style={{
+                width: "100%",
+                padding: "12px",
+                borderRadius: "8px",
+                background: "rgba(156, 108, 250, 0.1)",
+                border: "1.5px dashed rgba(156, 108, 250, 0.3)",
+                color: "var(--accent-purple)",
+                fontWeight: 500,
+                fontSize: "14px",
+                textDecoration: "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+            >
+              Write a New Letter
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   // Handle advancing wizard steps with transitions and blinding flash before envelope
   const handleNextStep = () => {
     if (visibleStepIndex < activeSteps.length - 1) {
@@ -412,7 +573,20 @@ function LetterReader() {
                 zIndex: -1,
                 pointerEvents: "none"
               }}
-            />
+            >
+              {/* Overlay wash to dim/soften high-contrast background areas for readability */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: getBackdropOverlay(data.theme || ""),
+                  transition: "background-color 0.8s ease"
+                }}
+              />
+            </div>
           )}
       <FloatingHearts />
       
@@ -451,9 +625,9 @@ function LetterReader() {
           <div 
             style={{
               position: "absolute",
-              left: "41px",
-              right: "41px",
-              top: "30px",
+              left: "var(--timeline-line-offset, 41px)",
+              right: "var(--timeline-line-offset, 41px)",
+              top: "var(--timeline-line-top, 30px)",
               height: "2px",
               background: `linear-gradient(to right, 
                 var(--accent-purple) ${(currentStepIndex / (activeSteps.filter(id => id !== "thankYou").length - 1)) * 100}%, 
@@ -492,8 +666,8 @@ function LetterReader() {
                       if (isClickable && !isTransitioning) {
                         const targetStepId = activeSteps[idx];
                         const isEnvPolTransition = envelopeAdjacency.isAdjacent && (
-                          (currentStep === "envelope" && targetStepId === "polaroids") ||
-                          (currentStep === "polaroids" && targetStepId === "envelope")
+                           (currentStep === "envelope" && targetStepId === "polaroids") ||
+                           (currentStep === "polaroids" && targetStepId === "envelope")
                         );
 
                         if (isEnvPolTransition) {
@@ -508,8 +682,8 @@ function LetterReader() {
                       }
                     }}
                     style={{
-                      width: "34px",
-                      height: "34px",
+                      width: "var(--timeline-btn-size, 34px)",
+                      height: "var(--timeline-btn-size, 34px)",
                       borderRadius: "50%",
                       backgroundColor: isActive 
                         ? "var(--accent-rose)" 
@@ -540,12 +714,12 @@ function LetterReader() {
                   </button>
                   <span 
                     style={{ 
-                      fontSize: "9px", 
+                      fontSize: "var(--timeline-label-size, 9px)", 
                       color: "#fff",
                       fontWeight: "bold",
                       marginTop: "6px",
                       position: "absolute",
-                      top: "38px",
+                      top: "var(--timeline-label-top, 38px)",
                       left: "50%",
                       transform: "translateX(-50%)",
                       whiteSpace: "nowrap",
@@ -600,7 +774,8 @@ function LetterReader() {
             securityData={data.security} 
             onSuccess={() => {
               if (typeof window !== "undefined") {
-                sessionStorage.setItem(`unlocked_${id}`, "true");
+                const key = id ? `unlocked_${id}` : (d ? `unlocked_${d.slice(0, 10)}` : "unlocked_temp");
+                sessionStorage.setItem(key, "true");
               }
               handleNextStep();
             }} 

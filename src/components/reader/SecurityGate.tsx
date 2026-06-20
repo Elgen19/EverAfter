@@ -29,6 +29,17 @@ export default function SecurityGate({ securityData, onSuccess }: SecurityGatePr
   const [dialYear, setDialYear] = useState(2026);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const id = searchParams.get("id");
+      const d = searchParams.get("d");
+      const key = id ? `unlocked_${id}` : (d ? `unlocked_${d.slice(0, 10)}` : "unlocked_temp");
+      if (sessionStorage.getItem(key) === "true") {
+        onSuccess();
+        return;
+      }
+    }
+
     const timer = setTimeout(() => {
       setShowInputs(true);
     }, 3000);
@@ -36,7 +47,7 @@ export default function SecurityGate({ securityData, onSuccess }: SecurityGatePr
       clearTimeout(timer);
       if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
     };
-  }, []);
+  }, [onSuccess]);
 
   const checkAnswer = (answerProvided: string) => {
     let correct = securityData.answer.trim().toLowerCase();

@@ -10,6 +10,7 @@ import SealingAnimation from "@/components/creator/SealingAnimation";
 import StationeryPreview from "@/components/creator/StationeryPreview";
 import ShareLinkModal from "@/components/creator/ShareLinkModal";
 import RomanticAlertModal from "@/components/creator/RomanticAlertModal";
+import MobilePreviewOverlay from "@/components/creator/MobilePreviewOverlay";
 
 // Modular configurators
 import EmojiPicker from "@/components/creator/EmojiPicker";
@@ -22,16 +23,71 @@ import MusicCreator from "@/components/creator/MusicCreator";
 import SendLaterCreator from "@/components/creator/SendLaterCreator";
 import AudioMessageCreator from "@/components/creator/AudioMessageCreator";
 import PolaroidsCreator from "@/components/creator/PolaroidsCreator";
+import GuestFeatureLockout from "@/components/creator/GuestFeatureLockout";
+
+interface AccordionItemProps {
+  title: string;
+  desc?: string;
+  icon: string;
+  enabled: boolean;
+  isOpen: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}
+
+function AccordionItem({ title, desc, icon, enabled, isOpen, onToggle, children }: AccordionItemProps) {
+  return (
+    <div className={`accordion-card ${isOpen ? "open" : ""} ${enabled ? "active" : ""}`}>
+      <div className="accordion-header" onClick={onToggle}>
+        <div className="accordion-title" style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+          <span style={{ fontSize: "20px", display: "flex", alignItems: "center" }}>{icon}</span>
+          <div style={{ display: "flex", flexDirection: "column", gap: "3px", textAlign: "left" }}>
+            <span style={{ fontWeight: 600, fontSize: "14px", color: "var(--text-main)" }}>{title}</span>
+            {desc && <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "normal", opacity: 0.8 }}>{desc}</span>}
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span className={`accordion-status ${enabled ? "enabled" : "disabled"}`}>
+            {enabled ? "Enabled" : "Disabled"}
+          </span>
+          <span className="accordion-arrow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </span>
+        </div>
+      </div>
+      <div className="accordion-body">
+        {children}
+      </div>
+    </div>
+  );
+}
 
 function CreateLetterStudio() {
   const form = useLetterForm();
-  const [activeTab, setActiveTab] = useState<"write" | "design" | "addons" | "flow" | "preview">("write");
+  const [activeTab, setActiveTab] = useState<"write" | "design" | "addons" | "flow">("write");
+  const [openAccordion, setOpenAccordion] = useState<string | null>(null);
+  const [isMobilePreviewOpen, setIsMobilePreviewOpen] = useState(false);
+
+  const toggleAccordion = (id: string) => {
+    setOpenAccordion(prev => prev === id ? null : id);
+  };
   const [pendingSelection, setPendingSelection] = useState<{
     type: "theme" | "backdrop" | "envelope";
     id: string;
     name: string;
     desc: string;
   } | null>(null);
+
+  const handleTabChange = (tabId: "write" | "design" | "addons" | "flow") => {
+    setActiveTab(tabId);
+    if (tabId === "write" || tabId === "design") {
+      form.setPreviewMode("letter");
+    } else if (tabId === "flow") {
+      form.setPreviewMode("envelope");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +114,7 @@ function CreateLetterStudio() {
     form.handleCreate(e);
   };
 
-  if (form.loading || !form.user || !form.recipientProfile) {
+  if (form.loading || (form.user && !form.recipientProfile && !form.isWriteback)) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", flexDirection: "column", gap: "16px" }}>
         <div style={{ width: "40px", height: "40px", borderRadius: "50%", border: "3px solid rgba(255, 75, 114, 0.1)", borderTopColor: "var(--accent-rose)", animation: "spin 1s linear infinite" }} />
@@ -95,6 +151,17 @@ function CreateLetterStudio() {
     }
   };
 
+  const getBackdropOverlay = () => {
+    switch (form.theme) {
+      case "celestial": return "rgba(9, 14, 36, 0.45)";
+      case "royal": return "rgba(247, 241, 227, 0.35)";
+      case "scroll": return "rgba(237, 220, 185, 0.35)";
+      case "blush": return "rgba(255, 253, 247, 0.4)";
+      case "lavender": return "rgba(247, 244, 252, 0.4)";
+      default: return "transparent";
+    }
+  };
+
   return (
     <div className="studio-container" style={{ minHeight: "100vh", position: "relative", padding: "40px 20px" }}>
       <FloatingHearts />
@@ -128,38 +195,45 @@ function CreateLetterStudio() {
       <main className="studio-main" style={{ maxWidth: "1200px", margin: "0 auto", position: "relative", zIndex: 10 }}>
 
         <header className="studio-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px" }}>
-          <Link
-            href={form.isWriteback ? `/mailbox?ref=${form.queryReplyToId || ""}` : "/dashboard"}
-            style={{ color: "var(--text-muted)", fontSize: "14px", display: "flex", alignItems: "center", gap: "8px", transition: "color 0.2s" }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent-rose)")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="19" y1="12" x2="5" y2="12"></line>
-              <polyline points="12 19 5 12 12 5"></polyline>
-            </svg>
-            {form.isWriteback ? "Mailbox" : "Dashboard"}
-          </Link>
+          {(() => {
+            const hasParent = !!(form.queryReplyToId && form.queryReplyToId !== "undefined" && form.queryReplyToId !== "null");
+            const showMailbox = form.isWriteback && hasParent && form.user;
+            const backHref = form.user ? (showMailbox ? `/mailbox?ref=${form.queryReplyToId}` : "/dashboard") : "/";
+            const backLabel = form.user ? (showMailbox ? "Mailbox" : "Dashboard") : "Home";
+            return (
+              <Link
+                href={backHref}
+                style={{ color: "var(--text-muted)", fontSize: "14px", display: "flex", alignItems: "center", gap: "8px", transition: "color 0.2s" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent-rose)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="19" y1="12" x2="5" y2="12"></line>
+                  <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                {backLabel}
+              </Link>
+            );
+          })()}
           <h1 style={{ fontSize: "36px", fontWeight: "normal", fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive", background: "linear-gradient(to right, #ff4b72, #9c6cfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: "0.5px" }}>
             EverAfter Studio
           </h1>
           <div className="studio-header-spacer" style={{ width: "80px" }} />
         </header>
 
-        {/* Mobile Segmented Tab Control */}
-        <div className="mobile-tabs-container">
+        {/* Segmented Tab Control */}
+        <div className="studio-tabs-container">
           {([
             { id: "write", label: "Write", icon: "✍️" },
             { id: "design", label: "Design", icon: "🎨" },
             { id: "addons", label: "Add-ons", icon: "🌟" },
-            { id: "flow", label: "Flow", icon: "🔄" },
-            { id: "preview", label: "Preview", icon: "👁️" }
+            { id: "flow", label: "Flow", icon: "🔄" }
           ] as const).map((tab) => (
             <button
               key={tab.id}
               type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`mobile-tab-btn ${activeTab === tab.id ? "active" : ""}`}
+              onClick={() => handleTabChange(tab.id)}
+              className={`studio-tab-btn ${activeTab === tab.id ? "active" : ""}`}
             >
               <span style={{ fontSize: "16px" }}>{tab.icon}</span>
               <span>{tab.label}</span>
@@ -173,7 +247,7 @@ function CreateLetterStudio() {
           <form id="create-letter-form" onSubmit={handleSubmit} className="glass studio-form hide-scrollbar" style={{ padding: "30px", display: "flex", flexDirection: "column", gap: "24px", maxHeight: "85vh", overflowY: "auto" }}>
             
             {/* --- Section 1: Write --- */}
-            <div className={`studio-section ${activeTab === "write" ? "" : "hidden-mobile"}`}>
+            <div className={`studio-section ${activeTab === "write" ? "" : "hidden-section"}`}>
               <h2 style={{ fontSize: "18px", fontWeight: 600, borderBottom: "1px solid var(--border-card)", paddingBottom: "12px", color: "var(--text-main)" }}>
                 Write Your Letter
               </h2>
@@ -247,11 +321,11 @@ function CreateLetterStudio() {
                 />
               </div>
 
-              {/* Mobile next button */}
-              <div className="mobile-only" style={{ marginTop: "16px" }}>
+              {/* Section 1 Next Button */}
+              <div style={{ marginTop: "24px" }}>
                 <button
                   type="button"
-                  onClick={() => setActiveTab("design")}
+                  onClick={() => handleTabChange("design")}
                   style={{
                     width: "100%",
                     padding: "16px",
@@ -275,7 +349,7 @@ function CreateLetterStudio() {
             </div>
 
             {/* --- Section 2: Design --- */}
-            <div className={`studio-section ${activeTab === "design" ? "" : "hidden-mobile"}`} style={{ borderTop: "none", paddingTop: "0" }}>
+            <div className={`studio-section ${activeTab === "design" ? "" : "hidden-section"}`} style={{ borderTop: "none", paddingTop: "0" }}>
               <h2 className="mobile-only" style={{ fontSize: "18px", fontWeight: 600, borderBottom: "1px solid var(--border-card)", paddingBottom: "12px", color: "var(--text-main)" }}>
                 Design Stationery & Envelope
               </h2>
@@ -350,11 +424,11 @@ function CreateLetterStudio() {
                 </div>
               </div>
 
-              {/* Mobile Design tab step buttons */}
-              <div className="mobile-flex-only" style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "16px" }}>
+              {/* Section 2 Step Buttons */}
+              <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "24px" }}>
                 <button
                   type="button"
-                  onClick={() => setActiveTab("write")}
+                  onClick={() => handleTabChange("write")}
                   style={{
                     flex: 1,
                     padding: "16px",
@@ -372,7 +446,7 @@ function CreateLetterStudio() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveTab("addons")}
+                  onClick={() => handleTabChange("addons")}
                   style={{
                     flex: 1,
                     padding: "16px",
@@ -396,44 +470,122 @@ function CreateLetterStudio() {
             </div>
 
             {/* --- Section 3: Add-ons & Customizations --- */}
-            <div className={`studio-section ${activeTab === "addons" ? "" : "hidden-mobile"}`} style={{ borderTop: "none", paddingTop: "0" }}>
+            <div className={`studio-section ${activeTab === "addons" ? "" : "hidden-section"}`} style={{ borderTop: "none", paddingTop: "0" }}>
               <h2 className="mobile-only" style={{ fontSize: "18px", fontWeight: 600, borderBottom: "1px solid var(--border-card)", paddingBottom: "12px", color: "var(--text-main)" }}>
                 Add-ons & Background Music
               </h2>
 
-              <MusicCreator music={form.music} setMusic={form.setMusic} musicType={form.musicType} setMusicType={form.setMusicType} musicUrl={form.musicUrl} setMusicUrl={form.setMusicUrl} />
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                <h3 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-main)", marginBottom: "12px" }}>Optional Add-ons</h3>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px", borderTop: "1px solid var(--border-card)", paddingTop: "20px" }}>
-                <h3 style={{ fontSize: "15px", fontWeight: 600, color: "var(--text-main)", marginBottom: "4px" }}>Optional Customizations</h3>
-                <SecurityGateCreator securityEnabled={form.securityEnabled} setSecurityEnabled={form.setSecurityEnabled} securityType={form.securityType} setSecurityType={form.setSecurityType} securityQuestion={form.securityQuestion} setSecurityQuestion={form.setSecurityQuestion} securityAnswer={form.securityAnswer} setSecurityAnswer={form.setSecurityAnswer} securityChoices={form.securityChoices} setSecurityChoices={form.setSecurityChoices} securityConfirmed={form.securityConfirmed} setSecurityConfirmed={form.setSecurityConfirmed} showAlert={form.showRomanticAlert} />
-                <IntroCreator introEnabled={form.introEnabled} setIntroEnabled={form.setIntroEnabled} introText={form.introText} setIntroText={form.setIntroText} introAnimation={form.introAnimation} setIntroAnimation={form.setIntroAnimation} introConfirmed={form.introConfirmed} setIntroConfirmed={form.setIntroConfirmed} showAlert={form.showRomanticAlert} />
-                <ClosingCreator closingEnabled={form.closingEnabled} setClosingEnabled={form.setClosingEnabled} closingText={form.closingText} setClosingText={form.setClosingText} closingAnimation={form.closingAnimation} setClosingAnimation={form.setClosingAnimation} closingConfirmed={form.closingConfirmed} setClosingConfirmed={form.setClosingConfirmed} showAlert={form.showRomanticAlert} />
-                <DateInviteCreator dateInviteEnabled={form.dateInviteEnabled} setDateInviteEnabled={form.setDateInviteEnabled} dateInviteQuestion={form.dateInviteQuestion} setDateInviteQuestion={form.setDateInviteQuestion} dateInviteDate={form.dateInviteDate} setDateInviteDate={form.setDateInviteDate} dateInviteTime={form.dateInviteTime} setDateInviteTime={form.setDateInviteTime} dateInvitePlace={form.dateInvitePlace} setDateInvitePlace={form.setDateInvitePlace} dateInviteMapLink={form.dateInviteMapLink} setDateInviteMapLink={form.setDateInviteMapLink} dateInviteEmail={form.dateInviteEmail} setDateInviteEmail={form.setDateInviteEmail} dateInviteConfirmed={form.dateInviteConfirmed} setDateInviteConfirmed={form.setDateInviteConfirmed} sender={form.sender} recipient={form.recipient} showAlert={form.showRomanticAlert} />
-                <SurveyCreator surveyEnabled={form.surveyEnabled} setSurveyEnabled={form.setSurveyEnabled} surveyQuestion={form.surveyQuestion} setSurveyQuestion={form.setSurveyQuestion} surveyType={form.surveyType} setSurveyType={form.setSurveyType} surveyConfirmed={form.surveyConfirmed} setSurveyConfirmed={form.setSurveyConfirmed} showAlert={form.showRomanticAlert} />
-                {!form.user ? (
-                  <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px dashed var(--border-card)", borderRadius: "10px", padding: "16px", fontSize: "12px", color: "var(--text-muted)", textAlign: "center" }}>
-                    🎤 Voice recording replies require an account. <Link href="/login" style={{ color: "var(--accent-rose)", fontWeight: "bold", textDecoration: "none" }}>Log in or Sign up</Link> to seal audio messages!
-                  </div>
-                ) : (
-                  <AudioMessageCreator audioEnabled={form.audioEnabled} setAudioEnabled={form.setAudioEnabled} audioUrl={form.audioUrl} setAudioUrl={form.setAudioUrl} audioFile={form.audioFile} setAudioFile={form.setAudioFile} audioCustomMessage={form.audioCustomMessage} setAudioCustomMessage={form.setAudioCustomMessage} audioConfirmed={form.audioConfirmed} setAudioConfirmed={form.setAudioConfirmed} showAlert={form.showRomanticAlert} />
-                )}
-                <PolaroidsCreator
-                  polaroidsEnabled={form.polaroidsEnabled}
-                  setPolaroidsEnabled={form.setPolaroidsEnabled}
-                  polaroids={form.polaroids}
-                  setPolaroids={form.setPolaroids}
-                  polaroidsConfirmed={form.polaroidsConfirmed}
-                  setPolaroidsConfirmed={form.setPolaroidsConfirmed}
-                  showAlert={form.showRomanticAlert}
-                />
-                <SendLaterCreator sendLaterEnabled={form.sendLaterEnabled} setSendLaterEnabled={form.setSendLaterEnabled} sendLaterDate={form.sendLaterDate} setSendLaterDate={form.setSendLaterDate} sendLaterTime={form.sendLaterTime} setSendLaterTime={form.setSendLaterTime} />
+                <AccordionItem title="Background Music" desc="Play a romantic tune when your partner opens the letter" icon="🎵" enabled={form.music} isOpen={openAccordion === "music"} onToggle={() => toggleAccordion("music")}>
+                  <MusicCreator 
+                    music={form.music} 
+                    setMusic={form.setMusic} 
+                    musicType={form.musicType} 
+                    setMusicType={form.setMusicType} 
+                    musicUrl={form.musicUrl} 
+                    setMusicUrl={form.setMusicUrl}
+                    musicFile={form.musicFile}
+                    setMusicFile={form.setMusicFile}
+                    musicFileName={form.musicFileName}
+                    setMusicFileName={form.setMusicFileName}
+                    user={form.user}
+                    encodedData={form.getEncodedState()}
+                  />
+                </AccordionItem>
+
+                <AccordionItem title="Security Lock" desc="Lock your letter with a secret question and answer" icon="🔒" enabled={form.securityEnabled} isOpen={openAccordion === "security"} onToggle={() => toggleAccordion("security")}>
+                  <SecurityGateCreator securityEnabled={form.securityEnabled} setSecurityEnabled={form.setSecurityEnabled} securityType={form.securityType} setSecurityType={form.setSecurityType} securityQuestion={form.securityQuestion} setSecurityQuestion={form.setSecurityQuestion} securityAnswer={form.securityAnswer} setSecurityAnswer={form.setSecurityAnswer} securityChoices={form.securityChoices} setSecurityChoices={form.setSecurityChoices} securityConfirmed={form.securityConfirmed} setSecurityConfirmed={form.setSecurityConfirmed} showAlert={form.showRomanticAlert} />
+                </AccordionItem>
+
+                <AccordionItem title="Opening Intro Text" desc="Animate a typewriter message before the envelope appears" icon="✨" enabled={form.introEnabled} isOpen={openAccordion === "intro"} onToggle={() => toggleAccordion("intro")}>
+                  <IntroCreator introEnabled={form.introEnabled} setIntroEnabled={form.setIntroEnabled} introText={form.introText} setIntroText={form.setIntroText} introAnimation={form.introAnimation} setIntroAnimation={form.setIntroAnimation} introConfirmed={form.introConfirmed} setIntroConfirmed={form.setIntroConfirmed} showAlert={form.showRomanticAlert} />
+                </AccordionItem>
+
+                <AccordionItem title="Closing Statement" desc="Display a final romantic message after the letter is closed" icon="✍️" enabled={form.closingEnabled} isOpen={openAccordion === "closing"} onToggle={() => toggleAccordion("closing")}>
+                  <ClosingCreator closingEnabled={form.closingEnabled} setClosingEnabled={form.setClosingEnabled} closingText={form.closingText} setClosingText={form.setClosingText} closingAnimation={form.closingAnimation} setClosingAnimation={form.setClosingAnimation} closingConfirmed={form.closingConfirmed} setClosingConfirmed={form.setClosingConfirmed} showAlert={form.showRomanticAlert} />
+                </AccordionItem>
+
+                <AccordionItem title="Date Night Invitation" desc="Embed a date night RSVP proposal card inside the sequence" icon="🌹" enabled={form.dateInviteEnabled} isOpen={openAccordion === "dateInvite"} onToggle={() => toggleAccordion("dateInvite")}>
+                  {!form.user ? (
+                    <GuestFeatureLockout
+                      featureName="Date Night Invitation"
+                      featureIcon="🌹"
+                      featureDesc="Propose a custom date night plan with interactive RSVP options and location details directly inside your letter."
+                      encodedData={form.getEncodedState()}
+                    />
+                  ) : (
+                    <DateInviteCreator dateInviteEnabled={form.dateInviteEnabled} setDateInviteEnabled={form.setDateInviteEnabled} dateInviteQuestion={form.dateInviteQuestion} setDateInviteQuestion={form.setDateInviteQuestion} dateInviteDate={form.dateInviteDate} setDateInviteDate={form.setDateInviteDate} dateInviteTime={form.dateInviteTime} setDateInviteTime={form.setDateInviteTime} dateInvitePlace={form.dateInvitePlace} setDateInvitePlace={form.setDateInvitePlace} dateInviteMapLink={form.dateInviteMapLink} setDateInviteMapLink={form.setDateInviteMapLink} dateInviteEmail={form.dateInviteEmail} setDateInviteEmail={form.setDateInviteEmail} dateInviteConfirmed={form.dateInviteConfirmed} setDateInviteConfirmed={form.setDateInviteConfirmed} sender={form.sender} recipient={form.recipient} showAlert={form.showRomanticAlert} />
+                  )}
+                </AccordionItem>
+
+                <AccordionItem title="Emoji Survey / RSVP" desc="Add a fun custom question with interactive emoji feedback" icon="📊" enabled={form.surveyEnabled} isOpen={openAccordion === "survey"} onToggle={() => toggleAccordion("survey")}>
+                  {!form.user ? (
+                    <GuestFeatureLockout
+                      featureName="Emoji Survey / RSVP"
+                      featureIcon="📊"
+                      featureDesc="Add a custom question with interactive emoji response options for your partner to select from when completing the letter."
+                      encodedData={form.getEncodedState()}
+                    />
+                  ) : (
+                    <SurveyCreator surveyEnabled={form.surveyEnabled} setSurveyEnabled={form.setSurveyEnabled} surveyQuestion={form.surveyQuestion} setSurveyQuestion={form.setSurveyQuestion} surveyType={form.surveyType} setSurveyType={form.setSurveyType} surveyConfirmed={form.surveyConfirmed} setSurveyConfirmed={form.setSurveyConfirmed} showAlert={form.showRomanticAlert} />
+                  )}
+                </AccordionItem>
+
+                <AccordionItem title="Voice Audio Message" desc="Record or upload a voice note to seal in your envelope" icon="🎤" enabled={form.audioEnabled} isOpen={openAccordion === "audio"} onToggle={() => toggleAccordion("audio")}>
+                  {!form.user ? (
+                    <GuestFeatureLockout
+                      featureName="Voice Audio Message"
+                      featureIcon="🎤"
+                      featureDesc="Record or upload a personal voice note to seal inside your envelope and let them hear your voice."
+                      encodedData={form.getEncodedState()}
+                    />
+                  ) : (
+                    <AudioMessageCreator audioEnabled={form.audioEnabled} setAudioEnabled={form.setAudioEnabled} audioUrl={form.audioUrl} setAudioUrl={form.setAudioUrl} audioFile={form.audioFile} setAudioFile={form.setAudioFile} audioCustomMessage={form.audioCustomMessage} setAudioCustomMessage={form.setAudioCustomMessage} audioConfirmed={form.audioConfirmed} setAudioConfirmed={form.setAudioConfirmed} showAlert={form.showRomanticAlert} />
+                  )}
+                </AccordionItem>
+
+                <AccordionItem title="Polaroid Photo Chest" desc="Attach a stack of retro polaroid photos with handwritten captions" icon="📸" enabled={form.polaroidsEnabled} isOpen={openAccordion === "polaroids"} onToggle={() => toggleAccordion("polaroids")}>
+                  {!form.user ? (
+                    <GuestFeatureLockout
+                      featureName="Polaroid Photo Chest"
+                      featureIcon="📸"
+                      featureDesc="Attach a stack of retro polaroid photos with custom handwritten captions to showcase your favorite memories."
+                      encodedData={form.getEncodedState()}
+                    />
+                  ) : (
+                    <PolaroidsCreator
+                      polaroidsEnabled={form.polaroidsEnabled}
+                      setPolaroidsEnabled={form.setPolaroidsEnabled}
+                      polaroids={form.polaroids}
+                      setPolaroids={form.setPolaroids}
+                      polaroidsConfirmed={form.polaroidsConfirmed}
+                      setPolaroidsConfirmed={form.setPolaroidsConfirmed}
+                      showAlert={form.showRomanticAlert}
+                    />
+                  )}
+                </AccordionItem>
+
+                <AccordionItem title="Schedule Send Later" desc="Prevent the letter from being opened until a specific date/time" icon="📅" enabled={form.sendLaterEnabled} isOpen={openAccordion === "sendLater"} onToggle={() => toggleAccordion("sendLater")}>
+                  {!form.user ? (
+                    <GuestFeatureLockout
+                      featureName="Schedule Send Later"
+                      featureIcon="📅"
+                      featureDesc="Set a future date and time lock for your letter. Your recipient will see a live countdown showing exactly when the seal can be broken."
+                      encodedData={form.getEncodedState()}
+                    />
+                  ) : (
+                    <SendLaterCreator sendLaterEnabled={form.sendLaterEnabled} setSendLaterEnabled={form.setSendLaterEnabled} sendLaterDate={form.sendLaterDate} setSendLaterDate={form.setSendLaterDate} sendLaterTime={form.sendLaterTime} setSendLaterTime={form.setSendLaterTime} />
+                  )}
+                </AccordionItem>
               </div>
 
-              {/* Mobile Add-ons tab step buttons */}
-              <div className="mobile-flex-only" style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "16px" }}>
+              {/* Section 3 Step Buttons */}
+              <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "24px" }}>
                 <button
                   type="button"
-                  onClick={() => setActiveTab("design")}
+                  onClick={() => handleTabChange("design")}
                   style={{
                     flex: 1,
                     padding: "16px",
@@ -451,7 +603,7 @@ function CreateLetterStudio() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveTab("flow")}
+                  onClick={() => handleTabChange("flow")}
                   style={{
                     flex: 1,
                     padding: "16px",
@@ -475,7 +627,7 @@ function CreateLetterStudio() {
             </div>
 
             {/* --- Section 4: Flow --- */}
-            <div className={`studio-section ${activeTab === "flow" ? "" : "hidden-mobile"}`} style={{ borderTop: "none", paddingTop: "0" }}>
+            <div className={`studio-section ${activeTab === "flow" ? "" : "hidden-section"}`} style={{ borderTop: "none", paddingTop: "0" }}>
               <h2 className="mobile-only" style={{ fontSize: "18px", fontWeight: 600, borderBottom: "1px solid var(--border-card)", paddingBottom: "12px", color: "var(--text-main)" }}>
                 Timeline Flow Sequence
               </h2>
@@ -509,11 +661,11 @@ function CreateLetterStudio() {
                 </div>
               </div>
 
-              {/* Mobile Flow tab step buttons */}
-              <div className="mobile-flex-only" style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "16px" }}>
+              {/* Section 4 Step Buttons */}
+              <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "24px" }}>
                 <button
                   type="button"
-                  onClick={() => setActiveTab("addons")}
+                  onClick={() => handleTabChange("addons")}
                   style={{
                     flex: 1,
                     padding: "16px",
@@ -531,7 +683,8 @@ function CreateLetterStudio() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveTab("preview")}
+                  className="hidden-desktop"
+                  onClick={() => setIsMobilePreviewOpen(true)}
                   style={{
                     flex: 1,
                     padding: "16px",
@@ -556,7 +709,7 @@ function CreateLetterStudio() {
 
             {/* Submit */}
             <button type="submit"
-              className={activeTab === "flow" ? "" : "hidden-mobile"}
+              className={activeTab === "flow" ? "" : "hidden-section"}
               style={{ width: "100%", padding: "16px", borderRadius: "12px", backgroundColor: "var(--accent-rose)", backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)", border: "none", color: "#fff", fontWeight: 600, fontSize: "15px", cursor: "pointer", boxShadow: "0 8px 20px rgba(255, 75, 114, 0.25)", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", transition: "all 0.2s", marginTop: "12px" }}
               onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
               onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
@@ -572,7 +725,7 @@ function CreateLetterStudio() {
           </form>
 
           {/* ── Right: Live Preview ── */}
-          <div className={`studio-preview-col ${activeTab === "preview" ? "" : "hidden-mobile"}`} style={{ display: "flex", flexDirection: "column", gap: "16px", position: "sticky", top: "20px" }}>
+          <div className="studio-preview-col hidden-mobile" style={{ display: "flex", flexDirection: "column", gap: "16px", position: "sticky", top: "20px" }}>
             <div className="studio-preview-mode-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ display: "flex", gap: "8px" }}>
                 {(["letter", "envelope"] as const).map((mode) => (
@@ -585,7 +738,23 @@ function CreateLetterStudio() {
             </div>
 
             {form.previewMode === "envelope" ? (
-              <div className="glass studio-preview-card" style={{ width: "100%", height: "680px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative", background: previewBackdropUrl ? `url(${previewBackdropUrl})` : "rgba(20, 15, 30, 0.4)", backgroundSize: "cover", backgroundPosition: "center", borderRadius: "16px" }}>
+              <div className="glass studio-preview-card" style={{
+                width: "100%",
+                height: "680px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+                position: "relative",
+                backgroundImage: previewBackdropUrl 
+                  ? `linear-gradient(${getBackdropOverlay()}, ${getBackdropOverlay()}), url(${previewBackdropUrl})` 
+                  : "none",
+                backgroundColor: previewBackdropUrl ? "transparent" : "rgba(20, 15, 30, 0.4)",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                borderRadius: "16px"
+              }}>
                 <button type="button" onClick={() => form.setEnvelopeResetKey(prev => prev + 1)}
                   style={{ position: "absolute", top: "16px", left: "16px", zIndex: 200, padding: "6px 12px", borderRadius: "6px", backgroundColor: "rgba(255, 255, 255, 0.1)", border: "1px solid var(--border-card)", color: "#fff", fontSize: "11px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.2)"}
@@ -611,22 +780,6 @@ function CreateLetterStudio() {
               />
             )}
 
-            {/* Mobile-only Submit button for Preview tab */}
-            <div className="mobile-only" style={{ marginTop: "12px" }}>
-              <button type="submit" form="create-letter-form"
-                style={{ width: "100%", padding: "16px", borderRadius: "12px", backgroundColor: "var(--accent-rose)", backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)", border: "none", color: "#fff", fontWeight: 600, fontSize: "15px", cursor: "pointer", boxShadow: "0 8px 20px rgba(255, 75, 114, 0.25)", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", transition: "all 0.2s" }}
-                onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
-                onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
-              >
-                {form.editId ? (
-                  <><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Save Changes</>
-                ) : form.isWriteback ? (
-                  <><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>Send Write Back ✍️</>
-                ) : (
-                  <><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8"></path><path d="M8 12h8"></path></svg>Seal Envelope & Get Link</>
-                )}
-              </button>
-            </div>
           </div>
         </div>
       </main>
@@ -829,6 +982,41 @@ function CreateLetterStudio() {
           </div>
         </div>
       )}
+
+      {/* Mobile Floating Eyeball Preview FAB */}
+      <button
+        type="button"
+        className="mobile-fab-preview"
+        onClick={() => setIsMobilePreviewOpen(true)}
+        title="Open Preview"
+      >
+        👁️
+      </button>
+
+      {/* Full-screen Mobile Preview Overlay Modal */}
+      <MobilePreviewOverlay
+        isOpen={isMobilePreviewOpen}
+        onClose={() => setIsMobilePreviewOpen(false)}
+        previewMode={form.previewMode}
+        setPreviewMode={form.setPreviewMode}
+        envelopeResetKey={form.envelopeResetKey}
+        setEnvelopeResetKey={form.setEnvelopeResetKey}
+        recipient={form.recipient}
+        sender={form.sender}
+        content={form.content}
+        theme={form.theme}
+        sealSymbol={form.sealSymbol}
+        sealColor={form.sealColor}
+        envelopeStyle={form.envelopeStyle}
+        greeting={form.greeting}
+        farewell={form.farewell}
+        backdrop={form.backdrop}
+        previewBackdropUrl={previewBackdropUrl}
+        hasBackdrop={!!hasBackdrop}
+        getGlassyBg={getGlassyBg}
+        getGlassyBorder={getGlassyBorder}
+        getBackdropOverlay={getBackdropOverlay}
+      />
     </div>
   );
 }

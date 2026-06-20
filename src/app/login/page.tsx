@@ -1,32 +1,46 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import FloatingHearts from "@/components/FloatingHearts";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") || "";
+  const dParam = searchParams.get("d") || "";
+  const isLoginParam = searchParams.get("login") === "true";
+
   const { user, recipient, loading, signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
   
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(true); // Default to signup for guest upgrade path
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
   const [authError, setAuthError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // Sync isSignUp tab view with login query param on load
+  useEffect(() => {
+    if (isLoginParam) {
+      setIsSignUp(false);
+    }
+  }, [isLoginParam]);
+
   // Redirect if logged in
   useEffect(() => {
     if (!loading && user) {
       if (!recipient) {
-        router.push("/recipient-setup");
+        router.push(`/recipient-setup?redirect=${encodeURIComponent(redirect)}&d=${encodeURIComponent(dParam)}`);
+      } else if (redirect) {
+        router.push(`${redirect}?d=${dParam}`);
       } else {
         router.push("/dashboard");
       }
     }
-  }, [user, recipient, loading, router]);
+  }, [user, recipient, loading, router, redirect, dParam]);
 
   const validateEmail = (val: string) => {
     setEmail(val);
@@ -313,5 +327,18 @@ export default function LoginPage() {
 
       </main>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", flexDirection: "column", gap: "16px" }}>
+        <div style={{ width: "40px", height: "40px", borderRadius: "50%", border: "3px solid rgba(255, 75, 114, 0.1)", borderTopColor: "var(--accent-rose)", animation: "spin 1s linear infinite" }} />
+        <div style={{ color: "var(--text-muted)", fontSize: "14px" }}>Loading studio...</div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }

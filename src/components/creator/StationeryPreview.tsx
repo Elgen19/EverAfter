@@ -28,13 +28,34 @@ export default function StationeryPreview({
   getGlassyBg,
   getGlassyBorder,
 }: StationeryPreviewProps) {
+  const getBackdropOverlay = (themeName: string) => {
+    switch (themeName) {
+      case "celestial":
+        return "rgba(9, 14, 36, 0.45)";
+      case "royal":
+        return "rgba(247, 241, 227, 0.35)";
+      case "scroll":
+        return "rgba(237, 220, 185, 0.35)";
+      case "blush":
+        return "rgba(255, 253, 247, 0.4)";
+      case "lavender":
+        return "rgba(247, 244, 252, 0.4)";
+      default:
+        return "transparent";
+    }
+  };
+
+  const overlayColor = getBackdropOverlay(theme);
+
   return (
     <div
       className={`theme-${theme} studio-preview-wrapper`}
       style={{
         borderRadius: "16px",
         padding: previewBackdropUrl ? "30px 20px" : "0px",
-        backgroundImage: previewBackdropUrl ? `url(${previewBackdropUrl})` : "none",
+        backgroundImage: previewBackdropUrl 
+          ? `linear-gradient(${overlayColor}, ${overlayColor}), url(${previewBackdropUrl})` 
+          : "none",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",

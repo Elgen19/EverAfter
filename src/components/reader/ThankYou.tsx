@@ -269,7 +269,7 @@ export default function ThankYou({
                 ✍️ Write Back
               </button>
             )}
-            {isWriteback && replyToId && (
+            {isWriteback && replyToId && replyToId !== "undefined" && replyToId !== "null" && (
               <button onClick={() => { setIsRedirecting(true); window.location.href = `/letter?id=${replyToId}`; }}
                 style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "linear-gradient(135deg, #e2b857 0%, #b38f36 100%)", border: "none", color: "#fff", fontWeight: 600, fontSize: "14px", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", boxShadow: "0 4px 10px rgba(226, 184, 87, 0.2)" }}
                 onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
@@ -311,33 +311,35 @@ export default function ThankYou({
           </div>
 
           {/* Mailbox button below */}
-          <button 
-            onClick={() => {
-              setIsRedirecting(true);
-              const targetLink = mailboxLink || `/mailbox?ref=${parentLetterId}`;
-              window.location.href = targetLink;
-            }}
-            className="glowing-mailbox-btn thankyou-mailbox-btn"
-            style={{ 
-              padding: "12px", 
-              borderRadius: "8px", 
-              background: "linear-gradient(135deg, #ff4b72, #9c6cfa)", 
-              border: "1px solid rgba(255, 255, 255, 0.2)", 
-              color: "#fff", 
-              fontWeight: "bold", 
-              fontSize: "14px", 
-              cursor: "pointer", 
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "6px",
-              boxShadow: "0 0 15px rgba(255, 75, 114, 0.4), 0 0 25px rgba(156, 108, 250, 0.3)",
-              transition: "all 0.3s ease",
-              width: "100%",
-            }}
-          >
-            📬 Mailbox
-          </button>
+          {showMailboxButton && (
+            <button 
+              onClick={() => {
+                setIsRedirecting(true);
+                const targetLink = mailboxLink || `/mailbox?ref=${parentLetterId}`;
+                window.location.href = targetLink;
+              }}
+              className="glowing-mailbox-btn thankyou-mailbox-btn"
+              style={{ 
+                padding: "12px", 
+                borderRadius: "8px", 
+                background: "linear-gradient(135deg, #ff4b72, #9c6cfa)", 
+                border: "1px solid rgba(255, 255, 255, 0.2)", 
+                color: "#fff", 
+                fontWeight: "bold", 
+                fontSize: "14px", 
+                cursor: "pointer", 
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px",
+                boxShadow: "0 0 15px rgba(255, 75, 114, 0.4), 0 0 25px rgba(156, 108, 250, 0.3)",
+                transition: "all 0.3s ease",
+                width: "100%",
+              }}
+            >
+              📬 Mailbox
+            </button>
+          )}
         </div>
 
       </div>

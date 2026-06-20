@@ -603,15 +603,23 @@ function MailboxContent() {
           }
         }
         @keyframes active-shake {
-          0% { transform: scale(0.9) rotate(var(--rotation, 0deg)); }
-          25% { transform: scale(var(--active-envelope-scale, 1.08)) rotate(-2deg); }
-          50% { transform: scale(var(--active-envelope-scale, 1.08)) rotate(2deg); }
-          75% { transform: scale(var(--active-envelope-scale, 1.08)) rotate(-1deg); }
-          90% { transform: scale(var(--active-envelope-scale, 1.08)) rotate(0.5deg); }
-          100% { transform: scale(var(--active-envelope-scale, 1.08)) rotate(0deg); }
+          0%, 100% { transform: scale(var(--active-envelope-scale, 1.08)) rotate(0deg); }
+          12% { transform: scale(var(--active-envelope-scale, 1.08)) rotate(-1.5deg); }
+          25% { transform: scale(var(--active-envelope-scale, 1.08)) rotate(1.5deg); }
+          37% { transform: scale(var(--active-envelope-scale, 1.08)) rotate(-1deg); }
+          50% { transform: scale(var(--active-envelope-scale, 1.08)) rotate(1deg); }
+          62%, 90% { transform: scale(var(--active-envelope-scale, 1.08)) rotate(0deg); }
+        }
+        @keyframes active-envelope-glow {
+          0%, 100% {
+            box-shadow: 0 25px 50px rgba(0,0,0,0.7), 0 0 15px rgba(226, 184, 87, 0.35);
+          }
+          50% {
+            box-shadow: 0 25px 50px rgba(0,0,0,0.7), 0 0 35px rgba(226, 184, 87, 0.75);
+          }
         }
         .active-envelope-shake {
-          animation: active-shake 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+          animation: active-shake 2.5s ease-in-out infinite;
           transform: scale(var(--active-envelope-scale, 1.08)) rotate(0deg);
         }
         @keyframes pulse-keyhole {
@@ -672,43 +680,6 @@ function MailboxContent() {
         }
       `}</style>
 
-      {/* Top Left Floating Back Button */}
-      <button
-        onClick={() => router.push(`/letter?id=${refId}`)}
-        style={{
-          position: "absolute",
-          top: "24px",
-          left: "24px",
-          width: "48px",
-          height: "48px",
-          borderRadius: "50%",
-          background: "rgba(20, 15, 30, 0.65)",
-          border: "1px solid rgba(226, 184, 87, 0.4)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          zIndex: 100,
-          transition: "all 0.3s ease",
-          boxShadow: "0 4px 15px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.15)",
-          backdropFilter: "blur(10px)"
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "scale(1.1)";
-          e.currentTarget.style.borderColor = "var(--accent-gold)";
-          e.currentTarget.style.boxShadow = "0 6px 20px rgba(226,184,87,0.3)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.borderColor = "rgba(226, 184, 87, 0.4)";
-          e.currentTarget.style.boxShadow = "0 4px 15px rgba(0,0,0,0.5)";
-        }}
-        title="Back to Letter"
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.3))" }}>
-          <path d="M19 12H5M12 19l-7-7 7-7" />
-        </svg>
-      </button>
 
       {/* Floating Cherry Blossom Petals */}
       <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", overflow: "hidden", pointerEvents: "none", zIndex: 2 }}>
@@ -923,6 +894,7 @@ function MailboxContent() {
                           : isCurrentRef 
                             ? "0 0 20px rgba(226, 184, 87, 0.3), 0 10px 25px rgba(0,0,0,0.45)" 
                             : "0 10px 25px rgba(0,0,0,0.45)",
+                        animation: isActive ? "active-envelope-glow 2s ease-in-out infinite alternate" : "none",
                         transition: "box-shadow 0.4s ease"
                       }}
                     >
@@ -1057,18 +1029,10 @@ function MailboxContent() {
                                                isVintageWhite ? "url(/vintage_red_seal.png)" : "url(/vintage_rose_seal.png)",
                             pointerEvents: "none",
                             zIndex: 8,
-                            ...(isVintageWhite ? {
-                              width: "112px",
-                              height: "112px",
-                              left: "calc(50% - 56px)",
-                              top: "164px"
-                            } : {}),
-                            ...(isCelestialBlue ? {
-                              width: "106px",
-                              height: "106px",
-                              left: "calc(50% - 53px)",
-                              top: "167px"
-                            } : {})
+                            width: "106px",
+                            height: "106px",
+                            left: "calc(50% - 53px)",
+                            top: "167px"
                           } as React.CSSProperties}
                         >
                           <div className="wax-seal-quarter top-left" />

@@ -20,6 +20,20 @@ export default function SurveyFeedback({ survey, sender, recipient, letterKey, o
   const [surveyText, setSurveyText] = useState("");
   const [surveySubmitted, setSurveySubmitted] = useState(false);
 
+  React.useEffect(() => {
+    const cachedSurveyStr = localStorage.getItem(`survey_response_${letterKey.slice(0, 10)}`);
+    if (cachedSurveyStr) {
+      try {
+        const cached = JSON.parse(cachedSurveyStr);
+        setSurveyEmoji(cached.emoji || "");
+        setSurveyText(cached.feedback || "");
+        setSurveySubmitted(true);
+      } catch (e) {
+        console.error("Failed to parse cached survey response:", e);
+      }
+    }
+  }, [letterKey]);
+
   const submitSurvey = (e: React.FormEvent) => {
     e.preventDefault();
     setSurveySubmitted(true);

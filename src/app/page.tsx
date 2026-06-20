@@ -218,6 +218,7 @@ export default function LandingPage() {
           {/* Logo */}
           <Link 
             href="/"
+            className="header-logo-container"
             style={{ 
               display: "flex",
               alignItems: "center",
@@ -231,6 +232,7 @@ export default function LandingPage() {
             <img 
               src="/logo.png" 
               alt="EverAfter Logo" 
+              className="header-logo-img"
               style={{ 
                 width: "40px", 
                 height: "40px", 
@@ -240,14 +242,17 @@ export default function LandingPage() {
                 border: "1.5px solid rgba(255, 255, 255, 0.1)"
               }} 
             />
-            <span style={{ 
-              fontSize: "36px", 
-              fontWeight: "normal", 
-              fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive", 
-              background: "linear-gradient(to right, #ff4b72, #9c6cfa)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent"
-            }}>
+            <span 
+              className="header-logo-text"
+              style={{ 
+                fontSize: "36px", 
+                fontWeight: "normal", 
+                fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive", 
+                background: "linear-gradient(to right, #ff4b72, #9c6cfa)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent"
+              }}
+            >
               EverAfter
             </span>
           </Link>
@@ -317,7 +322,8 @@ export default function LandingPage() {
                   onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.12)")}
                   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.06)")}
                 >
-                  Go to Dashboard 💖
+                  <span className="dashboard-text-full">Go to Dashboard 💖</span>
+                  <span className="dashboard-text-short">Dashboard 💖</span>
                 </Link>
               ) : (
                 <Link 
@@ -436,10 +442,9 @@ export default function LandingPage() {
               Capture your deepest feelings in modern, media-rich love letters. Seal your words in digital wax, set time locks for anniversaries, embed ambient soundtracks, and secure them behind private gates.
             </p>
 
-            {/* Call to Actions */}
             <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "12px" }}>
               <Link
-                href={mounted && user ? "/dashboard" : "/login"}
+                href={mounted && user ? "/dashboard" : "/create"}
                 className="cta-button"
                 style={{
                   display: "inline-flex",
@@ -519,10 +524,10 @@ export default function LandingPage() {
                     "--seal-color-light": "#ffd670",
                     "--seal-color-dark": "#7a5c18",
                     "--seal-bg-image": "url(/vintage_red_seal.png)",
-                    width: "112px",
-                    height: "112px",
-                    left: "calc(50% - 56px)",
-                    top: "164px"
+                    width: "106px",
+                    height: "106px",
+                    left: "calc(50% - 53px)",
+                    top: "167px"
                   } as React.CSSProperties}>
                     <div className="wax-seal-quarter top-left" />
                     <div className="wax-seal-quarter top-right" />
@@ -1117,7 +1122,7 @@ export default function LandingPage() {
             Create an EverAfter account to write and manage your love letters today.
           </p>
           <Link
-            href={mounted && user ? "/dashboard" : "/login"}
+            href={mounted && user ? "/dashboard" : "/create"}
             className="cta-button"
             style={{
               display: "inline-flex",

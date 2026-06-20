@@ -223,13 +223,21 @@ export default function Envelope({
       setIsSealBroken(true);
       setIsBreaking(false);
 
-      // Generate romantic heart burst particles!
-      const heartsList = ["❤️", "💖", "💝", "💕", "✨", "🌸"];
+      // Generate dynamic theme-specific burst particles!
+      let particlesList = ["❤️", "💖", "💝", "💕", "✨", "🌸"];
+      if (theme === "blush") {
+        particlesList = ["🌸", "🌹", "💖", "💕", "✨", "🌸"];
+      } else if (theme === "celestial") {
+        particlesList = ["✨", "🌟", "⭐", "💫", "🌙", "✨"];
+      } else if (theme === "royal") {
+        particlesList = ["⚜️", "👑", "✨", "⭐", "⚜️", "👑"];
+      }
+
       const newBursts = [];
-      for (let i = 0; i < 22; i++) {
-        const char = heartsList[Math.floor(Math.random() * heartsList.length)];
-        const tx = `${(Math.random() - 0.5) * 360}px`;
-        const ty = `${-150 - Math.random() * 220}px`; // shoots upwards
+      for (let i = 0; i < 32; i++) {
+        const char = particlesList[Math.floor(Math.random() * particlesList.length)];
+        const tx = `${(Math.random() - 0.5) * 380}px`;
+        const ty = `${-150 - Math.random() * 250}px`; // shoots upwards
         const scale = Math.random() * 0.9 + 0.6;
         const rot = `${(Math.random() - 0.5) * 180}deg`;
         newBursts.push({
@@ -456,18 +464,10 @@ export default function Envelope({
               "--seal-bg-image": isCelestialBlue ? "url(/vintage_heart_seal.jpg)" :
                                  isVintageWhite ? "url(/vintage_red_seal.png)" : "url(/vintage_rose_seal.png)",
               display: isSealBroken && !isOpen ? "none" : undefined,
-              ...(isVintageWhite ? {
-                width: "112px",
-                height: "112px",
-                left: "calc(50% - 56px)",
-                top: "164px"
-              } : {}),
-              ...(isCelestialBlue ? {
-                width: "106px",
-                height: "106px",
-                left: "calc(50% - 53px)",
-                top: "167px"
-              } : {})
+              width: "106px",
+              height: "106px",
+              left: "calc(50% - 53px)",
+              top: "167px"
             } as React.CSSProperties}
             onClick={handleOpen}
             aria-label="Open Letter"

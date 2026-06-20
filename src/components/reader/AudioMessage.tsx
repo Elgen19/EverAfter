@@ -22,26 +22,49 @@ export default function AudioMessage({ audioMessage, onComplete, theme = "scroll
   const audioRef = useRef<HTMLAudioElement>(null);
   const [hasPlayedOnce, setHasPlayedOnce] = useState(false);
 
+  // Check sessionStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const id = searchParams.get("id") || searchParams.get("d") || "default";
+      const key = `audio_opened_${id.slice(0, 10)}`;
+      if (sessionStorage.getItem(key) === "true") {
+        setStage("player-ready");
+      }
+    }
+  }, []);
+
   // Sequence Timer Control
   useEffect(() => {
     // Stage 1: statement-enter (0s - 1.5s)
     const t1 = setTimeout(() => {
-      setStage("statement-visible");
+      setStage(prev => prev === "statement-enter" ? "statement-visible" : prev);
     }, 1500);
 
     // Stage 2: statement-visible (1.5s - 4.5s)
     const t2 = setTimeout(() => {
-      setStage("statement-exit");
+      setStage(prev => prev === "statement-visible" ? "statement-exit" : prev);
     }, 4500);
 
     // Stage 3: statement-exit (4.5s - 6.0s)
     const t3 = setTimeout(() => {
-      setStage("player-enter");
+      setStage(prev => prev === "statement-exit" ? "player-enter" : prev);
     }, 6000);
 
     // Stage 4: player-enter (6.0s - 7.5s)
     const t4 = setTimeout(() => {
-      setStage("player-ready");
+      setStage(prev => {
+        if (prev === "player-enter") {
+          if (typeof window !== "undefined") {
+            const searchParams = new URLSearchParams(window.location.search);
+            const id = searchParams.get("id") || searchParams.get("d") || "default";
+            const key = `audio_opened_${id.slice(0, 10)}`;
+            sessionStorage.setItem(key, "true");
+          }
+          return "player-ready";
+        }
+        return prev;
+      });
     }, 7500);
 
     return () => {
@@ -53,8 +76,14 @@ export default function AudioMessage({ audioMessage, onComplete, theme = "scroll
   }, []);
 
   const skipToPlayer = () => {
-    if (stage === "statement-enter" || stage === "statement-visible" || stage === "statement-exit") {
+    if (stage === "statement-enter" || stage === "statement-visible" || stage === "statement-exit" || stage === "player-enter") {
       setStage("player-ready");
+      if (typeof window !== "undefined") {
+        const searchParams = new URLSearchParams(window.location.search);
+        const id = searchParams.get("id") || searchParams.get("d") || "default";
+        const key = `audio_opened_${id.slice(0, 10)}`;
+        sessionStorage.setItem(key, "true");
+      }
     }
   };
 
@@ -262,6 +291,7 @@ export default function AudioMessage({ audioMessage, onComplete, theme = "scroll
                 ? "dramatic-text-visible" 
                 : "dramatic-text-exit"
           }
+          onClick={skipToPlayer}
           style={{
             width: "100%",
             padding: "40px 30px",
@@ -277,10 +307,12 @@ export default function AudioMessage({ audioMessage, onComplete, theme = "scroll
             boxShadow: `0 15px 40px rgba(0, 0, 0, 0.5), 0 0 10px ${colors.shadow}`,
             backdropFilter: "blur(12px)",
             WebkitBackdropFilter: "blur(12px)",
-            cursor: "default",
+            cursor: "pointer",
             minHeight: "360px",
-            boxSizing: "border-box"
+            boxSizing: "border-box",
+            position: "relative"
           }}
+          title="Click to skip intro"
         >
           {/* Animated pulsing glow icon */}
           <div 
@@ -307,6 +339,27 @@ export default function AudioMessage({ audioMessage, onComplete, theme = "scroll
           >
             {audioMessage.customMessage ? `"${audioMessage.customMessage}"` : "Listen to a special voice recording left for you..."}
           </p>
+
+          {/* Subtle Skip Hint */}
+          <span 
+            style={{ 
+              position: "absolute", 
+              bottom: "16px", 
+              right: "20px", 
+              fontSize: "11px", 
+              color: "rgba(255, 255, 255, 0.45)", 
+              letterSpacing: "0.5px", 
+              textTransform: "uppercase",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              fontFamily: "var(--font-ui), sans-serif",
+              fontWeight: 600,
+              pointerEvents: "none"
+            }}
+          >
+            Skip Intro ➔
+          </span>
         </div>
       )}
 

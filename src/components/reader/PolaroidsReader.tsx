@@ -107,45 +107,7 @@ export default function PolaroidsReader({
 
   // Synthesize paper swoosh/rustle sound using Web Audio API
   const playSwooshSound = () => {
-    if (typeof window === "undefined") return;
-    try {
-      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioContext) return;
-      const ctx = new AudioContext();
-      
-      const duration = 0.22;
-      const bufferSize = ctx.sampleRate * duration;
-      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      
-      // Populate buffer with noise
-      for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1;
-      }
-      
-      const noise = ctx.createBufferSource();
-      noise.buffer = buffer;
-      
-      // Soft low-pass filter sweep
-      const filter = ctx.createBiquadFilter();
-      filter.type = "lowpass";
-      filter.frequency.setValueAtTime(1400, ctx.currentTime);
-      filter.frequency.exponentialRampToValueAtTime(350, ctx.currentTime + duration);
-      
-      // Volume fade envelope
-      const gainNode = ctx.createGain();
-      gainNode.gain.setValueAtTime(0.04, ctx.currentTime); // Keep it ambient
-      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-      
-      noise.connect(filter);
-      filter.connect(gainNode);
-      gainNode.connect(ctx.destination);
-      
-      noise.start();
-    } catch (err) {
-      // Autoplay rules might block audio if they haven't clicked the page yet
-      console.log("Web Audio API blocked or not supported:", err);
-    }
+    return; // sound disabled per user request
   };
 
   const triggerSwipe = (dir: "left" | "right") => {
@@ -268,8 +230,8 @@ export default function PolaroidsReader({
 
   const truncateCaption = (text: string | undefined) => {
     if (!text) return "💖";
-    if (text.length > 10) {
-      return text.slice(0, 10) + "...";
+    if (text.length > 24) {
+      return text.slice(0, 24) + "...";
     }
     return text;
   };

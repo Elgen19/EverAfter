@@ -723,18 +723,10 @@ export default function SealingAnimation({
                 zIndex: 7,
                 animation: "sealStampEffect 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards",
                 transform: "translateZ(4px)",
-                ...(isVintageWhite ? {
-                  width: "112px",
-                  height: "112px",
-                  left: "calc(50% - 56px)",
-                  top: "164px"
-                } : {}),
-                ...(isCelestialBlue ? {
-                  width: "106px",
-                  height: "106px",
-                  left: "calc(50% - 53px)",
-                  top: "167px"
-                } : {})
+                width: "106px",
+                height: "106px",
+                left: "calc(50% - 53px)",
+                top: "167px"
               } as React.CSSProperties}
             >
               <div className="wax-seal-quarter top-left" />

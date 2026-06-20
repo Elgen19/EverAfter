@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { encodeLetterData, LetterData } from "@/utils/encoding";
+import { encodeLetterData, decodeLetterData, LetterData } from "@/utils/encoding";
 import { db, storage } from "@/utils/firebase";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 
@@ -17,10 +17,12 @@ export function useLetterForm() {
   const queryFrom = searchParams.get("from") || "";
   const queryRecipientUid = searchParams.get("recipientUid") || "";
   const queryReplyToId = searchParams.get("replyToId") || "";
+  const queryD = searchParams.get("d") || "";
 
   // Preview options state
   const [previewMode, setPreviewMode] = useState<"letter" | "envelope">("letter");
   const [envelopeResetKey, setEnvelopeResetKey] = useState(0);
+  const [hasLoadedD, setHasLoadedD] = useState(false);
 
   // Email sending states
   const [emailToSend, setEmailToSend] = useState("");
@@ -37,9 +39,7 @@ export function useLetterForm() {
   // Guard routing
   useEffect(() => {
     if (!loading) {
-      if (!user && !isWriteback) {
-        router.push("/login");
-      } else if (user && !recipientProfile && !isWriteback) {
+      if (user && !recipientProfile && !isWriteback) {
         router.push("/recipient-setup");
       }
     }
@@ -102,6 +102,8 @@ export function useLetterForm() {
   const [music, setMusic] = useState(false);
   const [musicType, setMusicType] = useState<"synth" | "url">("synth");
   const [musicUrl, setMusicUrl] = useState("");
+  const [musicFile, setMusicFile] = useState<File | null>(null);
+  const [musicFileName, setMusicFileName] = useState("");
 
   const [greeting, setGreeting] = useState("Dearest");
   const [farewell, setFarewell] = useState("With all my love,");
@@ -291,6 +293,180 @@ export function useLetterForm() {
     };
     loadLetter();
   }, [editId, db, user]);
+
+  // Load from query string d (for guests upgrading to account)
+  useEffect(() => {
+    if (!queryD || hasLoadedD) return;
+    try {
+      const decoded = decodeLetterData(queryD);
+      if (decoded) {
+        // Only load sender and recipient values from guest URL parameter if the creator is still a guest
+        if (!user || !recipientProfile) {
+          setRecipient(decoded.recipient || "");
+          setSender(decoded.sender || "");
+          if (decoded.email) setEmail(decoded.email);
+        }
+        setTitle(decoded.title || "Love Letter");
+        setContent(decoded.content || "");
+        setTheme(decoded.theme || "scroll");
+        setBackdrop(decoded.backdrop || "none");
+        setSealSymbol(decoded.sealSymbol || "heart");
+        setSealColor(decoded.sealColor || "#9c1c2e");
+        setEnvelopeStyle(decoded.envelopeStyle || "vintage-rose");
+        setMusic(decoded.music || false);
+        if (decoded.musicType) setMusicType(decoded.musicType);
+        if (decoded.musicUrl) setMusicUrl(decoded.musicUrl);
+        setGreeting(decoded.greeting || "");
+        setFarewell(decoded.farewell || "");
+        if (decoded.security) {
+          setSecurityEnabled(decoded.security.enabled || false);
+          setSecurityType(decoded.security.type || "boolean");
+          setSecurityQuestion(decoded.security.question || "");
+          setSecurityAnswer(decoded.security.answer || "");
+          setSecurityChoices(decoded.security.choices || ["", "", ""]);
+          setSecurityConfirmed(true);
+        }
+        if (decoded.intro) {
+          setIntroEnabled(decoded.intro.enabled || false);
+          setIntroText(decoded.intro.text || "");
+          setIntroAnimation(decoded.intro.animation || "typewriter");
+          setIntroConfirmed(true);
+        }
+        if (decoded.closing) {
+          setClosingEnabled(decoded.closing.enabled || false);
+          setClosingText(decoded.closing.text || "");
+          setClosingAnimation(decoded.closing.animation || "typewriter");
+          setClosingConfirmed(true);
+        }
+        if (decoded.survey) {
+          setSurveyEnabled(decoded.survey.enabled || false);
+          setSurveyType(decoded.survey.type || "both");
+          setSurveyQuestion(decoded.survey.question || "");
+          setSurveyConfirmed(true);
+        }
+        if (decoded.dateInvite) {
+          setDateInviteEnabled(decoded.dateInvite.enabled || false);
+          setDateInviteQuestion(decoded.dateInvite.question || "");
+          setDateInviteDate(decoded.dateInvite.date || "");
+          setDateInviteTime(decoded.dateInvite.time || "");
+          setDateInvitePlace(decoded.dateInvite.place || "");
+          setDateInviteMapLink(decoded.dateInvite.mapLink || "");
+          setDateInviteEmail(decoded.dateInvite.email || "");
+          setDateInviteConfirmed(true);
+        }
+        if (decoded.sendLaterDate) {
+          setSendLaterEnabled(true);
+          const [dVal, tVal] = decoded.sendLaterDate.split("T");
+          setSendLaterDate(dVal || "");
+          setSendLaterTime(tVal || "");
+        }
+        if (decoded.audioMessage) {
+          setAudioEnabled(decoded.audioMessage.enabled || false);
+          setAudioUrl(decoded.audioMessage.audioUrl || "");
+          setAudioCustomMessage(decoded.audioMessage.customMessage || "");
+          setAudioConfirmed(true);
+        }
+        if (decoded.polaroids) {
+          setPolaroidsEnabled(decoded.polaroids.enabled || false);
+          const loadedPolaroids = [
+            { id: 0, url: "", file: null, caption: "" },
+            { id: 1, url: "", file: null, caption: "" },
+            { id: 2, url: "", file: null, caption: "" }
+          ];
+          if (decoded.polaroids.items && Array.isArray(decoded.polaroids.items)) {
+            decoded.polaroids.items.forEach((item: any, idx: number) => {
+              if (idx < 3) {
+                loadedPolaroids[idx] = {
+                  id: idx,
+                  url: item.imageUrl || "",
+                  file: null,
+                  caption: item.caption || ""
+                };
+              }
+            });
+          }
+          setPolaroids(loadedPolaroids);
+          setPolaroidsConfirmed(true);
+        }
+        if (decoded.stepOrder) {
+          setStepOrder(decoded.stepOrder);
+        }
+        setHasLoadedD(true);
+      }
+    } catch (err) {
+      console.error("Failed to restore progress from d param:", err);
+    }
+  }, [queryD, hasLoadedD, user, recipientProfile]);
+
+  const getEncodedState = () => {
+    const finalSendLaterDate = sendLaterEnabled ? `${sendLaterDate}T${sendLaterTime}` : undefined;
+    const letterData: LetterData = {
+      recipient: recipient.trim() || "My Love",
+      sender: sender.trim() || "Yours Truly",
+      email: email.trim() || undefined,
+      title: title.trim() || "A Secret Letter",
+      content: content.trim() || "I love you.",
+      theme,
+      backdrop,
+      sealSymbol,
+      sealColor,
+      envelopeStyle,
+      music,
+      musicType: music ? musicType : undefined,
+      musicUrl: music && musicType === "url" ? musicUrl : undefined,
+      timestamp: Date.now(),
+      greeting: greeting.trim(),
+      farewell: farewell.trim(),
+      sendLaterDate: finalSendLaterDate,
+      security: securityEnabled ? {
+        enabled: true,
+        type: securityType,
+        question: securityQuestion.trim(),
+        answer: securityAnswer.trim().toLowerCase(),
+        choices: securityType === "choice" ? securityChoices.map(c => c.trim()).filter(Boolean) : undefined
+      } : undefined,
+      intro: introEnabled ? {
+        enabled: true,
+        text: introText.trim().substring(0, 200),
+        animation: introAnimation
+      } : undefined,
+      closing: closingEnabled ? {
+        enabled: true,
+        text: closingText.trim().substring(0, 200),
+        animation: closingAnimation
+      } : undefined,
+      dateInvite: dateInviteEnabled ? {
+        enabled: true,
+        question: dateInviteQuestion.trim(),
+        activity: dateInvitePlace.trim() || undefined,
+        dateTime: `${dateInviteDate} at ${dateInviteTime}` || undefined,
+        date: dateInviteDate.trim() || undefined,
+        time: dateInviteTime.trim() || undefined,
+        place: dateInvitePlace.trim() || undefined,
+        mapLink: dateInviteMapLink.trim() || undefined,
+        email: dateInviteEmail.trim() || undefined
+      } : undefined,
+      survey: surveyEnabled ? {
+        enabled: true,
+        type: surveyType,
+        question: surveyQuestion.trim()
+      } : undefined,
+      audioMessage: audioEnabled ? {
+        enabled: true,
+        audioUrl: audioUrl || undefined,
+        customMessage: audioCustomMessage.trim() || undefined
+      } : undefined,
+      polaroids: polaroidsEnabled ? {
+        enabled: true,
+        items: polaroids.filter(p => p.url.trim() !== "").map(p => ({
+          imageUrl: p.url.startsWith("blob:") ? undefined : p.url,
+          caption: p.caption.trim() || undefined
+        }))
+      } : undefined,
+      stepOrder
+    };
+    return encodeLetterData(letterData);
+  };
 
   // Derived helpers
   const showRomanticAlert = (title: string, message: string) => {
@@ -630,6 +806,9 @@ export function useLetterForm() {
         imageUrl: item.imageUrl?.startsWith("blob:") ? undefined : item.imageUrl
       }));
     }
+    if (musicFile) {
+      letterDataForEncoding.musicUrl = undefined;
+    }
     const encoded = encodeLetterData(letterDataForEncoding);
     const origin = typeof window !== "undefined" ? window.location.origin : "";
     const localGeneratedLink = `${origin}/letter?d=${encoded}`;
@@ -653,6 +832,13 @@ export function useLetterForm() {
               if (sanitizedData.audioMessage) {
                 sanitizedData.audioMessage.audioUrl = finalAudioUrl;
               }
+            }
+            if (music && musicType === "url" && musicFile) {
+              const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
+              const storageRef = ref(storage, `letters/${editId}/background_music`);
+              const snapshot = await uploadBytes(storageRef, musicFile);
+              const finalMusicUrl = await getDownloadURL(snapshot.ref);
+              sanitizedData.musicUrl = finalMusicUrl;
             }
             if (polaroidsEnabled && sanitizedData.polaroids?.items) {
               const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
@@ -698,6 +884,13 @@ export function useLetterForm() {
               const snapshot = await uploadBytes(storageRef, audioFile);
               const finalAudioUrl = await getDownloadURL(snapshot.ref);
               await updateDoc(docRef, { "audioMessage.audioUrl": finalAudioUrl });
+            }
+            if (music && musicType === "url" && musicFile) {
+              const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
+              const storageRef = ref(storage, `letter/${letterId}/background_music`);
+              const snapshot = await uploadBytes(storageRef, musicFile);
+              const finalMusicUrl = await getDownloadURL(snapshot.ref);
+              await updateDoc(docRef, { musicUrl: finalMusicUrl });
             }
             if (polaroidsEnabled && initialSanitizedData.polaroids?.items) {
               const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
@@ -798,6 +991,7 @@ export function useLetterForm() {
     envelopeStyle, setEnvelopeStyle,
     // Music
     music, setMusic, musicType, setMusicType, musicUrl, setMusicUrl,
+    musicFile, setMusicFile, musicFileName, setMusicFileName,
     // Text customizations
     greeting, setGreeting, farewell, setFarewell,
     // Security
@@ -840,5 +1034,6 @@ export function useLetterForm() {
     // Handlers
     handleCreate, copyToClipboard, handleSendEmail, handleEmailChange,
     moveStep, handleInsertEmoji, showRomanticAlert, handleCloseAlert,
+    getEncodedState,
   };
 }

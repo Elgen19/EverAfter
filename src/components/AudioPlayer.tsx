@@ -10,149 +10,32 @@ interface AudioPlayerProps {
 
 export default function AudioPlayer({ autoplay = false, musicType = "synth", musicUrl }: AudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
-  const audioCtxRef = useRef<AudioContext | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isPlayingRef = useRef(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const startAudio = () => {
     if (isPlayingRef.current) return;
 
-    if (musicType === "url" && musicUrl) {
-      if (!audioRef.current) {
-        audioRef.current = new Audio(musicUrl);
-        audioRef.current.loop = true;
-        audioRef.current.volume = 0.35;
-      }
-      audioRef.current.play().then(() => {
-        isPlayingRef.current = true;
-        setIsPlaying(true);
-      }).catch(err => {
-        console.error("Audio URL play failed:", err);
-      });
-      return;
+    // Use custom uploaded soundtrack if available, otherwise fall back to the system default soundtrack
+    const finalUrl = (musicType === "url" && musicUrl) ? musicUrl : "/cant_help_falling_in_love.mp3";
+
+    if (!audioRef.current) {
+      audioRef.current = new Audio(finalUrl);
+      audioRef.current.loop = true;
+      audioRef.current.volume = 0.35;
     }
-    
-    // Create Audio Context
-    const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!AudioContextClass) return;
 
-    const ctx = new AudioContextClass();
-    audioCtxRef.current = ctx;
-    isPlayingRef.current = true;
-    setIsPlaying(true);
-
-    // Master Volume
-    const masterGain = ctx.createGain();
-    masterGain.gain.setValueAtTime(0.12, ctx.currentTime);
-    masterGain.connect(ctx.destination);
-
-    // Reverb/Delay effect (Simulated via a delay node)
-    const delay = ctx.createDelay();
-    delay.delayTime.value = 0.5;
-    const delayFeedback = ctx.createGain();
-    delayFeedback.gain.value = 0.4;
-    
-    delay.connect(delayFeedback);
-    delayFeedback.connect(delay);
-    delayFeedback.connect(masterGain);
-
-    // Synth function
-    const playNote = (freq: number, start: number, duration: number, type: OscillatorType = "sine", volume = 0.5) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, start);
-
-      // Lowpass filter to make it warmer
-      const filter = ctx.createBiquadFilter();
-      filter.type = "lowpass";
-      filter.frequency.setValueAtTime(800, start);
-
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(masterGain);
-      // also route to delay for spatial width
-      gain.connect(delay);
-
-      // Envelope: Slow attack and long release
-      gain.gain.setValueAtTime(0, start);
-      gain.gain.linearRampToValueAtTime(volume, start + 0.1);
-      gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
-
-      osc.start(start);
-      osc.stop(start + duration + 0.1);
-    };
-
-    // Frequencies mapping
-    const notes = {
-      C3: 130.81, E3: 164.81, G3: 196.00, B3: 246.94, D4: 293.66,
-      A2: 110.00, C4: 261.63, E4: 329.63, G4: 392.00,
-      F2: 87.31,  A3: 220.00, C5: 523.25, E5: 659.25,
-      G2: 98.00,  D3: 146.83, F3: 174.61, G3_h: 392.00, B4: 493.88
-    };
-
-    const chords = [
-      // Cmaj9
-      [notes.C3, notes.G3, notes.B3, notes.D4, notes.E4],
-      // Am9
-      [notes.A2, notes.E3, notes.G3, notes.C4, notes.E4],
-      // Fmaj9
-      [notes.F2, notes.C3, notes.A3, notes.E4, notes.G4],
-      // G11 (G7 sus)
-      [notes.G2, notes.D3, notes.F3, notes.B3, notes.D4]
-    ];
-
-    const pentatonicBells = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25, 783.99];
-
-    let step = 0;
-    const playLoop = () => {
-      if (!isPlayingRef.current || ctx.state === "closed") return;
-      
-      const now = ctx.currentTime;
-      const currentChord = chords[step % chords.length];
-
-      // Play soft backing pads (Triangle for warm bass, Sine for mids)
-      currentChord.forEach((freq, idx) => {
-        const isBass = idx === 0;
-        playNote(
-          freq, 
-          now, 
-          5.0, 
-          isBass ? "triangle" : "sine", 
-          isBass ? 0.3 : 0.2
-        );
-      });
-
-      // Spawn random bell melody notes over next 4 seconds
-      const melodyCount = Math.floor(Math.random() * 3) + 2; // 2 to 4 melody notes
-      for (let i = 0; i < melodyCount; i++) {
-        const bellFreq = pentatonicBells[Math.floor(Math.random() * pentatonicBells.length)];
-        const bellTime = now + (i * (4 / melodyCount)) + (Math.random() * 0.3);
-        playNote(bellFreq, bellTime, 1.8, "sine", 0.15);
-      }
-
-      step++;
-      
-      // Schedule next chord
-      timerRef.current = setTimeout(playLoop, 4000);
-    };
-
-    playLoop();
+    audioRef.current.play().then(() => {
+      isPlayingRef.current = true;
+      setIsPlaying(true);
+    }).catch(err => {
+      console.error("Audio play failed:", err);
+    });
   };
 
   const stopAudio = () => {
     if (audioRef.current) {
       audioRef.current.pause();
-    }
-    if (audioCtxRef.current) {
-      audioCtxRef.current.close();
-      audioCtxRef.current = null;
-    }
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
     }
     isPlayingRef.current = false;
     setIsPlaying(false);
@@ -186,12 +69,6 @@ export default function AudioPlayer({ autoplay = false, musicType = "synth", mus
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
-      }
-      if (audioCtxRef.current) {
-        audioCtxRef.current.close();
-      }
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
       }
     };
   }, []);

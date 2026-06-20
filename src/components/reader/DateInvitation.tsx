@@ -13,6 +13,8 @@ interface DateInvitationProps {
     place?: string;
     mapLink?: string;
     email?: string;
+    rsvpStatus?: string;
+    rsvpNotes?: string;
   };
   sender: string;
   recipient: string;
@@ -87,6 +89,33 @@ export default function DateInvitation({
   const [dateStatusMessage, setDateStatusMessage] = useState("");
   const [dateInviteHearts, setDateInviteHearts] = useState<{ id: number; char: string; tx: string; ty: string; scale: number; rot: string }[]>([]);
   const [isSealing, setIsSealing] = useState(false);
+  const [isConfirmed, setIsConfirmed] = useState(false);
+
+  React.useEffect(() => {
+    const cachedRsvpStr = localStorage.getItem(`date_rsvp_${letterKey.slice(0, 10)}`);
+    if (cachedRsvpStr) {
+      try {
+        const cached = JSON.parse(cachedRsvpStr);
+        if (cached.accepted) {
+          setDateRsvpSelected("yes");
+          setDateNotes(cached.notes || "");
+          setIsConfirmed(true);
+        } else {
+          setShowDeclineFeedbackModal(true);
+        }
+      } catch (e) {
+        console.error("Failed to parse cached RSVP:", e);
+      }
+    } else if (dateInvite.rsvpStatus) {
+      if (dateInvite.rsvpStatus === "accepted") {
+        setDateRsvpSelected("yes");
+        setDateNotes(dateInvite.rsvpNotes || "");
+        setIsConfirmed(true);
+      } else if (dateInvite.rsvpStatus === "declined") {
+        setShowDeclineFeedbackModal(true);
+      }
+    }
+  }, [dateInvite, letterKey]);
 
 
   const buildGoogleCalendarUrl = () => {
@@ -232,6 +261,7 @@ export default function DateInvitation({
     setTimeout(() => {
       triggerHeartsBurst();
       setShowRsvpSuccessModal(true);
+      setIsConfirmed(true);
     }, 250);
 
     setTimeout(() => {
@@ -333,7 +363,7 @@ export default function DateInvitation({
           <h3 style={{ 
             fontSize: "36px", 
             fontWeight: "normal", 
-            fontFamily: "var(--font-allura), 'Allura', var(--font-sacramento), 'Sacramento', var(--font-great-vibes), 'Great Vibes', 'Dancing Script', cursive",
+            fontFamily: "var(--font-cursive)",
             color: "var(--accent-rose)", 
             margin: 0, 
             textAlign: "center" 
@@ -427,7 +457,7 @@ export default function DateInvitation({
           <h3 style={{ 
             fontSize: "36px", 
             fontWeight: "normal", 
-            fontFamily: "var(--font-allura), 'Allura', var(--font-sacramento), 'Sacramento', 'Dancing Script', cursive",
+            fontFamily: "var(--font-cursive)",
             color: "#fff", 
             margin: 0, 
             textAlign: "center" 
@@ -444,30 +474,72 @@ export default function DateInvitation({
           }}>
             No worries, darling. I hope we can make it happen someday soon! I completely understand. 💖
           </p>
-          <button
-            type="button"
-            onClick={() => {
-              setShowDeclineFeedbackModal(false);
-              onComplete();
-            }}
-            style={{
-              width: "100%",
-              maxWidth: "200px",
-              padding: "12px",
-              borderRadius: "8px",
-              backgroundColor: "var(--accent-rose)",
-              backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)",
-              color: "#fff",
-              fontWeight: "bold",
-              fontSize: "14px",
-              border: "none",
-              cursor: "pointer",
-              boxShadow: "0 4px 15px rgba(255, 75, 114, 0.3)",
-              transition: "all 0.2s"
-            }}
-          >
-            Continue 💖
-          </button>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%", alignItems: "center" }}>
+            <button
+              type="button"
+              onClick={() => {
+                setShowDeclineFeedbackModal(false);
+                onComplete();
+              }}
+              style={{
+                width: "100%",
+                maxWidth: "200px",
+                padding: "12px",
+                borderRadius: "8px",
+                backgroundColor: "var(--accent-rose)",
+                backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)",
+                color: "#fff",
+                fontWeight: "bold",
+                fontSize: "14px",
+                border: "none",
+                cursor: "pointer",
+                boxShadow: "0 4px 15px rgba(255, 75, 114, 0.3)",
+                transition: "all 0.2s"
+              }}
+            >
+              Continue 💖
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowDeclineFeedbackModal(false);
+                setDateRsvpSelected(null);
+                setIsConfirmed(false);
+                localStorage.removeItem(`date_rsvp_${letterKey.slice(0, 10)}`);
+                if (letterId && db) {
+                  import("firebase/firestore").then(({ doc, updateDoc }) => {
+                    const docRef = doc(db, "letters", letterId);
+                    updateDoc(docRef, {
+                      "dateInvite.rsvpStatus": "",
+                      "dateInvite.rsvpNotes": "",
+                      "dateInvite.rsvpTimestamp": null
+                    });
+                  }).catch(err => console.error("Failed to reset Firestore RSVP:", err));
+                }
+              }}
+              style={{
+                background: "none",
+                border: "1px solid rgba(255, 255, 255, 0.2)",
+                color: "var(--text-muted)",
+                padding: "10px 20px",
+                borderRadius: "8px",
+                fontSize: "12px",
+                cursor: "pointer",
+                marginTop: "4px",
+                transition: "all 0.2s"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.4)";
+                e.currentTarget.style.color = "#fff";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
+                e.currentTarget.style.color = "var(--text-muted)";
+              }}
+            >
+              Change Response ↩
+            </button>
+          </div>
         </div>
       ) : showDeclineModal ? (
         // Decline Confirmation Modal (rendered in normal flow!)
@@ -476,7 +548,7 @@ export default function DateInvitation({
           <h3 style={{ 
             fontSize: "36px", 
             fontWeight: "normal", 
-            fontFamily: "var(--font-allura), 'Allura', var(--font-sacramento), 'Sacramento', 'Dancing Script', cursive",
+            fontFamily: "var(--font-cursive)",
             color: "var(--accent-rose)", 
             margin: 0, 
             textAlign: "center" 
@@ -567,7 +639,7 @@ export default function DateInvitation({
                 color: "#fff", 
                 marginTop: "2px", 
                 lineHeight: "1.2",
-                fontFamily: "'Allura', 'Sacramento', 'Great Vibes', 'Dancing Script', cursive"
+                fontFamily: "var(--font-cursive)"
               }}>
                 Thank you for going on a date with me
               </h2>
@@ -675,6 +747,7 @@ export default function DateInvitation({
               <label style={{ fontSize: "10px", color: "var(--accent-gold)", textTransform: "uppercase", fontWeight: 700 }}>Add a ticket message...</label>
               <textarea
                 value={dateNotes}
+                disabled={isConfirmed}
                 onChange={(e) => setDateNotes(e.target.value)}
                 placeholder="e.g. Can't wait! I'll wear that outfit you love... 😘"
                 rows={2}
@@ -699,26 +772,88 @@ export default function DateInvitation({
               </p>
             )}
 
-            <button
-              type="button"
-              onClick={handleRsvpConfirm}
-              style={{
-                width: "100%",
-                padding: "10px",
-                borderRadius: "8px",
-                backgroundColor: "var(--accent-rose)",
-                backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)",
-                color: "#fff",
-                fontWeight: 600,
-                fontSize: "13px",
-                border: "none",
-                cursor: "pointer",
-                boxShadow: "0 4px 15px rgba(255, 75, 114, 0.3)",
-                transition: "all 0.2s"
-              }}
-            >
-              Confirm RSVP & Seal Pass 🎟️
-            </button>
+            {isConfirmed ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
+                {buildGoogleCalendarUrl() && (
+                  <a
+                    href={buildGoogleCalendarUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                      width: "100%",
+                      padding: "10px",
+                      borderRadius: "8px",
+                      border: "1.5px solid var(--accent-gold)",
+                      backgroundColor: "rgba(226, 184, 87, 0.1)",
+                      color: "var(--accent-gold)",
+                      fontWeight: "bold",
+                      fontSize: "13px",
+                      textDecoration: "none",
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                      boxShadow: "0 4px 15px rgba(226, 184, 87, 0.15)",
+                      boxSizing: "border-box"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "rgba(226, 184, 87, 0.25)";
+                      e.currentTarget.style.transform = "scale(1.01)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "rgba(226, 184, 87, 0.1)";
+                      e.currentTarget.style.transform = "none";
+                    }}
+                  >
+                    📅 Sync to Google Calendar
+                  </a>
+                )}
+                <button
+                  type="button"
+                  onClick={onComplete}
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    backgroundColor: "#2ec4b6",
+                    color: "#fff",
+                    fontWeight: "bold",
+                    fontSize: "13px",
+                    border: "none",
+                    cursor: "pointer",
+                    boxShadow: "0 4px 15px rgba(46, 196, 182, 0.25)",
+                    transition: "all 0.2s"
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.01)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}
+                >
+                  ✓ RSVP Sealed! Continue ➔
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleRsvpConfirm}
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  borderRadius: "8px",
+                  backgroundColor: "var(--accent-rose)",
+                  backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)",
+                  color: "#fff",
+                  fontWeight: 600,
+                  fontSize: "13px",
+                  border: "none",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 15px rgba(255, 75, 114, 0.3)",
+                  transition: "all 0.2s"
+                }}
+              >
+                Confirm RSVP & Seal Pass 🎟️
+              </button>
+            )}
           </div>
         </div>
       ) : (
