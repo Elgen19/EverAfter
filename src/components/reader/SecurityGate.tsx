@@ -49,7 +49,7 @@ export default function SecurityGate({ securityData, onSuccess }: SecurityGatePr
     };
   }, [onSuccess]);
 
-  const checkAnswer = (answerProvided: string) => {
+  const checkAnswer = async (answerProvided: string) => {
     let correct = securityData.answer.trim().toLowerCase();
     let provided = answerProvided.trim().toLowerCase();
 
@@ -59,7 +59,25 @@ export default function SecurityGate({ securityData, onSuccess }: SecurityGatePr
     if (provided === "true") provided = "yes";
     if (provided === "false") provided = "no";
 
-    if (correct === provided) {
+    // Check if the correct answer is a SHA-256 hash (64-char hex string)
+    const isSha256 = /^[a-f0-9]{64}$/i.test(correct);
+
+    let match = false;
+    if (isSha256) {
+      try {
+        const msgUint8 = new TextEncoder().encode(provided);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+        match = (hashHex === correct);
+      } catch (err) {
+        console.error("Hashing error during validation:", err);
+      }
+    } else {
+      match = (correct === provided);
+    }
+
+    if (match) {
       setSecurityError("");
       onSuccess();
     } else {

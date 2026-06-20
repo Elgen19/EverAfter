@@ -112,8 +112,41 @@ export function useLetterForm() {
   const [securityType, setSecurityType] = useState<"date" | "boolean" | "choice">("boolean");
   const [securityQuestion, setSecurityQuestion] = useState("");
   const [securityAnswer, setSecurityAnswer] = useState("");
+  const [loadedSecurityAnswerHash, setLoadedSecurityAnswerHash] = useState("");
+  const [hashedAnswer, setHashedAnswer] = useState("");
   const [securityChoices, setSecurityChoices] = useState<string[]>(["", "", ""]);
   const [securityConfirmed, setSecurityConfirmed] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const calculateHash = async () => {
+      if (!securityAnswer.trim() || securityAnswer === "__HASHED__") {
+        return;
+      }
+      if (securityType === "boolean") {
+        setHashedAnswer(securityAnswer.trim().toLowerCase());
+      } else {
+        try {
+          const msgUint8 = new TextEncoder().encode(securityAnswer.trim().toLowerCase());
+          const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+          if (isMounted) {
+            setHashedAnswer(hashHex);
+          }
+        } catch (err) {
+          console.error("Hashing failed:", err);
+          if (isMounted) {
+            setHashedAnswer(securityAnswer.trim().toLowerCase());
+          }
+        }
+      }
+    };
+    calculateHash();
+    return () => {
+      isMounted = false;
+    };
+  }, [securityAnswer, securityType]);
 
   const [introEnabled, setIntroEnabled] = useState(false);
   const [introText, setIntroText] = useState("");
@@ -197,10 +230,44 @@ export function useLetterForm() {
             setFarewell(data.farewell || "");
             if (data.security) {
               setSecurityEnabled(data.security.enabled || false);
-              setSecurityType(data.security.type || "boolean");
+              const sType = data.security.type || "boolean";
+              setSecurityType(sType);
               setSecurityQuestion(data.security.question || "");
-              setSecurityAnswer(data.security.answer || "");
-              setSecurityChoices(data.security.choices || []);
+              
+              const choices = data.security.choices || [];
+              setSecurityChoices(choices);
+              
+              const answer = data.security.answer || "";
+              const isHash = /^[a-f0-9]{64}$/i.test(answer);
+              
+              if (isHash && sType === "choice") {
+                let matchedPlaintext = "";
+                for (const choice of choices) {
+                  if (choice) {
+                    const msgUint8 = new TextEncoder().encode(choice.trim().toLowerCase());
+                    const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+                    const hashArray = Array.from(new Uint8Array(hashBuffer));
+                    const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+                    if (hashHex === answer) {
+                      matchedPlaintext = choice;
+                      break;
+                    }
+                  }
+                }
+                if (matchedPlaintext) {
+                  setSecurityAnswer(matchedPlaintext);
+                  setLoadedSecurityAnswerHash("");
+                } else {
+                  setSecurityAnswer("__HASHED__");
+                  setLoadedSecurityAnswerHash(answer);
+                }
+              } else if (isHash) {
+                setSecurityAnswer("__HASHED__");
+                setLoadedSecurityAnswerHash(answer);
+              } else {
+                setSecurityAnswer(answer);
+                setLoadedSecurityAnswerHash("");
+              }
               setSecurityConfirmed(true);
             }
             if (data.intro) {
@@ -297,35 +364,70 @@ export function useLetterForm() {
   // Load from query string d (for guests upgrading to account)
   useEffect(() => {
     if (!queryD || hasLoadedD) return;
-    try {
-      const decoded = decodeLetterData(queryD);
-      if (decoded) {
-        // Only load sender and recipient values from guest URL parameter if the creator is still a guest
-        if (!user || !recipientProfile) {
-          setRecipient(decoded.recipient || "");
-          setSender(decoded.sender || "");
-          if (decoded.email) setEmail(decoded.email);
-        }
-        setTitle(decoded.title || "Love Letter");
-        setContent(decoded.content || "");
-        setTheme(decoded.theme || "scroll");
-        setBackdrop(decoded.backdrop || "none");
-        setSealSymbol(decoded.sealSymbol || "heart");
-        setSealColor(decoded.sealColor || "#9c1c2e");
-        setEnvelopeStyle(decoded.envelopeStyle || "vintage-rose");
-        setMusic(decoded.music || false);
-        if (decoded.musicType) setMusicType(decoded.musicType);
-        if (decoded.musicUrl) setMusicUrl(decoded.musicUrl);
-        setGreeting(decoded.greeting || "");
-        setFarewell(decoded.farewell || "");
-        if (decoded.security) {
-          setSecurityEnabled(decoded.security.enabled || false);
-          setSecurityType(decoded.security.type || "boolean");
-          setSecurityQuestion(decoded.security.question || "");
-          setSecurityAnswer(decoded.security.answer || "");
-          setSecurityChoices(decoded.security.choices || ["", "", ""]);
-          setSecurityConfirmed(true);
-        }
+    const loadDecoded = async () => {
+      try {
+        const decoded = decodeLetterData(queryD);
+        if (decoded) {
+          // Only load sender and recipient values from guest URL parameter if the creator is still a guest
+          if (!user || !recipientProfile) {
+            setRecipient(decoded.recipient || "");
+            setSender(decoded.sender || "");
+            if (decoded.email) setEmail(decoded.email);
+          }
+          setTitle(decoded.title || "Love Letter");
+          setContent(decoded.content || "");
+          setTheme(decoded.theme || "scroll");
+          setBackdrop(decoded.backdrop || "none");
+          setSealSymbol(decoded.sealSymbol || "heart");
+          setSealColor(decoded.sealColor || "#9c1c2e");
+          setEnvelopeStyle(decoded.envelopeStyle || "vintage-rose");
+          setMusic(decoded.music || false);
+          if (decoded.musicType) setMusicType(decoded.musicType);
+          if (decoded.musicUrl) setMusicUrl(decoded.musicUrl);
+          setGreeting(decoded.greeting || "");
+          setFarewell(decoded.farewell || "");
+          if (decoded.security) {
+            setSecurityEnabled(decoded.security.enabled || false);
+            const sType = decoded.security.type || "boolean";
+            setSecurityType(sType);
+            setSecurityQuestion(decoded.security.question || "");
+            
+            const choices = decoded.security.choices || ["", "", ""];
+            setSecurityChoices(choices);
+            
+            const answer = decoded.security.answer || "";
+            const isHash = /^[a-f0-9]{64}$/i.test(answer);
+            
+            if (isHash && sType === "choice") {
+              let matchedPlaintext = "";
+              for (const choice of choices) {
+                if (choice) {
+                  const msgUint8 = new TextEncoder().encode(choice.trim().toLowerCase());
+                  const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+                  const hashArray = Array.from(new Uint8Array(hashBuffer));
+                  const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+                  if (hashHex === answer) {
+                    matchedPlaintext = choice;
+                    break;
+                  }
+                }
+              }
+              if (matchedPlaintext) {
+                setSecurityAnswer(matchedPlaintext);
+                setLoadedSecurityAnswerHash("");
+              } else {
+                setSecurityAnswer("__HASHED__");
+                setLoadedSecurityAnswerHash(answer);
+              }
+            } else if (isHash) {
+              setSecurityAnswer("__HASHED__");
+              setLoadedSecurityAnswerHash(answer);
+            } else {
+              setSecurityAnswer(answer);
+              setLoadedSecurityAnswerHash("");
+            }
+            setSecurityConfirmed(true);
+          }
         if (decoded.intro) {
           setIntroEnabled(decoded.intro.enabled || false);
           setIntroText(decoded.intro.text || "");
@@ -396,6 +498,8 @@ export function useLetterForm() {
     } catch (err) {
       console.error("Failed to restore progress from d param:", err);
     }
+    };
+    loadDecoded();
   }, [queryD, hasLoadedD, user, recipientProfile]);
 
   const getEncodedState = () => {
@@ -422,7 +526,9 @@ export function useLetterForm() {
         enabled: true,
         type: securityType,
         question: securityQuestion.trim(),
-        answer: securityAnswer.trim().toLowerCase(),
+        answer: securityAnswer === "__HASHED__"
+          ? loadedSecurityAnswerHash
+          : (securityType === "boolean" ? securityAnswer.trim().toLowerCase() : hashedAnswer),
         choices: securityType === "choice" ? securityChoices.map(c => c.trim()).filter(Boolean) : undefined
       } : undefined,
       intro: introEnabled ? {
@@ -752,7 +858,9 @@ export function useLetterForm() {
         enabled: true,
         type: securityType,
         question: securityQuestion.trim(),
-        answer: securityAnswer.trim().toLowerCase(),
+        answer: securityAnswer === "__HASHED__"
+          ? loadedSecurityAnswerHash
+          : (securityType === "boolean" ? securityAnswer.trim().toLowerCase() : hashedAnswer),
         choices: securityType === "choice" ? securityChoices.map(c => c.trim()).filter(Boolean) : undefined
       } : undefined,
       intro: introEnabled ? {

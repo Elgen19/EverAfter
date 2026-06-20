@@ -6,6 +6,38 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { recipientEmail, letterLink, senderName, recipientName, title } = body;
 
+    // Validate letterLink origin to prevent open email relay spam/phishing abuse
+    if (letterLink) {
+      try {
+        const parsedLink = new URL(letterLink);
+        const requestUrl = new URL(request.url);
+        
+        if (parsedLink.hostname !== requestUrl.hostname) {
+          return NextResponse.json(
+            { success: false, error: "Forbidden: letterLink hostname must match origin server hostname." },
+            { status: 400 }
+          );
+        }
+        
+        if (parsedLink.pathname !== "/letter") {
+          return NextResponse.json(
+            { success: false, error: "Forbidden: letterLink pathname must be exactly /letter." },
+            { status: 400 }
+          );
+        }
+      } catch (err) {
+        return NextResponse.json(
+          { success: false, error: "Invalid URL provided for letterLink." },
+          { status: 400 }
+        );
+      }
+    } else {
+      return NextResponse.json(
+        { success: false, error: "Missing letterLink parameter." },
+        { status: 400 }
+      );
+    }
+
     const emailSubject = `💌 Sealed with a Kiss: A secret message from ${senderName || "your partner"} is waiting...`;
 
     // Plain Text Version

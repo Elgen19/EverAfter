@@ -39,6 +39,33 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { recipientEmail, senderEmail, senderName, recipientName, date, time, place, mapLink, accepted, notes } = body;
 
+    // Validate mapLink to prevent phishing URL injection
+    if (mapLink) {
+      try {
+        const parsedMap = new URL(mapLink);
+        const host = parsedMap.hostname.toLowerCase();
+        
+        const isGoogleMapsHost = 
+          host === "maps.google.com" || 
+          host === "maps.app.goo.gl" ||
+          (host === "www.google.com" && parsedMap.pathname.startsWith("/maps")) ||
+          (host === "google.com" && parsedMap.pathname.startsWith("/maps")) ||
+          (host === "goo.gl" && parsedMap.pathname.startsWith("/maps"));
+          
+        if (!isGoogleMapsHost) {
+          return NextResponse.json(
+            { success: false, error: "Forbidden: mapLink must be a valid Google Maps URL." },
+            { status: 400 }
+          );
+        }
+      } catch (err) {
+        return NextResponse.json(
+          { success: false, error: "Invalid URL provided for mapLink." },
+          { status: 400 }
+        );
+      }
+    }
+
     if (!accepted) {
       return NextResponse.json({
         success: true,

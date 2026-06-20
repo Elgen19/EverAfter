@@ -152,22 +152,30 @@ export default function SecurityGateCreator({
             )}
 
             {securityType === "date" && (
-              <input 
-                type="date"
-                disabled={securityConfirmed}
-                value={securityAnswer}
-                onChange={(e) => setSecurityAnswer(e.target.value)}
-                style={{
-                  backgroundColor: "rgba(0,0,0,0.2)",
-                  border: "1px solid var(--border-card)",
-                  borderRadius: "6px",
-                  padding: "8px 12px",
-                  color: "#fff",
-                  fontSize: "13px",
-                  outline: "none",
-                  opacity: securityConfirmed ? 0.6 : 1
-                }}
-              />
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px", width: "100%" }}>
+                <input 
+                  type="date"
+                  disabled={securityConfirmed}
+                  value={securityAnswer === "__HASHED__" ? "" : securityAnswer}
+                  onChange={(e) => setSecurityAnswer(e.target.value)}
+                  style={{
+                    backgroundColor: "rgba(0,0,0,0.2)",
+                    border: "1px solid var(--border-card)",
+                    borderRadius: "6px",
+                    padding: "8px 12px",
+                    color: "#fff",
+                    fontSize: "13px",
+                    outline: "none",
+                    opacity: securityConfirmed ? 0.6 : 1,
+                    width: "100%"
+                  }}
+                />
+                {securityAnswer === "__HASHED__" && (
+                  <span style={{ fontSize: "11px", color: "var(--accent-gold)", textAlign: "left", display: "block" }}>
+                    🔒 Existing anniversary date lock is encrypted. Select a new date to change it.
+                  </span>
+                )}
+              </div>
             )}
 
             {securityType === "choice" && (
@@ -210,6 +218,11 @@ export default function SecurityGateCreator({
                     />
                   </div>
                 ))}
+                 {securityAnswer === "__HASHED__" && (
+                  <span style={{ fontSize: "11px", color: "var(--accent-gold)", textAlign: "left", display: "block" }}>
+                    🔒 Existing correct choice is encrypted (could not match options). Select a radio button next to one of the options to set a new correct choice.
+                  </span>
+                )}
                 <p style={{ fontSize: "10px", color: "var(--text-muted)" }}>
                   * Fill options, then select the radio button next to the correct answer.
                 </p>
