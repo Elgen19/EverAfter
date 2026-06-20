@@ -1732,13 +1732,14 @@ button:hover .quiz-option-badge {
 
 @media (max-width: 600px) {
   .stationery-sheet-portal {
-    padding-top: 100px !important; /* Clears the user journey progress dots at the top */
-    padding-bottom: 24px !important;
+    padding-top: 95px !important; /* Clears the user journey progress dots at the top */
+    padding-bottom: 20px !important;
     align-items: flex-start !important;
   }
   .stationery-sheet {
-    max-height: calc(100vh - 170px) !important;
-    height: calc(100% - 20px) !important;
+    height: 100% !important;
+    max-height: none !important;
+    margin: 0 !important;
   }
 }
 
