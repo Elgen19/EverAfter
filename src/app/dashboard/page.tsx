@@ -617,7 +617,7 @@ export default function DashboardPage() {
                             Invitation to {letter.recipient}
                           </h3>
                           <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
-                            Sent in: "{letter.title}" • {formatDate(letter.timestamp)}
+                            {(letter.isWriteback || letter.emailSent) ? "Sent" : "Written"} in: "{letter.title}" • {formatDate(letter.timestamp)}
                           </span>
                         </div>
                         <span style={{ 
@@ -718,7 +718,7 @@ export default function DashboardPage() {
                           Feedback from {letter.recipient}
                         </h3>
                         <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
-                          Sent in: "{letter.title}" • {formatDate(letter.timestamp)}
+                          {(letter.isWriteback || letter.emailSent) ? "Sent" : "Written"} in: "{letter.title}" • {formatDate(letter.timestamp)}
                         </span>
                       </div>
 
@@ -859,7 +859,7 @@ export default function DashboardPage() {
                             Love Quiz for {letter.recipient}
                           </h3>
                           <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
-                            Sent in: "{letter.title}" • {formatDate(letter.timestamp)}
+                            {(letter.isWriteback || letter.emailSent) ? "Sent" : "Written"} in: "{letter.title}" • {formatDate(letter.timestamp)}
                           </span>
                         </div>
                         <span style={{ 

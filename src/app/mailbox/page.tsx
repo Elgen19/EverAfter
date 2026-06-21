@@ -20,6 +20,7 @@ interface MailboxLetter {
   link: string;
   isWriteback?: boolean;
   replyToId?: string;
+  emailSent?: boolean;
 }
 
 function MailboxContent() {
@@ -247,7 +248,8 @@ function MailboxContent() {
               envelopeStyle: data.envelopeStyle || "vintage-rose",
               link: data.link || `/letter?id=${docSnap.id}`,
               isWriteback: false,
-              replyToId: ""
+              replyToId: "",
+              emailSent: data.emailSent || false
             });
             letterIds.push(docSnap.id);
           }
@@ -275,7 +277,8 @@ function MailboxContent() {
                 envelopeStyle: data.envelopeStyle || "vintage-rose",
                 link: data.link || `/letter?id=${docSnap.id}`,
                 isWriteback: true,
-                replyToId: data.replyToId
+                replyToId: data.replyToId,
+                emailSent: true
               });
             }
           });
@@ -1202,7 +1205,7 @@ function MailboxContent() {
                 fontWeight: 600,
                 marginRight: "6px"
               }}>
-                Sent:
+                {(displayedLetters[activeIndex].isWriteback || displayedLetters[activeIndex].emailSent) ? "Sent:" : "Written:"}
               </span>
               <span style={{ 
                 fontFamily: "var(--font-cursive)", 
