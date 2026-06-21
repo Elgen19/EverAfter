@@ -1017,9 +1017,9 @@ export function useLetterForm() {
       } : undefined,
       polaroids: polaroidsEnabled ? {
         enabled: true,
-        items: polaroids.filter(p => p.url.trim() !== "").map(p => ({
-          imageUrl: p.url.startsWith("blob:") ? undefined : p.url,
-          caption: p.caption.trim() || undefined
+        items: polaroids.map(p => ({
+          imageUrl: p.url.startsWith("blob:") ? null : (p.url.trim() || null),
+          caption: p.caption.trim() || null
         }))
       } : undefined,
       stepOrder
@@ -1109,14 +1109,14 @@ export function useLetterForm() {
             const letterId = docRef.id;
             if (audioEnabled && audioFile) {
               const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
-              const storageRef = ref(storage, `letter/${letterId}/audio_message`);
+              const storageRef = ref(storage, `letters/${letterId}/audio_message`);
               const snapshot = await uploadBytes(storageRef, audioFile);
               const finalAudioUrl = await getDownloadURL(snapshot.ref);
               await updateDoc(docRef, { "audioMessage.audioUrl": finalAudioUrl });
             }
             if (music && musicType === "url" && musicFile) {
               const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
-              const storageRef = ref(storage, `letter/${letterId}/background_music`);
+              const storageRef = ref(storage, `letters/${letterId}/background_music`);
               const snapshot = await uploadBytes(storageRef, musicFile);
               const finalMusicUrl = await getDownloadURL(snapshot.ref);
               await updateDoc(docRef, { musicUrl: finalMusicUrl });
@@ -1128,7 +1128,7 @@ export function useLetterForm() {
               for (let i = 0; i < polaroids.length; i++) {
                 const p = polaroids[i];
                 if (p.file) {
-                  const storageRef = ref(storage, `letter/${letterId}/polaroid_${i}`);
+                  const storageRef = ref(storage, `letters/${letterId}/polaroid_${i}`);
                   const snapshot = await uploadBytes(storageRef, p.file);
                   const downloadUrl = await getDownloadURL(snapshot.ref);
                   if (updatedItems[i]) {
