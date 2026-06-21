@@ -7,6 +7,45 @@ import { encodeLetterData, decodeLetterData, LetterData } from "@/utils/encoding
 import { db, storage } from "@/utils/firebase";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 
+const DEFAULT_QUIZ_QUESTIONS = [
+  {
+    question: "Where did we first meet in person?",
+    correctAnswer: "At the coffee shop",
+    incorrectAnswers: ["In the library", "At a mutual friend's party", "Online in a chatroom"],
+    hint: "It smelled like roasted coffee beans!"
+  },
+  {
+    question: "What was the color of my shirt on our first official date?",
+    correctAnswer: "Emerald Green",
+    incorrectAnswers: ["Crimson Red", "Midnight Blue", "Classic Black"],
+    hint: "It matched the color of your eyes!"
+  },
+  {
+    question: "Which of these is my absolute favorite comfort food?",
+    correctAnswer: "Warm Chocolate Chip Cookies",
+    incorrectAnswers: ["Spicy Ramen", "Pepperoni Pizza", "Fresh Sushi"],
+    hint: "It is best served warm with a glass of milk."
+  },
+  {
+    question: "Where was our first vacation or weekend getaway together?",
+    correctAnswer: "A cozy cabin in the woods",
+    incorrectAnswers: ["A sunny beach resort", "A bustling city hotel", "A camping trip by the lake"],
+    hint: "There was a fireplace and lots of pine trees."
+  },
+  {
+    question: "Who said 'I love you' first?",
+    correctAnswer: "You did!",
+    incorrectAnswers: ["I did!", "We said it at the exact same time", "Neither (it was mutual silence)"],
+    hint: "Think back to that rainy Tuesday night."
+  },
+  {
+    question: "What is my absolute favorite memory of us together?",
+    correctAnswer: "Dancing in the kitchen at midnight",
+    incorrectAnswers: ["Getting stuck in the rain", "The fancy dinner date", "Watching the sunset on the roof"],
+    hint: "Music was playing softly, and we were in our pajamas."
+  }
+];
+
 export function useLetterForm() {
   const router = useRouter();
   const { user, recipient: recipientProfile, loading } = useAuth();
@@ -190,7 +229,15 @@ export function useLetterForm() {
   ]);
   const [polaroidsConfirmed, setPolaroidsConfirmed] = useState(false);
 
-  const [stepOrder, setStepOrder] = useState<string[]>(["security", "intro", "envelope", "polaroids", "audioMessage", "dateInvite", "closing", "survey"]);
+  const [quizEnabled, setQuizEnabled] = useState(false);
+  const [quizPrizeTitle, setQuizPrizeTitle] = useState("A Sweet Reward");
+  const [quizPrizeDesc, setQuizPrizeDesc] = useState("One cozy weekend trip or dinner cooked by yours truly! ❤️");
+  const [quizGameOverMsg, setQuizGameOverMsg] = useState("Don't worry, my love! A true romantic never gives up. Let's try again! 😘");
+  const [quizQuestions, setQuizQuestions] = useState<any[]>(DEFAULT_QUIZ_QUESTIONS);
+  const [quizStrictness, setQuizStrictness] = useState<"restart" | "hearts">("restart");
+  const [quizConfirmed, setQuizConfirmed] = useState(false);
+
+  const [stepOrder, setStepOrder] = useState<string[]>(["security", "intro", "envelope", "polaroids", "audioMessage", "loveQuiz", "dateInvite", "closing", "survey"]);
 
   // Share URL modal state
   const [shareUrl, setShareUrl] = useState("");
@@ -288,6 +335,16 @@ export function useLetterForm() {
               setSurveyQuestion(data.survey.question || "");
               setSurveyConfirmed(true);
             }
+            if (data.loveQuiz) {
+              setQuizEnabled(data.loveQuiz.enabled || false);
+              setQuizPrizeTitle(data.loveQuiz.prizeTitle || "");
+              setQuizPrizeDesc(data.loveQuiz.prizeDesc || "");
+              setQuizGameOverMsg(data.loveQuiz.gameOverMsg || "");
+              const loadedStrictness = data.loveQuiz.strictness || "restart";
+              setQuizStrictness(loadedStrictness === ("retry" as any) ? "restart" : loadedStrictness);
+              setQuizQuestions(data.loveQuiz.questions || DEFAULT_QUIZ_QUESTIONS);
+              setQuizConfirmed(true);
+            }
             if (data.dateInvite) {
               setDateInviteEnabled(data.dateInvite.enabled || false);
               setDateInviteQuestion(data.dateInvite.question || "");
@@ -348,6 +405,14 @@ export function useLetterForm() {
                   loadedOrder.splice(envIdx + 1, 0, "polaroids");
                 } else {
                   loadedOrder.push("polaroids");
+                }
+              }
+              if (!loadedOrder.includes("loveQuiz")) {
+                const envIdx = loadedOrder.indexOf("envelope");
+                if (envIdx !== -1) {
+                  loadedOrder.splice(envIdx + 1, 0, "loveQuiz");
+                } else {
+                  loadedOrder.push("loveQuiz");
                 }
               }
               setStepOrder(loadedOrder);
@@ -445,6 +510,16 @@ export function useLetterForm() {
           setSurveyType(decoded.survey.type || "both");
           setSurveyQuestion(decoded.survey.question || "");
           setSurveyConfirmed(true);
+        }
+        if (decoded.loveQuiz) {
+          setQuizEnabled(decoded.loveQuiz.enabled || false);
+          setQuizPrizeTitle(decoded.loveQuiz.prizeTitle || "");
+          setQuizPrizeDesc(decoded.loveQuiz.prizeDesc || "");
+          setQuizGameOverMsg(decoded.loveQuiz.gameOverMsg || "");
+          const decodedStrictness = decoded.loveQuiz.strictness || "restart";
+          setQuizStrictness(decodedStrictness === ("retry" as any) ? "restart" : decodedStrictness);
+          setQuizQuestions(decoded.loveQuiz.questions || DEFAULT_QUIZ_QUESTIONS);
+          setQuizConfirmed(true);
         }
         if (decoded.dateInvite) {
           setDateInviteEnabled(decoded.dateInvite.enabled || false);
@@ -557,6 +632,19 @@ export function useLetterForm() {
         type: surveyType,
         question: surveyQuestion.trim()
       } : undefined,
+      loveQuiz: quizEnabled ? {
+        enabled: true,
+        prizeTitle: quizPrizeTitle.trim(),
+        prizeDesc: quizPrizeDesc.trim(),
+        gameOverMsg: quizGameOverMsg.trim(),
+        strictness: quizStrictness,
+        questions: quizQuestions.map((q) => ({
+          question: q.question.trim(),
+          correctAnswer: q.correctAnswer.trim(),
+          incorrectAnswers: q.incorrectAnswers.map((x: string) => x.trim()),
+          hint: q.hint ? q.hint.trim() : undefined
+        }))
+      } : undefined,
       audioMessage: audioEnabled ? {
         enabled: true,
         audioUrl: audioUrl || undefined,
@@ -597,6 +685,7 @@ export function useLetterForm() {
     if (id === "intro" && introEnabled && introConfirmed) return true;
     if (id === "polaroids" && polaroidsEnabled && polaroidsConfirmed) return true;
     if (id === "audioMessage" && audioEnabled && audioConfirmed) return true;
+    if (id === "loveQuiz" && quizEnabled && quizConfirmed) return true;
     if (id === "dateInvite" && dateInviteEnabled && dateInviteConfirmed) return true;
     if (id === "closing" && closingEnabled && closingConfirmed) return true;
     if (id === "survey" && surveyEnabled && surveyConfirmed) return true;
@@ -610,6 +699,7 @@ export function useLetterForm() {
       case "envelope": return "✉ Envelope & Letter [Core]";
       case "polaroids": return "📸 Polaroid Stack";
       case "audioMessage": return "🎤 Audio Message";
+      case "loveQuiz": return "🎮 Love Quiz Game";
       case "dateInvite": return "🌹 Date Invitation";
       case "closing": return "✍ Closing Statement (P.S.)";
       case "survey": return "📊 Survey";
@@ -688,7 +778,7 @@ export function useLetterForm() {
     newActive[index] = newActive[targetIdx];
     newActive[targetIdx] = temp;
 
-    const disabled = ["security", "intro", "envelope", "polaroids", "audioMessage", "dateInvite", "closing", "survey"].filter(id => !newActive.includes(id));
+    const disabled = ["security", "intro", "envelope", "polaroids", "audioMessage", "loveQuiz", "dateInvite", "closing", "survey"].filter(id => !newActive.includes(id));
     setStepOrder([...newActive, ...disabled]);
   };
 
@@ -771,6 +861,24 @@ export function useLetterForm() {
     if (surveyEnabled && !surveyConfirmed) {
       showRomanticAlert("Confirm Your Survey", "You have enabled the feedback survey. Please press the 'Confirm Survey' button to lock this customization in before sealing.");
       return;
+    }
+    if (quizEnabled && !quizConfirmed) {
+      showRomanticAlert("Confirm Your Quiz", "You have enabled the relationship quiz. Please press the 'Confirm Quiz' button to lock this customization in before sealing.");
+      return;
+    }
+    if (quizEnabled) {
+      if (quizQuestions.length < 6) {
+        showRomanticAlert("Quiz Length Too Short", "To give leeway for the Skip lifeline, you must add at least 6 questions (up to 11 questions).");
+        return;
+      }
+      if (quizQuestions.length > 11) {
+        showRomanticAlert("Quiz Length Too Long", "You can configure a maximum of 11 questions.");
+        return;
+      }
+      if (!quizPrizeTitle.trim()) {
+        showRomanticAlert("Grand Prize Required", "Please specify a grand prize so they know what they are playing for!");
+        return;
+      }
     }
     if (securityEnabled && !securityQuestion.trim()) {
       showRomanticAlert("A Key to Your Heart", "To guard your secret romance, please write a security question that only your true love would know how to answer.");
@@ -888,6 +996,19 @@ export function useLetterForm() {
         enabled: true,
         type: surveyType,
         question: surveyQuestion.trim()
+      } : undefined,
+      loveQuiz: quizEnabled ? {
+        enabled: true,
+        prizeTitle: quizPrizeTitle.trim(),
+        prizeDesc: quizPrizeDesc.trim(),
+        gameOverMsg: quizGameOverMsg.trim(),
+        strictness: quizStrictness,
+        questions: quizQuestions.map((q) => ({
+          question: q.question.trim(),
+          correctAnswer: q.correctAnswer.trim(),
+          incorrectAnswers: q.incorrectAnswers.map((x: string) => x.trim()),
+          hint: q.hint ? q.hint.trim() : undefined
+        }))
       } : undefined,
       audioMessage: audioEnabled ? {
         enabled: true,
@@ -1120,6 +1241,11 @@ export function useLetterForm() {
     // Survey
     surveyEnabled, setSurveyEnabled, surveyType, setSurveyType,
     surveyQuestion, setSurveyQuestion, surveyConfirmed, setSurveyConfirmed,
+    // Love Quiz
+    quizEnabled, setQuizEnabled, quizPrizeTitle, setQuizPrizeTitle,
+    quizPrizeDesc, setQuizPrizeDesc, quizGameOverMsg, setQuizGameOverMsg,
+    quizQuestions, setQuizQuestions, quizStrictness, setQuizStrictness,
+    quizConfirmed, setQuizConfirmed,
     // Send later
     sendLaterEnabled, setSendLaterEnabled, sendLaterDate, setSendLaterDate,
     sendLaterTime, setSendLaterTime,

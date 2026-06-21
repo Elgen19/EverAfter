@@ -18,9 +18,31 @@ export interface SavedLetter {
   isWriteback?: boolean;
   dateInvite?: {
     enabled?: boolean;
+    question?: string;
+    activity?: string;
+    date?: string;
+    time?: string;
+    place?: string;
+    mapLink?: string;
     rsvpStatus?: "accepted" | "declined" | null;
     rsvpNotes?: string;
     rsvpTimestamp?: number;
+  } | null;
+  survey?: {
+    enabled?: boolean;
+    question?: string;
+    responseEmoji?: string;
+    responseFeedback?: string;
+    responseTimestamp?: number;
+  } | null;
+  loveQuiz?: {
+    enabled?: boolean;
+    prizeTitle?: string;
+    prizeDesc?: string;
+    won?: boolean;
+    wonTimestamp?: number;
+    claimed?: boolean;
+    claimedTimestamp?: number;
   } | null;
   email?: string | null;
   emailSent?: boolean;

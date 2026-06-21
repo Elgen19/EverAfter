@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { db } from "@/utils/firebase";
 
 interface SurveyFeedbackProps {
   survey: {
@@ -11,10 +12,11 @@ interface SurveyFeedbackProps {
   sender: string;
   recipient: string;
   letterKey: string;
+  letterId?: string;
   onComplete?: () => void;
 }
 
-export default function SurveyFeedback({ survey, sender, recipient, letterKey, onComplete }: SurveyFeedbackProps) {
+export default function SurveyFeedback({ survey, sender, recipient, letterKey, letterId, onComplete }: SurveyFeedbackProps) {
   const [actualSurveyType, setActualSurveyType] = useState<"emoji" | "text" | "both">(survey.type);
   const [surveyEmoji, setSurveyEmoji] = useState("");
   const [surveyText, setSurveyText] = useState("");
@@ -34,7 +36,7 @@ export default function SurveyFeedback({ survey, sender, recipient, letterKey, o
     }
   }, [letterKey]);
 
-  const submitSurvey = (e: React.FormEvent) => {
+  const submitSurvey = async (e: React.FormEvent) => {
     e.preventDefault();
     setSurveySubmitted(true);
 
@@ -48,6 +50,16 @@ export default function SurveyFeedback({ survey, sender, recipient, letterKey, o
         timestamp
       };
       localStorage.setItem(`survey_response_${letterKey.slice(0, 10)}`, JSON.stringify(surveyResult));
+
+      if (letterId && db) {
+        const { doc, updateDoc } = await import("firebase/firestore");
+        const docRef = doc(db, "letters", letterId);
+        await updateDoc(docRef, {
+          "survey.responseEmoji": surveyEmoji,
+          "survey.responseFeedback": surveyText,
+          "survey.responseTimestamp": timestamp
+        });
+      }
     } catch (err) {
       console.error("Failed to save survey result:", err);
     }

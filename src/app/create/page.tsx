@@ -19,6 +19,7 @@ import IntroCreator from "@/components/creator/IntroCreator";
 import ClosingCreator from "@/components/creator/ClosingCreator";
 import DateInviteCreator from "@/components/creator/DateInviteCreator";
 import SurveyCreator from "@/components/creator/SurveyCreator";
+import LoveQuizCreator from "@/components/creator/LoveQuizCreator";
 import MusicCreator from "@/components/creator/MusicCreator";
 import SendLaterCreator from "@/components/creator/SendLaterCreator";
 import AudioMessageCreator from "@/components/creator/AudioMessageCreator";
@@ -255,7 +256,7 @@ function CreateLetterStudio() {
               {/* Names / email - only shown when not a logged-in user with profile */}
               {form.user && form.recipientProfile ? null : (
                 <>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
                     {(["Recipient Name", "Sender Name"] as const).map((label, i) => (
                       <div key={label} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                         <label style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 500 }}>{label}</label>
@@ -533,6 +534,35 @@ function CreateLetterStudio() {
                   )}
                 </AccordionItem>
 
+                <AccordionItem title="Love Quiz Game" desc="Who Wants to Be a Love Millionaire relationship trivia" icon="🎮" enabled={form.quizEnabled} isOpen={openAccordion === "loveQuiz"} onToggle={() => toggleAccordion("loveQuiz")}>
+                  {!form.user ? (
+                    <GuestFeatureLockout
+                      featureName="Love Quiz Game"
+                      featureIcon="🎮"
+                      featureDesc="Test your partner's knowledge of your relationship milestones and inside jokes to unlock a custom prize."
+                      encodedData={form.getEncodedState()}
+                    />
+                  ) : (
+                    <LoveQuizCreator 
+                      quizEnabled={form.quizEnabled} 
+                      setQuizEnabled={form.setQuizEnabled} 
+                      quizPrizeTitle={form.quizPrizeTitle} 
+                      setQuizPrizeTitle={form.setQuizPrizeTitle} 
+                      quizPrizeDesc={form.quizPrizeDesc} 
+                      setQuizPrizeDesc={form.setQuizPrizeDesc} 
+                      quizGameOverMsg={form.quizGameOverMsg} 
+                      setQuizGameOverMsg={form.setQuizGameOverMsg} 
+                      quizQuestions={form.quizQuestions} 
+                      setQuizQuestions={form.setQuizQuestions} 
+                      quizStrictness={form.quizStrictness}
+                      setQuizStrictness={form.setQuizStrictness}
+                      quizConfirmed={form.quizConfirmed} 
+                      setQuizConfirmed={form.setQuizConfirmed} 
+                      showAlert={form.showRomanticAlert} 
+                    />
+                  )}
+                </AccordionItem>
+
                 <AccordionItem title="Voice Audio Message" desc="Record or upload a voice note to seal in your envelope" icon="🎤" enabled={form.audioEnabled} isOpen={openAccordion === "audio"} onToggle={() => toggleAccordion("audio")}>
                   {!form.user ? (
                     <GuestFeatureLockout
@@ -680,29 +710,6 @@ function CreateLetterStudio() {
                   }}
                 >
                   Back to Add-ons
-                </button>
-                <button
-                  type="button"
-                  className="hidden-desktop"
-                  onClick={() => setIsMobilePreviewOpen(true)}
-                  style={{
-                    flex: 1,
-                    padding: "16px",
-                    borderRadius: "12px",
-                    backgroundColor: "var(--accent-purple)",
-                    backgroundImage: "linear-gradient(135deg, #9c6cfa, #7c4bf5)",
-                    border: "none",
-                    color: "#fff",
-                    fontWeight: 600,
-                    fontSize: "14px",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px"
-                  }}
-                >
-                  Preview Letter 👁️
                 </button>
               </div>
             </div>

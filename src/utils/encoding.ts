@@ -64,6 +64,19 @@ export interface LetterData {
     mapLink?: string;
     email?: string;
   };
+  loveQuiz?: {
+    enabled: boolean;
+    prizeTitle: string;
+    prizeDesc: string;
+    gameOverMsg?: string;
+    strictness?: "restart" | "hearts";
+    questions: {
+      question: string;
+      correctAnswer: string;
+      incorrectAnswers: string[];
+      hint?: string;
+    }[];
+  };
   stepOrder?: string[];
   envelopeStyle?: string;
 }

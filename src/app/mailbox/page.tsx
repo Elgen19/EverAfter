@@ -6,6 +6,7 @@ import Link from "next/link";
 import { db } from "@/utils/firebase";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import FloatingHearts from "@/components/FloatingHearts";
+import { useAuth } from "@/context/AuthContext";
 
 interface MailboxLetter {
   id: string;
@@ -25,6 +26,7 @@ function MailboxContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const refId = searchParams.get("ref") || "";
+  const { user, loading: authLoading } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -122,11 +124,9 @@ function MailboxContent() {
   }, [displayedLetters]);
 
   useEffect(() => {
-    if (!refId) {
-      setError("No reference letter found. Please check your link.");
-      setLoading(false);
-      return;
-    }
+    if (authLoading) return;
+
+    let targetRefId = refId;
 
     const loadMailbox = async () => {
       try {
@@ -136,20 +136,51 @@ function MailboxContent() {
           return;
         }
 
-        const docRef = doc(db, "letters", refId);
-        const docSnap = await getDoc(docRef);
+        let referenceLetterDoc: any = null;
+        let actualRefId = targetRefId;
 
-        if (!docSnap.exists()) {
-          setError("The reference letter could not be found.");
-          setLoading(false);
-          return;
+        if (!actualRefId) {
+          if (user) {
+            const userLettersQuery = query(
+              collection(db, "letters"),
+              where("userId", "==", user.uid)
+            );
+            const userLettersSnap = await getDocs(userLettersQuery);
+            if (!userLettersSnap.empty) {
+              const docs = userLettersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+              docs.sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0));
+              const latestLetter = docs[0];
+              actualRefId = latestLetter.id;
+              referenceLetterDoc = latestLetter;
+            } else {
+              setError("Your mailbox is empty. Create and send a letter to fill your chest with memories!");
+              setLoading(false);
+              return;
+            }
+          } else {
+            setError("To open your Memory Chest, please use the mailbox link provided at the end of your letter.");
+            setLoading(false);
+            return;
+          }
         }
 
-        const refData = docSnap.data();
+        if (!referenceLetterDoc && actualRefId) {
+          const docRef = doc(db, "letters", actualRefId);
+          const docSnap = await getDoc(docRef);
+
+          if (!docSnap.exists()) {
+            setError("The reference letter could not be found.");
+            setLoading(false);
+            return;
+          }
+          referenceLetterDoc = docSnap.data();
+        }
+
+        const refData = { id: actualRefId, ...referenceLetterDoc };
         setRefLetter(refData);
 
         const isUnlocked = refData.security?.enabled 
-          ? sessionStorage.getItem(`unlocked_${refId}`) === "true"
+          ? sessionStorage.getItem(`unlocked_${actualRefId}`) === "true"
           : true;
 
         if (!isUnlocked) {
@@ -250,6 +281,11 @@ function MailboxContent() {
 
         fetchedLetters.sort((a, b) => b.timestamp - a.timestamp);
         setLetters(fetchedLetters);
+
+        if (!refId && actualRefId) {
+          const newUrl = `${window.location.pathname}?ref=${actualRefId}`;
+          window.history.replaceState(null, "", newUrl);
+        }
       } catch (err) {
         console.error("Failed to load mailbox:", err);
         setError("An error occurred while loading your letterbox.");
@@ -259,16 +295,17 @@ function MailboxContent() {
     };
 
     loadMailbox();
-  }, [refId]);
+  }, [refId, user, authLoading]);
 
   // Focus the active reference letter on page load
   useEffect(() => {
-    if (displayedLetters.length === 0 || !refId) return;
-    const index = displayedLetters.findIndex(l => l.id === refId);
+    const targetId = refId || refLetter?.id;
+    if (displayedLetters.length === 0 || !targetId) return;
+    const index = displayedLetters.findIndex(l => l.id === targetId);
     if (index !== -1) {
       setActiveIndex(index);
     }
-  }, [displayedLetters, refId]);
+  }, [displayedLetters, refId, refLetter]);
 
   if (error) {
     return (

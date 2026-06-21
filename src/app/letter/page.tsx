@@ -19,6 +19,7 @@ import ClosingStatement from "@/components/reader/ClosingStatement";
 import DateInvitation from "@/components/reader/DateInvitation";
 import SurveyFeedback from "@/components/reader/SurveyFeedback";
 import AudioMessage from "@/components/reader/AudioMessage";
+import LoveQuizReader from "@/components/reader/LoveQuizReader";
 import PolaroidsReader from "@/components/reader/PolaroidsReader";
 import ThankYou from "@/components/reader/ThankYou";
 
@@ -187,7 +188,7 @@ function LetterReader() {
   // Active steps calculation based on enabled modifications
   const activeSteps = useMemo<string[]>(() => {
     if (!data) return ["envelope"];
-    let rawOrder = data.stepOrder || ["security", "intro", "envelope", "polaroids", "audioMessage", "dateInvite", "closing", "survey"];
+    let rawOrder = data.stepOrder || ["security", "intro", "envelope", "polaroids", "audioMessage", "loveQuiz", "dateInvite", "closing", "survey"];
     if (data.audioMessage?.enabled && !rawOrder.includes("audioMessage")) {
       rawOrder = [...rawOrder];
       const envIdx = rawOrder.indexOf("envelope");
@@ -206,12 +207,22 @@ function LetterReader() {
         rawOrder.push("polaroids");
       }
     }
+    if (data.loveQuiz?.enabled && !rawOrder.includes("loveQuiz")) {
+      rawOrder = [...rawOrder];
+      const envIdx = rawOrder.indexOf("envelope");
+      if (envIdx !== -1) {
+        rawOrder.splice(envIdx + 1, 0, "loveQuiz");
+      } else {
+        rawOrder.push("loveQuiz");
+      }
+    }
     const steps = rawOrder.filter((stepId: string) => {
       if (stepId === "envelope") return true;
       if (stepId === "security" && data.security?.enabled) return true;
       if (stepId === "intro" && data.intro?.enabled) return true;
       if (stepId === "polaroids" && data.polaroids?.enabled) return true;
       if (stepId === "audioMessage" && data.audioMessage?.enabled) return true;
+      if (stepId === "loveQuiz" && data.loveQuiz?.enabled) return true;
       if (stepId === "dateInvite" && data.dateInvite?.enabled) return true;
       if (stepId === "closing" && data.closing?.enabled) return true;
       if (stepId === "survey" && data.survey?.enabled) return true;
@@ -846,6 +857,20 @@ function LetterReader() {
           />
         )}
 
+        {/* Step: Love Quiz Game */}
+        {currentStep === "loveQuiz" && data.loveQuiz && (
+          <LoveQuizReader
+            loveQuiz={data.loveQuiz}
+            sender={data.sender}
+            recipient={data.recipient}
+            letterKey={d || id || "preview"}
+            letterId={id}
+            senderEmail={dbData?.senderEmail || ""}
+            recipientEmail={dbData?.email || data?.email || ""}
+            onComplete={handleNextStep}
+          />
+        )}
+
         {/* Step: Date Invitation ticket pass */}
         {currentStep === "dateInvite" && data.dateInvite && (
           <DateInvitation 
@@ -877,6 +902,7 @@ function LetterReader() {
             sender={data.sender}
             recipient={data.recipient}
             letterKey={d}
+            letterId={id}
             onComplete={handleNextStep}
           />
         )}
