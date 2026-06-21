@@ -155,11 +155,16 @@ export default function DashboardPage() {
 
   const deleteLetter = async (linkToDelete: string) => {
     if (!user) return;
+    const targetLetter = letters.find((l) => l.link === linkToDelete);
     setLetters(letters.filter((l) => l.link !== linkToDelete));
     try {
-      const q = query(collection(db, "letters"), where("userId", "==", user.uid), where("link", "==", linkToDelete));
-      const snapshot = await getDocs(q);
-      await Promise.all(snapshot.docs.map((d) => deleteDoc(d.ref)));
+      if (targetLetter?.id) {
+        await deleteDoc(doc(db, "letters", targetLetter.id));
+      } else {
+        const q = query(collection(db, "letters"), where("userId", "==", user.uid), where("link", "==", linkToDelete));
+        const snapshot = await getDocs(q);
+        await Promise.all(snapshot.docs.map((d) => deleteDoc(d.ref)));
+      }
     } catch (err) { console.error("Failed to delete letter from Firestore:", err); }
   };
 

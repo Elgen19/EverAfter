@@ -179,9 +179,11 @@ function MailboxContent() {
         const refData = { id: actualRefId, ...referenceLetterDoc };
         setRefLetter(refData);
 
-        const isUnlocked = refData.security?.enabled 
-          ? sessionStorage.getItem(`unlocked_${actualRefId}`) === "true"
-          : true;
+        const isUnlocked = (user && user.uid === refData.userId)
+          ? true
+          : (refData.security?.enabled 
+              ? sessionStorage.getItem(`unlocked_${actualRefId}`) === "true"
+              : true);
 
         if (!isUnlocked) {
           setIsAuthorized(false);
