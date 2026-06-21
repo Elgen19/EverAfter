@@ -87,6 +87,14 @@ export default function LetterCard({
 }: LetterCardProps) {
   const badge = getThemeBadgeColor(letter.theme);
 
+  const getHref = () => {
+    if (!letter.link || !letter.link.includes("?d=")) {
+      return `/letter?id=${letter.id || ""}${letter.isWriteback ? "" : "&preview=true"}`;
+    }
+    const dParam = letter.link.split("?d=")[1];
+    return letter.isWriteback ? `/letter?d=${dParam}` : `/letter?d=${dParam}&preview=true`;
+  };
+
   return (
     <div
       className="dashboard-history-item"
@@ -194,7 +202,7 @@ export default function LetterCard({
 
         {/* Preview / View */}
         <Link
-          href={letter.isWriteback ? `/letter?d=${letter.link.split("?d=")[1]}` : `/letter?d=${letter.link.split("?d=")[1]}&preview=true`}
+          href={getHref()}
           target="_blank"
           title={letter.isWriteback ? "View Letter" : "Preview Letter"}
           style={{ ...iconBtnBase, backgroundColor: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.1)", color: "var(--text-muted)", textDecoration: "none" }}
