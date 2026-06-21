@@ -10,6 +10,9 @@
   --font-cormorant: var(--font-cormorant-google), serif;
   --font-libre-baskerville: var(--font-libre-baskerville-google), serif;
   --font-allura: var(--font-allura-google), cursive;
+  --font-lora: var(--font-lora-google), serif;
+  --font-dm-serif: var(--font-dm-serif-display-google), serif;
+  --font-source-serif: var(--font-source-serif-4-google), serif;
   --envelope-min-height: 500px;
 
   /* Creator Studio Color Palette (Dark Theme / Glassmorphism) */
@@ -125,7 +128,12 @@ body {
   --stationery-border: #B76E79;
   --stationery-text: #2F2F2F;
   --stationery-accent: #E8B4B8;
-  --stationery-font: var(--font-libre-baskerville, 'Libre Baskerville', serif);
+  --stationery-font: var(--font-libre-baskerville);
+  --stationery-greeting-font: var(--font-playfair);
+  --stationery-sig-font: var(--font-allura);
+  --stationery-font-size: 18px;
+  --stationery-font-size-preview: 15px;
+  --stationery-line-height: 1.8;
 }
 
 .theme-blush.stationery-sheet {
@@ -147,7 +155,12 @@ body {
   --stationery-border: #5c381f;
   --stationery-text: #2c1a0c;
   --stationery-accent: #8b5a2b;
-  --stationery-font: var(--font-playfair, 'Playfair Display', serif);
+  --stationery-font: var(--font-playfair);
+  --stationery-greeting-font: var(--font-dancing-script);
+  --stationery-sig-font: var(--font-dancing-script);
+  --stationery-font-size: 18px;
+  --stationery-font-size-preview: 15px;
+  --stationery-line-height: 1.8;
 }
 
 .theme-scroll.stationery-sheet {
@@ -213,22 +226,146 @@ body {
 }
 
 .theme-lavender {
-  --stationery-bg: #f7f4fc;
-  --stationery-border: #e8dbf8;
-  --stationery-text: #2a1b40;
-  --stationery-accent: #7b2cbf;
-  --stationery-font: var(--font-playfair, 'Playfair Display', serif);
-  background-image: linear-gradient(rgba(123, 44, 191, 0.03) 1px, transparent 1px);
-  background-size: 100% 28px;
+  --stationery-bg: #3d020a;
+  --stationery-border: #d4af37;
+  --stationery-text: #f5e6e8;
+  --stationery-accent: #d4af37;
+  --stationery-font: var(--font-cormorant);
+  --stationery-greeting-font: var(--font-cinzel-dec);
+  --stationery-sig-font: var(--font-allura);
+  --stationery-font-size: 19px;
+  --stationery-font-size-preview: 16px;
+  --stationery-line-height: 1.7;
+}
+
+.theme-lavender.stationery-sheet {
+  padding: 40px 32px !important;
+}
+
+.theme-lavender.stationery-sheet:not(.has-backdrop) {
+  border: none !important;
+  background-image: url('/crimson_gold_rose_bg.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  box-shadow: 
+    0 25px 60px -15px rgba(0,0,0,0.7),
+    0 0 35px rgba(212, 175, 55, 0.15) !important;
 }
 
 .theme-celestial {
-  --stationery-bg: rgba(9, 14, 36, 0.2);
-  --stationery-border: rgba(226, 184, 87, 0.25);
-  --stationery-text: #e2b857;
-  --stationery-accent: #e2b857;
-  --stationery-font: var(--font-playfair, 'Playfair Display', serif);
-  --page-bg-image: url('/campfire_letter.png');
+  --stationery-bg: #090e24;
+  --stationery-border: #dcdde1;
+  --stationery-text: #f5f6fa;
+  --stationery-accent: #dcdde1;
+  --stationery-font: var(--font-cormorant);
+  --stationery-greeting-font: var(--font-great-vibes);
+  --stationery-sig-font: var(--font-great-vibes);
+  --stationery-font-size: 19px;
+  --stationery-font-size-preview: 16px;
+  --stationery-line-height: 1.7;
+}
+
+.theme-celestial.stationery-sheet {
+  padding: 40px 32px !important;
+}
+
+.theme-celestial.stationery-sheet:not(.has-backdrop) {
+  border: none !important;
+  background-image: url('/celestial_eagle_bg.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  box-shadow: 
+    0 25px 60px -15px rgba(0,0,0,0.7),
+    0 0 35px rgba(220, 221, 225, 0.1) !important;
+}
+
+.theme-celestial.stationery-sheet.has-backdrop {
+  border: 1px solid rgba(220, 221, 225, 0.25) !important;
+  background: rgba(9, 14, 36, 0.82) !important;
+  box-shadow: 
+    0 25px 60px -15px rgba(0,0,0,0.7),
+    inset 0 0 20px rgba(220, 221, 225, 0.05) !important;
+}
+
+.theme-midnight_rose {
+  --stationery-bg: #fdfbf7;
+  --stationery-border: #8c6c30;
+  --stationery-text: #3c2f2f;
+  --stationery-accent: #8c6c30;
+  --stationery-font: var(--font-cormorant);
+  --stationery-greeting-font: var(--font-playfair);
+  --stationery-sig-font: var(--font-great-vibes);
+  --stationery-font-size: 19px;
+  --stationery-font-size-preview: 16px;
+  --stationery-line-height: 1.7;
+}
+
+.theme-midnight_rose.stationery-sheet {
+  padding: 45px 36px !important;
+}
+
+.theme-midnight_rose.stationery-sheet:not(.has-backdrop) {
+  border: none !important;
+  background-image: url('/midnight_rose_bg.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.5) !important;
+}
+
+.theme-midnight_rose.stationery-sheet.has-backdrop {
+  border: 1px solid rgba(140, 108, 48, 0.25) !important;
+  background: rgba(253, 251, 247, 0.85) !important;
+  box-shadow: 
+    0 25px 60px -15px rgba(0, 0, 0, 0.5),
+    inset 0 0 20px rgba(140, 108, 48, 0.05) !important;
+}
+
+.theme-obsidian_poppy {
+  --stationery-bg: #1c1c1f;
+  --stationery-border: #c59279;
+  --stationery-text: #e8c4b0;
+  --stationery-accent: #c59279;
+  --stationery-font: var(--font-cormorant);
+  --stationery-greeting-font: var(--font-dancing-script);
+  --stationery-sig-font: var(--font-dancing-script);
+  --stationery-font-size: 19px;
+  --stationery-font-size-preview: 16px;
+  --stationery-line-height: 1.7;
+}
+
+.theme-obsidian_poppy.stationery-sheet {
+  padding: 45px 40px !important;
+}
+
+.theme-obsidian_poppy.stationery-sheet:not(.has-backdrop) {
+  border: none !important;
+  background-image: url('/obsidian_poppy_bg.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7) !important;
+}
+
+.theme-obsidian_poppy.stationery-sheet.has-backdrop {
+  border: 1px solid rgba(197, 146, 121, 0.25) !important;
+  background: rgba(28, 28, 31, 0.85) !important;
+  box-shadow: 
+    0 25px 60px -15px rgba(0,0,0,0.7),
+    inset 0 0 20px rgba(197, 146, 121, 0.05) !important;
+}
+
+.theme-obsidian_poppy .letter-body::first-letter {
+  font-size: 36px;
+  font-weight: 600;
+  color: var(--stationery-accent);
+  margin-right: 2px;
+}
+
+.studio-preview-wrapper.theme-obsidian_poppy .letter-body::first-letter {
+  font-size: 30px;
 }
 
 .theme-royal {
@@ -236,7 +373,12 @@ body {
   --stationery-border: #C9A227;
   --stationery-text: #3A2618;
   --stationery-accent: #7B1E1E;
-  --stationery-font: var(--font-cormorant, 'Cormorant Garamond', serif);
+  --stationery-font: var(--font-cormorant);
+  --stationery-greeting-font: var(--font-cinzel-dec);
+  --stationery-sig-font: var(--font-great-vibes);
+  --stationery-font-size: 19px;
+  --stationery-font-size-preview: 16px;
+  --stationery-line-height: 1.8;
 }
 
 .theme-royal.stationery-sheet {
@@ -1989,6 +2131,37 @@ button:hover .quiz-option-badge {
 }
 .dashboard-text-short {
   display: none;
+}
+
+/* Star sparkle pulse for Celestial theme */
+@keyframes star-pulse {
+  0%, 100% { transform: scale(0.6); opacity: 0.2; }
+  50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 15px #fff, 0 0 25px #e2b857; }
+}
+
+/* Shooting star sweep across the screen */
+@keyframes shooting-star {
+  0% { transform: translate(-10%, -10%) rotate(45deg) scale(0); opacity: 0; }
+  4% { opacity: 1; transform: translate(20%, 20%) rotate(45deg) scale(1); }
+  12% { transform: translate(110%, 110%) rotate(45deg) scale(0.4); opacity: 0; }
+  100% { transform: translate(110%, 110%) rotate(45deg) scale(0); opacity: 0; }
+}
+
+/* Floating amethyst dust for Lavender theme (wavy and scale variants) */
+@keyframes dust-float {
+  0% { transform: translateY(105%) translateX(0) scale(0.8); opacity: 0; }
+  20% { opacity: 0.8; transform: translateY(75%) translateX(-15px) scale(1); }
+  50% { transform: translateY(45%) translateX(15px) scale(0.9); }
+  80% { opacity: 0.8; transform: translateY(15%) translateX(-10px) scale(1.1); }
+  100% { transform: translateY(-5%) translateX(5px) scale(0.8); opacity: 0; }
+}
+
+/* Falling rose petals for Midnight Rose theme (3D flutter rotateX/rotateY/rotateZ) */
+@keyframes petal-fall {
+  0% { transform: translateY(-5%) translateX(0) rotateX(0deg) rotateY(0deg) rotateZ(0deg); opacity: 0; }
+  10% { opacity: 0.85; }
+  90% { opacity: 0.85; }
+  100% { transform: translateY(105%) translateX(35px) rotateX(360deg) rotateY(180deg) rotateZ(270deg); opacity: 0; }
 }
 
 

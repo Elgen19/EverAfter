@@ -91,8 +91,47 @@ export default function DateInvitation({
   const [isSealing, setIsSealing] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
 
+  const getDateKey = () => {
+    if (letterId) return letterId;
+    if (letterKey && letterKey !== "preview") {
+      let hash = 0;
+      for (let i = 0; i < letterKey.length; i++) {
+        hash = (hash << 5) - hash + letterKey.charCodeAt(i);
+        hash |= 0;
+      }
+      return Math.abs(hash).toString(36);
+    }
+    return "preview";
+  };
+
   React.useEffect(() => {
-    const cachedRsvpStr = localStorage.getItem(`date_rsvp_${letterKey.slice(0, 10)}`);
+    if (preview) {
+      setDateRsvpSelected(null);
+      setDateNotes("");
+      setIsConfirmed(false);
+      setShowDeclineFeedbackModal(false);
+      setShowDeclineModal(false);
+      setShowRsvpSuccessModal(false);
+      return;
+    }
+
+    if (dateInvite.rsvpStatus) {
+      if (dateInvite.rsvpStatus === "accepted") {
+        setDateRsvpSelected("yes");
+        setDateNotes(dateInvite.rsvpNotes || "");
+        setIsConfirmed(true);
+        setShowDeclineFeedbackModal(false);
+      } else if (dateInvite.rsvpStatus === "declined") {
+        setDateRsvpSelected(null);
+        setDateNotes("");
+        setIsConfirmed(false);
+        setShowDeclineFeedbackModal(true);
+      }
+      return;
+    }
+
+    const keyPart = getDateKey();
+    const cachedRsvpStr = localStorage.getItem(`date_rsvp_${keyPart}`);
     if (cachedRsvpStr) {
       try {
         const cached = JSON.parse(cachedRsvpStr);
@@ -100,22 +139,27 @@ export default function DateInvitation({
           setDateRsvpSelected("yes");
           setDateNotes(cached.notes || "");
           setIsConfirmed(true);
+          setShowDeclineFeedbackModal(false);
         } else {
+          setDateRsvpSelected(null);
+          setDateNotes("");
+          setIsConfirmed(false);
           setShowDeclineFeedbackModal(true);
         }
+        return;
       } catch (e) {
         console.error("Failed to parse cached RSVP:", e);
       }
-    } else if (dateInvite.rsvpStatus) {
-      if (dateInvite.rsvpStatus === "accepted") {
-        setDateRsvpSelected("yes");
-        setDateNotes(dateInvite.rsvpNotes || "");
-        setIsConfirmed(true);
-      } else if (dateInvite.rsvpStatus === "declined") {
-        setShowDeclineFeedbackModal(true);
-      }
     }
-  }, [dateInvite, letterKey]);
+
+    // Reset state if not RSVP'd in database and not cached
+    setDateRsvpSelected(null);
+    setDateNotes("");
+    setIsConfirmed(false);
+    setShowDeclineFeedbackModal(false);
+    setShowDeclineModal(false);
+    setShowRsvpSuccessModal(false);
+  }, [letterKey, letterId, dateInvite.rsvpStatus, dateInvite.rsvpNotes]);
 
 
   const buildGoogleCalendarUrl = () => {
@@ -163,9 +207,11 @@ export default function DateInvitation({
         place: dateInvite.place,
         timestamp
       };
-      localStorage.setItem(`date_rsvp_${letterKey.slice(0, 10)}`, JSON.stringify(rsvpResult));
+      if (!preview) {
+        localStorage.setItem(`date_rsvp_${getDateKey()}`, JSON.stringify(rsvpResult));
+      }
       
-      if (letterId && db) {
+      if (letterId && db && !preview) {
         const { doc, updateDoc } = await import("firebase/firestore");
         const docRef = doc(db, "letters", letterId);
         await updateDoc(docRef, {
@@ -218,9 +264,11 @@ export default function DateInvitation({
         mapLink: dateInvite.mapLink,
         timestamp
       };
-      localStorage.setItem(`date_rsvp_${letterKey.slice(0, 10)}`, JSON.stringify(rsvpResult));
+      if (!preview) {
+        localStorage.setItem(`date_rsvp_${getDateKey()}`, JSON.stringify(rsvpResult));
+      }
 
-      if (letterId && db) {
+      if (letterId && db && !preview) {
         const { doc, updateDoc } = await import("firebase/firestore");
         const docRef = doc(db, "letters", letterId);
         await updateDoc(docRef, {
@@ -505,8 +553,10 @@ export default function DateInvitation({
                 setShowDeclineFeedbackModal(false);
                 setDateRsvpSelected(null);
                 setIsConfirmed(false);
-                localStorage.removeItem(`date_rsvp_${letterKey.slice(0, 10)}`);
-                if (letterId && db) {
+                if (!preview) {
+                  localStorage.removeItem(`date_rsvp_${getDateKey()}`);
+                }
+                if (letterId && db && !preview) {
                   import("firebase/firestore").then(({ doc, updateDoc }) => {
                     const docRef = doc(db, "letters", letterId);
                     updateDoc(docRef, {

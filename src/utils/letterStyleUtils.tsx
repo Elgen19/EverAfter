@@ -101,8 +101,10 @@ export function getThemeColors(theme: string) {
   switch (theme) {
     case "royal": return { border: "rgba(201, 162, 39, 0.6)", buttonBg: "#7B1E1E", shadow: "rgba(123, 30, 30, 0.4)", accent: "#C9A227" };
     case "blush": return { border: "rgba(183, 110, 121, 0.6)", buttonBg: "#B76E79", shadow: "rgba(183, 110, 121, 0.4)", accent: "#E8B4B8" };
-    case "lavender": return { border: "rgba(156, 108, 250, 0.5)", buttonBg: "var(--accent-purple)", shadow: "rgba(156, 108, 250, 0.35)", accent: "#c3b1e1" };
-    case "celestial": return { border: "rgba(226, 184, 87, 0.4)", buttonBg: "var(--accent-rose)", shadow: "rgba(255, 75, 114, 0.4)", accent: "#e2b857" };
+    case "lavender": return { border: "rgba(212, 175, 55, 0.6)", buttonBg: "#7a091a", shadow: "rgba(122, 9, 26, 0.4)", accent: "#d4af37" };
+    case "midnight_rose": return { border: "rgba(140, 108, 48, 0.6)", buttonBg: "#1a4325", shadow: "rgba(26, 67, 37, 0.35)", accent: "#8c6c30" };
+    case "celestial": return { border: "rgba(220, 221, 225, 0.5)", buttonBg: "#131c38", shadow: "rgba(19, 28, 56, 0.4)", accent: "#e2b857" };
+    case "obsidian_poppy": return { border: "rgba(197, 146, 121, 0.6)", buttonBg: "#4a3328", shadow: "rgba(74, 51, 40, 0.4)", accent: "#c59279" };
     default: return { border: "rgba(226, 184, 87, 0.5)", buttonBg: "var(--accent-rose)", shadow: "rgba(255, 75, 114, 0.45)", accent: "var(--accent-rose)" };
   }
 }

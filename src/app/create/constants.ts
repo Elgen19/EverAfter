@@ -11,8 +11,10 @@ export const THEMES = [
   { id: "royal", name: "Royal Gilt", desc: "Gold vine patterns, burgundy accents, and a royal crown crest" },
   { id: "scroll", name: "Royal Scroll", desc: "3D wooden scroll rollers and wavy deckle edges" },
   { id: "blush", name: "Blush Rose Gold", desc: "Soft cream paper, double-line borders, and rose-gold script" },
-  { id: "lavender", name: "Lavender Dream", desc: "Serene violet paper with ruled notebook lines" },
-  { id: "celestial", name: "Celestial Night", desc: "Indigo glass on starry sky landscapes" }
+  { id: "lavender", name: "Crimson Gold Rose", desc: "Burgundy velvet paper, golden rose filigree borders, and a golden rose emblem" },
+  { id: "midnight_rose", name: "Emerald Ivy", desc: "Cream parchment with deep green borders and antiqued bronze ivy frames" },
+  { id: "celestial", name: "Celestial Eagle", desc: "Navy blue velvet paper, silver eagle ornaments, and twinkling stars" },
+  { id: "obsidian_poppy", name: "Obsidian Poppy", desc: "Charcoal paper, geometric rose gold borders, and vintage dried poppy pods" }
 ];
 
 export const SYMBOLS = [

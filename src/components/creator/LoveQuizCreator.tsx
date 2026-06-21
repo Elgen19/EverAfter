@@ -426,7 +426,17 @@ export default function LoveQuizCreator({
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px", padding: "10px 0" }}>
                   <div style={{ fontSize: "36px" }}>💔</div>
                   <div style={{ color: "var(--accent-rose)", fontWeight: "bold", fontSize: "14px" }}>GAME OVER</div>
-                  <p style={{ fontSize: "12px", color: "var(--text-muted)", fontStyle: "italic", margin: "0 auto", maxWidth: "80%" }}>
+                  
+                  {/* Grand Prize Info to motivate trying again */}
+                  <div style={{ background: "rgba(201, 162, 39, 0.05)", border: "1px dashed rgba(201, 162, 39, 0.2)", borderRadius: "8px", padding: "8px 10px", margin: "4px auto", maxWidth: "85%", textAlign: "center" }}>
+                    <span style={{ fontSize: "9px", color: "var(--accent-gold)", textTransform: "uppercase", letterSpacing: "1px", fontWeight: "bold", display: "block", marginBottom: "2px" }}>
+                      🏆 Grand Prize at Stake:
+                    </span>
+                    <strong style={{ fontSize: "12px", color: "#fff", display: "block" }}>{quizPrizeTitle || "A Romantic Surprise"}</strong>
+                    <span style={{ fontSize: "10px", color: "var(--text-muted)", display: "block" }}>{quizPrizeDesc || "Unlock a special custom reward."}</span>
+                  </div>
+
+                  <p style={{ fontSize: "12px", color: "var(--text-muted)", fontStyle: "italic", margin: "4px auto", maxWidth: "80%", lineHeight: "1.4" }}>
                     "{quizGameOverMsg || "Don't worry! Try again."}"
                   </p>
                   <button 
@@ -488,6 +498,13 @@ export default function LoveQuizCreator({
                     {quizQuestions[previewActiveIdx]?.question || "Unconfigured Question"}
                   </div>
 
+                  {/* Clue Hint display if hint used */}
+                  {previewShowHintClue && quizQuestions[previewActiveIdx]?.hint && (
+                    <div style={{ background: "rgba(201, 162, 39, 0.08)", border: "1px solid rgba(201, 162, 39, 0.3)", borderRadius: "6px", padding: "8px", fontSize: "11px", color: "var(--accent-gold)", fontStyle: "italic", marginBottom: "8px" }}>
+                      🔑 Clue: "{quizQuestions[previewActiveIdx].hint}"
+                    </div>
+                  )}
+
                   {/* Answers Grid */}
                   {(() => {
                     const currentQ = quizQuestions[previewActiveIdx];
@@ -545,12 +562,7 @@ export default function LoveQuizCreator({
                     );
                   })()}
 
-                  {/* Clue Hint display if hint used */}
-                  {previewShowHintClue && quizQuestions[previewActiveIdx]?.hint && (
-                    <div style={{ background: "rgba(201, 162, 39, 0.08)", border: "1px solid rgba(201, 162, 39, 0.3)", borderRadius: "6px", padding: "8px", fontSize: "11px", color: "var(--accent-gold)", fontStyle: "italic" }}>
-                      🔑 Clue: "{quizQuestions[previewActiveIdx].hint}"
-                    </div>
-                  )}
+
 
                   {/* Lifeline Buttons */}
                   <div style={{ display: "flex", justifyContent: "center", gap: "8px", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "12px", marginTop: "4px" }}>

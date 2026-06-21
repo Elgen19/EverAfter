@@ -9,7 +9,10 @@ import {
   Cormorant_Garamond, 
   Geist, 
   Geist_Mono, 
-  Libre_Baskerville 
+  Libre_Baskerville,
+  Lora,
+  DM_Serif_Display,
+  Source_Serif_4
 } from "next/font/google";
 import PolaroidsReader from "./reader/PolaroidsReader";
 import { PolaroidItem } from "@/utils/encoding";
@@ -57,6 +60,25 @@ const libreBaskerville = Libre_Baskerville({
   weight: ["400", "700"],
   subsets: ["latin"],
   variable: "--font-libre-baskerville-google",
+  display: "swap",
+});
+
+const lora = Lora({
+  subsets: ["latin"],
+  variable: "--font-lora-google",
+  display: "swap",
+});
+
+const dmSerifDisplay = DM_Serif_Display({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-dm-serif-display-google",
+  display: "swap",
+});
+
+const sourceSerif4 = Source_Serif_4({
+  subsets: ["latin"],
+  variable: "--font-source-serif-4-google",
   display: "swap",
 });
 
@@ -281,18 +303,20 @@ export default function Envelope({
     }, closeDuration);
   };
 
-  const hasBackdrop = (backdrop && backdrop !== "none") || theme === "celestial";
+  const hasBackdrop = backdrop && backdrop !== "none";
 
   const getGlassyBg = () => {
     if (!hasBackdrop) return "var(--stationery-bg)";
     switch (theme) {
-      case "royal": return "rgba(247, 241, 227, 0.55)";
-      case "scroll": return "rgba(237, 220, 185, 0.55)";
-      case "blush": return "rgba(255, 253, 247, 0.5)";
-      case "lavender": return "rgba(247, 244, 252, 0.5)";
+      case "royal": return "rgba(247, 241, 227, 0.85)";
+      case "scroll": return "rgba(237, 220, 185, 0.88)";
+      case "blush": return "rgba(255, 253, 247, 0.85)";
+      case "lavender": return "rgba(94, 11, 28, 0.88)";
+      case "midnight_rose": return "rgba(17, 14, 16, 0.85)";
+      case "obsidian_poppy": return "rgba(28, 28, 31, 0.85)";
       case "celestial":
       default:
-        return "rgba(9, 14, 36, 0.45)";
+        return "rgba(9, 14, 36, 0.82)";
     }
   };
 
@@ -302,10 +326,12 @@ export default function Envelope({
       case "royal": return "rgba(201, 162, 39, 0.5)";
       case "scroll": return "rgba(92, 56, 31, 0.5)";
       case "blush": return "rgba(183, 110, 121, 0.5)";
-      case "lavender": return "rgba(232, 219, 248, 0.45)";
+      case "lavender": return "rgba(212, 175, 55, 0.4)";
+      case "midnight_rose": return "rgba(156, 28, 46, 0.45)";
+      case "obsidian_poppy": return "rgba(197, 146, 121, 0.4)";
       case "celestial":
       default:
-        return "rgba(226, 184, 87, 0.25)";
+        return "rgba(220, 221, 225, 0.25)";
     }
   };
   const getSolidBg = () => {
@@ -313,9 +339,10 @@ export default function Envelope({
       case "royal": return "#F7F1E3";
       case "scroll": return "#eddcb9";
       case "blush": return "#FFFDF7";
-      case "lavender": return "#f7f4fc";
+      case "lavender": return "#3d020a";
+      case "midnight_rose": return "#110e10";
+      case "obsidian_poppy": return "#1c1c1f";
       case "celestial":
-      default:
         return "#090e24";
     }
   };
@@ -334,7 +361,7 @@ export default function Envelope({
 
   return (
     <div 
-      className={`envelope-outer-wrapper ${playfair.variable} ${allura.variable} ${cinzelDec.variable} ${cormorant.variable} ${geist.variable} ${geistMono.variable} ${libreBaskerville.variable}`}
+      className={`envelope-outer-wrapper ${playfair.variable} ${allura.variable} ${cinzelDec.variable} ${cormorant.variable} ${geist.variable} ${geistMono.variable} ${libreBaskerville.variable} ${lora.variable} ${dmSerifDisplay.variable} ${sourceSerif4.variable}`}
       style={{
         display: "flex",
         flexDirection: "column",
@@ -485,7 +512,9 @@ export default function Envelope({
               background: theme === "royal" ? "#F7F1E3" :
                           theme === "scroll" ? "#eddcb9" :
                           theme === "blush" ? "#FFFDF7" :
-                          theme === "lavender" ? "#f7f4fc" :
+                          theme === "lavender" ? "#150b24" :
+                          theme === "midnight_rose" ? "#110e10" :
+                          theme === "obsidian_poppy" ? "#1c1c1f" :
                           theme === "celestial" ? "#090e24" :
                           "var(--stationery-bg)",
               transform: (isOpen && isFirstOpen && activeSheet === "none" && activeStep === "envelope")
@@ -509,7 +538,7 @@ export default function Envelope({
       {/* Expanded Full Screen Stationery Sheet (Fade-in portal style) */}
       {activeSheet === "letter" && mounted && createPortal(
         <div
-          className={`stationery-sheet-portal ${isOnlyStep || !activeStep ? "no-timeline" : ""}`}
+          className={`stationery-sheet-portal ${isOnlyStep || !activeStep ? "no-timeline" : ""} ${playfair.variable} ${allura.variable} ${cinzelDec.variable} ${cormorant.variable} ${geist.variable} ${geistMono.variable} ${libreBaskerville.variable} ${lora.variable} ${dmSerifDisplay.variable} ${sourceSerif4.variable}`}
           style={{
             opacity: isSheetExpanded ? 1 : 0,
             pointerEvents: isSheetExpanded ? "auto" : "none",
@@ -546,6 +575,284 @@ export default function Envelope({
               overflow: "hidden",
             }}
           >
+            {/* Dark Theme Particle Effects */}
+            {/* Dark Theme Particle Effects */}
+            {theme === "celestial" && (
+              <>
+                {/* Twinkling Star Sparkles */}
+                <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 3, overflow: "hidden" }}>
+                  {Array.from({ length: 14 }).map((_, idx) => {
+                    const size = 3 + Math.random() * 4;
+                    const top = Math.random() * 100;
+                    const left = Math.random() * 100;
+                    const delay = Math.random() * 4;
+                    const duration = 2 + Math.random() * 3;
+                    return (
+                      <div
+                        key={idx}
+                        style={{
+                          position: "absolute",
+                          top: `${top}%`,
+                          left: `${left}%`,
+                          width: `${size}px`,
+                          height: `${size}px`,
+                          background: "#fff",
+                          borderRadius: "50%",
+                          boxShadow: "0 0 10px #fff, 0 0 20px #dcdde1",
+                          animation: `star-pulse ${duration}s infinite ease-in-out ${delay}s`
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* Celestial Corner Ornaments - only show in glassy backdrop mode fallback */}
+                {hasBackdrop && (
+                  <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 5 }}>
+                    <svg width="100%" height="100%" style={{ position: "absolute", top: 0, left: 0 }}>
+                      <defs>
+                        <g id="celestial-corner-reader">
+                          <path d="M 8,8 L 30,12 L 20,28 L 8,8 M 20,28 L 36,36 L 24,48" fill="none" stroke="rgba(220, 221, 225, 0.4)" strokeWidth="0.8" strokeDasharray="2,2" />
+                          <circle cx="8" cy="8" r="2.5" fill="#dcdde1" />
+                          <circle cx="30" cy="12" r="1.5" fill="#dcdde1" />
+                          <circle cx="20" cy="28" r="3" fill="#fff" style={{ filter: "drop-shadow(0 0 3px #fff)" }} />
+                          <circle cx="36" cy="36" r="1.5" fill="#dcdde1" />
+                          <circle cx="24" cy="48" r="2" fill="#dcdde1" />
+                        </g>
+                      </defs>
+                      <use href="#celestial-corner-reader" x="0" y="0" />
+                      <use href="#celestial-corner-reader" x="0" y="0" transform="translate(100%, 0) scale(-1, 1)" style={{ transformOrigin: "right top" }} />
+                      <use href="#celestial-corner-reader" x="0" y="0" transform="translate(0, 100%) scale(1, -1)" style={{ transformOrigin: "left bottom" }} />
+                      <use href="#celestial-corner-reader" x="0" y="0" transform="translate(100%, 100%) scale(-1, -1)" style={{ transformOrigin: "right bottom" }} />
+                    </svg>
+                  </div>
+                )}
+              </>
+            )}
+
+            {theme === "lavender" && (
+              <>
+                {/* Wavy Gold Stardust */}
+                <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 3, overflow: "hidden" }}>
+                  {Array.from({ length: 16 }).map((_, idx) => {
+                    const size = 2 + Math.random() * 5;
+                    const top = Math.random() * 100;
+                    const left = Math.random() * 100;
+                    const delay = Math.random() * 6;
+                    const duration = 4 + Math.random() * 5;
+                    const colors = ["#ffeea1", "#d4af37", "#f3e5ab"];
+                    const bgColor = colors[idx % colors.length];
+                    return (
+                      <div
+                        key={idx}
+                        style={{
+                          position: "absolute",
+                          top: `${top}%`,
+                          left: `${left}%`,
+                          width: `${size}px`,
+                          height: `${size}px`,
+                          background: bgColor,
+                          borderRadius: "50%",
+                          boxShadow: `0 0 8px ${bgColor}, 0 0 16px rgba(212, 175, 55, 0.4)`,
+                          animation: `dust-float ${duration}s infinite linear ${delay}s`
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+
+
+                {/* Left & Right Climbing Golden Vines */}
+                {hasBackdrop && (
+                  <>
+                    <div style={{ position: "absolute", top: "45px", bottom: "45px", left: "6px", width: "20px", zIndex: 5, pointerEvents: "none", opacity: 0.65 }}>
+                      <svg width="100%" height="100%">
+                        {Array.from({ length: 16 }).map((_, i) => (
+                          <g key={i} transform={`translate(0, ${10 + i * 36})`}>
+                            <path d="M 6,0 Q 14,-10 6,-20 Q -2,-10 6,0 Z" fill="none" stroke="#d4af37" strokeWidth="0.8" />
+                            <path d="M 6,-10 L 14,-14" fill="none" stroke="#d4af37" strokeWidth="0.8" />
+                            <circle cx="14" cy="-14" r="1.5" fill="#d4af37" />
+                          </g>
+                        ))}
+                      </svg>
+                    </div>
+                    <div style={{ position: "absolute", top: "45px", bottom: "45px", right: "6px", width: "20px", zIndex: 5, pointerEvents: "none", opacity: 0.65, transform: "scaleX(-1)" }}>
+                      <svg width="100%" height="100%">
+                        {Array.from({ length: 16 }).map((_, i) => (
+                          <g key={i} transform={`translate(0, ${10 + i * 36})`}>
+                            <path d="M 6,0 Q 14,-10 6,-20 Q -2,-10 6,0 Z" fill="none" stroke="#d4af37" strokeWidth="0.8" />
+                            <path d="M 6,-10 L 14,-14" fill="none" stroke="#d4af37" strokeWidth="0.8" />
+                            <circle cx="14" cy="-14" r="1.5" fill="#d4af37" />
+                          </g>
+                        ))}
+                      </svg>
+                    </div>
+                  </>
+                )}
+
+                {/* Intricate Gold Filigree Frame & Corners */}
+                {hasBackdrop && (
+                  <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 5 }}>
+                    <svg width="100%" height="100%" style={{ position: "absolute", top: 0, left: 0 }}>
+                      <defs>
+                        <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#ffeea1" />
+                          <stop offset="50%" stopColor="#d4af37" />
+                          <stop offset="100%" stopColor="#aa7c11" />
+                        </linearGradient>
+                        <g id="gold-rose-corner-filigree">
+                          <path d="M 8,8 Q 28,10 36,26 C 40,32 34,38 28,32 C 22,26 28,14 40,18 C 46,20 44,28 38,26" fill="none" stroke="url(#goldGrad)" strokeWidth="1.2" />
+                          <path d="M 8,8 Q 10,28 26,36 C 32,40 38,34 32,28 C 26,22 14,28 18,40 C 20,46 28,44 26,38" fill="none" stroke="url(#goldGrad)" strokeWidth="1.2" />
+                          <path d="M 14,20 Q 18,17 21,14 M 20,14 C 21,12 24,12 25,14 C 26,16 24,19 22,18 Z" fill="url(#goldGrad)" fillOpacity="0.2" stroke="url(#goldGrad)" strokeWidth="0.8" />
+                          <path d="M 14,20 C 12,21 12,24 14,25 C 16,26 19,24 18,22 Z" fill="url(#goldGrad)" fillOpacity="0.2" stroke="url(#goldGrad)" strokeWidth="0.8" />
+                          <circle cx="30" cy="30" r="4.5" fill="#3d020a" stroke="url(#goldGrad)" strokeWidth="1" />
+                          <path d="M 28,28 C 30,26 32,30 30,32 Z" fill="url(#goldGrad)" />
+                        </g>
+                      </defs>
+                      <rect x="12" y="12" width="calc(100% - 24px)" height="calc(100% - 24px)" fill="none" stroke="url(#goldGrad)" strokeWidth="1" opacity="0.4" />
+                      <use href="#gold-rose-corner-filigree" x="0" y="0" />
+                      <use href="#gold-rose-corner-filigree" x="0" y="0" transform="translate(100%, 0) scale(-1, 1)" style={{ transformOrigin: "right top" }} />
+                      <use href="#gold-rose-corner-filigree" x="0" y="0" transform="translate(0, 100%) scale(1, -1)" style={{ transformOrigin: "left bottom" }} />
+                      <use href="#gold-rose-corner-filigree" x="0" y="0" transform="translate(100%, 100%) scale(-1, -1)" style={{ transformOrigin: "right bottom" }} />
+                    </svg>
+                  </div>
+                )}
+
+                {/* 3D Golden Rose Emblem (Bottom-Right) */}
+                <div style={{ position: "absolute", bottom: "16px", right: "16px", width: "64px", height: "64px", zIndex: 6, pointerEvents: "none" }}>
+                  <svg width="100%" height="100%" viewBox="0 0 100 100">
+                    <defs>
+                      <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ffeea1" />
+                        <stop offset="50%" stopColor="#d4af37" />
+                        <stop offset="100%" stopColor="#aa7c11" />
+                      </linearGradient>
+                    </defs>
+                    <path d="M 55,60 Q 40,75 35,90 M 55,65 Q 65,70 60,75 M 48,70 Q 30,70 38,65 Z" fill="none" stroke="url(#goldGrad)" strokeWidth="2" />
+                    <path d="M 40,72 C 34,70 28,74 34,78 C 40,82 44,78 40,72 Z" fill="url(#goldGrad)" stroke="url(#goldGrad)" strokeWidth="0.5" />
+                    <path d="M 58,74 C 64,72 70,76 64,80 C 58,84 54,80 58,74 Z" fill="url(#goldGrad)" stroke="url(#goldGrad)" strokeWidth="0.5" />
+                    <path d="M 50,22 C 35,22 30,38 50,58 C 70,38 65,22 50,22 Z" fill="url(#goldGrad)" fillOpacity="0.8" stroke="url(#goldGrad)" strokeWidth="0.8" />
+                    <path d="M 50,30 C 40,32 40,48 50,48 C 60,48 60,32 50,30 Z" fill="url(#goldGrad)" stroke="url(#goldGrad)" strokeWidth="0.8" />
+                    <circle cx="50" cy="40" r="8" fill="#fff" fillOpacity="0.15" stroke="url(#goldGrad)" strokeWidth="1" />
+                    <circle cx="50" cy="40" r="4" fill="url(#goldGrad)" />
+                  </svg>
+                </div>
+              </>
+            )}
+
+            {theme === "midnight_rose" && (
+              <>
+                {/* Fluttering Green Leaves */}
+                <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 3, overflow: "hidden" }}>
+                  {Array.from({ length: 8 }).map((_, idx) => {
+                    const left = Math.random() * 100;
+                    const size = 10 + Math.random() * 12;
+                    const delay = Math.random() * 6;
+                    const duration = 6 + Math.random() * 6;
+                    const rotation = Math.random() * 360;
+                    const leafEmoji = idx % 2 === 0 ? "🍃" : "🌿";
+                    return (
+                      <div
+                        key={idx}
+                        style={{
+                          position: "absolute",
+                          top: "-20px",
+                          left: `${left}%`,
+                          fontSize: `${size}px`,
+                          opacity: idx % 3 === 0 ? 0.4 : 0.65,
+                          transform: `rotate(${rotation}deg)`,
+                          animation: `petal-fall ${duration}s infinite linear ${delay}s`
+                        }}
+                      >
+                        {leafEmoji}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Ivy Corner Ornaments - only show in glassy backdrop mode fallback */}
+                {hasBackdrop && (
+                  <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 5 }}>
+                    <svg width="100%" height="100%" style={{ position: "absolute", top: 0, left: 0 }}>
+                      <defs>
+                        <g id="ivy-corner-reader">
+                          <path d="M 12,12 Q 22,14 30,26 M 12,12 Q 14,22 26,30" fill="none" stroke="#8c6c30" strokeWidth="1.2" opacity="0.75" />
+                          <circle cx="30" cy="26" r="3" fill="#355c3c" stroke="#8c6c30" strokeWidth="0.5" />
+                          <circle cx="26" cy="30" r="3" fill="#355c3c" stroke="#8c6c30" strokeWidth="0.5" />
+                          <circle cx="18" cy="18" r="1.5" fill="#8c6c30" />
+                        </g>
+                      </defs>
+                      <use href="#ivy-corner-reader" x="0" y="0" />
+                      <use href="#ivy-corner-reader" x="0" y="0" transform="translate(100%, 0) scale(-1, 1)" style={{ transformOrigin: "right top" }} />
+                      <use href="#ivy-corner-reader" x="0" y="0" transform="translate(0, 100%) scale(1, -1)" style={{ transformOrigin: "left bottom" }} />
+                      <use href="#ivy-corner-reader" x="0" y="0" transform="translate(100%, 100%) scale(-1, -1)" style={{ transformOrigin: "right bottom" }} />
+                    </svg>
+                  </div>
+                )}
+              </>
+            )}
+
+            {theme === "obsidian_poppy" && (
+              <>
+                {/* Floating Rose Gold Stardust */}
+                <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 3, overflow: "hidden" }}>
+                  {Array.from({ length: 16 }).map((_, idx) => {
+                    const size = 2 + Math.random() * 5;
+                    const top = Math.random() * 100;
+                    const left = Math.random() * 100;
+                    const delay = Math.random() * 6;
+                    const duration = 4 + Math.random() * 5;
+                    const colors = ["#ebd1c5", "#c59279", "#e8c4b0", "#ffdcd0"];
+                    const bgColor = colors[idx % colors.length];
+                    return (
+                      <div
+                        key={idx}
+                        style={{
+                          position: "absolute",
+                          top: `${top}%`,
+                          left: `${left}%`,
+                          width: `${size}px`,
+                          height: `${size}px`,
+                          background: bgColor,
+                          borderRadius: "50%",
+                          boxShadow: `0 0 8px ${bgColor}, 0 0 16px rgba(197, 146, 121, 0.4)`,
+                          animation: `dust-float ${duration}s infinite linear ${delay}s`
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* Geometric Rose Gold Corner Ornaments - only show in glassy backdrop mode fallback */}
+                {hasBackdrop && (
+                  <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 5 }}>
+                    <svg width="100%" height="100%" style={{ position: "absolute", top: 0, left: 0 }}>
+                      <defs>
+                        <linearGradient id="roseGoldGradReader" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#ebd1c5" />
+                          <stop offset="50%" stopColor="#c59279" />
+                          <stop offset="100%" stopColor="#8c5b43" />
+                        </linearGradient>
+                        <g id="poppy-corner-reader">
+                          <path d="M 12,12 L 48,12 M 12,12 L 12,48" fill="none" stroke="url(#roseGoldGradReader)" strokeWidth="1.5" />
+                          <path d="M 18,18 L 38,18 M 18,18 L 18,38" fill="none" stroke="url(#roseGoldGradReader)" strokeWidth="0.8" opacity="0.7" />
+                          <path d="M 12,30 L 30,12" fill="none" stroke="url(#roseGoldGradReader)" strokeWidth="0.8" />
+                          <path d="M 18,32 L 32,18" fill="none" stroke="url(#roseGoldGradReader)" strokeWidth="0.8" />
+                          <path d="M 22,22 L 26,26 L 22,30 L 18,26 Z" fill="url(#roseGoldGradReader)" fillOpacity="0.25" stroke="url(#roseGoldGradReader)" strokeWidth="0.8" />
+                          <circle cx="26" cy="26" r="1.5" fill="#e8c4b0" />
+                        </g>
+                      </defs>
+                      <rect x="16" y="16" width="calc(100% - 32px)" height="calc(100% - 32px)" fill="none" stroke="url(#roseGoldGradReader)" strokeWidth="0.8" opacity="0.3" />
+                      <use href="#poppy-corner-reader" x="0" y="0" />
+                      <use href="#poppy-corner-reader" x="0" y="0" transform="translate(100%, 0) scale(-1, 1)" style={{ transformOrigin: "right top" }} />
+                      <use href="#poppy-corner-reader" x="0" y="0" transform="translate(0, 100%) scale(1, -1)" style={{ transformOrigin: "left bottom" }} />
+                      <use href="#poppy-corner-reader" x="0" y="0" transform="translate(100%, 100%) scale(-1, -1)" style={{ transformOrigin: "right bottom" }} />
+                    </svg>
+                  </div>
+                )}
+              </>
+            )}
+
             {theme === "blush" && (
               <>
                 {/* Delicate corner floral SVGs */}
@@ -609,20 +916,50 @@ export default function Envelope({
                 flex: 1,
                 display: "flex",
                 flexDirection: "column",
-                gap: "24px",
+                gap: theme === "obsidian_poppy" ? "8px" : "24px",
                 zIndex: 6,
+                padding: theme === "royal" ? "24px 24px 24px 24px" :
+                         theme === "midnight_rose" ? "48px 56px 40px 56px" :
+                         theme === "celestial" ? "48px 56px 40px 56px" :
+                         theme === "obsidian_poppy" ? "52px 80px 40px 80px" :
+                         "24px 32px 32px 32px",
               }}
             >
               {/* Header: To */}
               <div 
                 className="letter-greeting"
                 style={{
-                  fontWeight: theme === "blush" ? "600" : theme === "royal" ? "bold" : "normal",
-                  fontFamily: theme === "blush" ? "var(--font-playfair)" : theme === "royal" ? "var(--font-cinzel-dec)" : "var(--font-cursive)",
-                  borderBottom: theme === "blush" || theme === "royal" ? "none" : "1px solid rgba(0,0,0,0.05)",
-                  textAlign: theme === "blush" ? "center" : "left",
-                  paddingBottom: "8px",
-                  color: theme === "blush" ? "var(--stationery-text)" : "var(--stationery-accent)",
+                  fontWeight: theme === "midnight_rose" ? "bold" :
+                              theme === "celestial" ? "normal" :
+                              theme === "obsidian_poppy" ? "normal" :
+                              theme === "blush" ? "600" :
+                              theme === "royal" ? "bold" : "normal",
+                  fontFamily: theme === "midnight_rose" ? "var(--font-playfair)" :
+                              theme === "celestial" ? "var(--font-great-vibes)" :
+                              theme === "obsidian_poppy" ? "var(--font-dancing-script)" :
+                              theme === "lavender" ? "var(--font-great-vibes)" :
+                              "var(--stationery-greeting-font, var(--font-cursive))",
+                  fontStyle: theme === "midnight_rose" ? "italic" : "normal",
+                  borderBottom: theme === "blush" || theme === "royal" || theme === "celestial" || theme === "midnight_rose" || theme === "lavender" || theme === "obsidian_poppy" ? "none" : "1px solid rgba(0,0,0,0.05)",
+                  textAlign: (theme === "blush" || theme === "midnight_rose") ? "center" :
+                             theme === "lavender" ? "right" :
+                             "left",
+                  paddingBottom: theme === "obsidian_poppy" ? "4px" : "12px",
+                  paddingLeft: "0px",
+                  paddingRight: theme === "lavender" ? "24px" : "0px",
+                  borderLeft: "none",
+                  fontSize: theme === "midnight_rose" ? "26px" :
+                            theme === "celestial" ? "32px" :
+                            theme === "obsidian_poppy" ? "30px" :
+                            theme === "lavender" ? "32px" :
+                            "26px",
+                  letterSpacing: "normal",
+                  textTransform: "none",
+                  color: theme === "midnight_rose" ? "#1a4325" :
+                         theme === "celestial" ? "#d4af37" :
+                         theme === "obsidian_poppy" ? "#e8c4b0" :
+                         theme === "blush" ? "var(--stationery-text)" : "var(--stationery-accent)",
+                  textShadow: "none",
                 }}
               >
                 {greeting ? `${greeting} ` : ""}{recipient || "My Loved One"},
@@ -647,14 +984,14 @@ export default function Envelope({
               <div
                 className="letter-body"
                 style={{
-                  fontSize: "18px",
-                  lineHeight: "1.8",
+                  fontSize: "var(--stationery-font-size, 18px)",
+                  lineHeight: "var(--stationery-line-height, 1.8)",
                   whiteSpace: "pre-wrap",
                   color: "var(--stationery-text)",
                   fontFamily: "var(--stationery-font)",
-                  letterSpacing: "0.3px",
+                  letterSpacing: "var(--stationery-letter-spacing, 0.3px)",
                   flex: 1,
-                  paddingBottom: "24px"
+                  paddingBottom: theme === "obsidian_poppy" ? "8px" : "24px"
                 }}
               >
                 {content}
@@ -663,23 +1000,70 @@ export default function Envelope({
               {/* Footer: From */}
               <div
                 style={{
-                  textAlign: "right",
+                  textAlign: (theme === "blush" || theme === "midnight_rose") ? "center" :
+                             (theme === "lavender" || theme === "obsidian_poppy") ? "left" :
+                             "right",
                   marginTop: "auto",
-                  paddingTop: "24px",
+                  paddingTop: theme === "obsidian_poppy" ? "12px" : "28px",
                   borderTop: "1px solid rgba(0,0,0,0.05)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: (theme === "blush" || theme === "midnight_rose") ? "center" :
+                              (theme === "lavender" || theme === "obsidian_poppy") ? "flex-start" :
+                              "flex-end",
+                  paddingRight: (theme === "blush" || theme === "midnight_rose" || theme === "obsidian_poppy") ? "0px" :
+                                theme === "scroll" ? "36px" :
+                                theme === "royal" ? "16px" :
+                                "0px",
+                  paddingLeft: theme === "lavender" ? "32px" : "0px",
                 }}
               >
                 {farewell && (
-                  <div className="letter-farewell" style={{ fontFamily: "var(--font-cursive)", opacity: 0.75, marginBottom: "4px" }}>
+                  <div 
+                    className="letter-farewell" 
+                    style={{ 
+                      fontFamily: theme === "midnight_rose" ? "var(--font-cormorant)" :
+                                  theme === "celestial" ? "var(--font-cormorant)" :
+                                  theme === "obsidian_poppy" ? "var(--font-cormorant)" :
+                                  theme === "lavender" ? "var(--font-cormorant)" :
+                                  "var(--stationery-font)",
+                      fontStyle: "italic",
+                      fontSize: theme === "obsidian_poppy" ? "21px" : "18px",
+                      fontWeight: "400",
+                      letterSpacing: "normal",
+                      textTransform: "none",
+                      color: theme === "midnight_rose" ? "#8c6c30" :
+                             theme === "obsidian_poppy" ? "#ebd1c5" :
+                             "var(--stationery-text)",
+                      opacity: 0.85,
+                      marginBottom: "6px" 
+                    }}
+                  >
                     {farewell}
                   </div>
                 )}
                 <div
                   className="letter-signature"
                   style={{
-                    fontFamily: theme === "blush" ? "var(--font-allura)" : theme === "royal" ? "var(--font-great-vibes)" : "var(--font-cursive)",
-                    color: theme === "blush" ? "#B76E79" : "var(--stationery-accent)",
-                    marginTop: "6px",
+                    fontFamily: theme === "midnight_rose" ? "var(--font-great-vibes)" :
+                                theme === "celestial" ? "var(--font-great-vibes)" :
+                                theme === "obsidian_poppy" ? "var(--font-dancing-script)" :
+                                theme === "lavender" ? "var(--font-great-vibes)" :
+                                "var(--stationery-sig-font, var(--font-cursive))",
+                    fontSize: (theme === "midnight_rose" || theme === "celestial" || theme === "obsidian_poppy") ? "36px" : "32px",
+                    lineHeight: "1.2",
+                    fontWeight: "normal",
+                    color: theme === "midnight_rose" ? "#1a4325" :
+                           theme === "celestial" ? "#ffeea1" :
+                           theme === "obsidian_poppy" ? "#ffdcd0" :
+                           theme === "lavender" ? "#ffeea1" :
+                           theme === "blush" ? "#B76E79" : "var(--stationery-accent)",
+                    marginTop: "4px",
+                    letterSpacing: "0.5px",
+                    textShadow: theme === "celestial" ? "0 0 10px rgba(255, 255, 255, 0.5)" :
+                                theme === "obsidian_poppy" ? "0 0 12px rgba(255, 220, 208, 0.2)" :
+                                theme === "midnight_rose" ? "none" :
+                                "0 0 12px rgba(197, 146, 121, 0.15)",
                   }}
                 >
                   {sender || "Yours Truly"}

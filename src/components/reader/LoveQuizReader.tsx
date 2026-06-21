@@ -17,6 +17,8 @@ interface LoveQuizReaderProps {
     gameOverMsg?: string;
     strictness?: "restart" | "hearts";
     questions: QuestionItem[];
+    won?: boolean;
+    claimed?: boolean;
   };
   sender: string;
   recipient: string;
@@ -24,6 +26,7 @@ interface LoveQuizReaderProps {
   letterId?: string;
   senderEmail?: string;
   recipientEmail?: string;
+  preview?: boolean;
   onComplete: () => void;
 }
 
@@ -50,6 +53,7 @@ export default function LoveQuizReader({
   letterId,
   senderEmail,
   recipientEmail,
+  preview = false,
   onComplete
 }: LoveQuizReaderProps) {
   const { questions, prizeTitle, prizeDesc, gameOverMsg } = loveQuiz;
@@ -61,8 +65,8 @@ export default function LoveQuizReader({
   const [wrongOptions, setWrongOptions] = useState<string[]>([]);
   const [hearts, setHearts] = useState(3);
   const [gameOver, setGameOver] = useState(false);
-  const [gameWon, setGameWon] = useState(false);
-  const [prizeRedeemed, setPrizeRedeemed] = useState(false);
+  const [gameWon, setGameWon] = useState(loveQuiz.won || false);
+  const [prizeRedeemed, setPrizeRedeemed] = useState(loveQuiz.claimed || false);
 
   // New features states
   const [gameStarted, setGameStarted] = useState(false);
@@ -86,7 +90,7 @@ export default function LoveQuizReader({
   const [showFinalConfirmation, setShowFinalConfirmation] = useState(false);
   const [pendingOption, setPendingOption] = useState<string | null>(null);
   const [showWinAnimation, setShowWinAnimation] = useState(false);
-  const [showLoseAnimation, setShowLoseAnimation] = useState(false);
+  const [inlineError, setInlineError] = useState<string | null>(null);
 
   // We want to shuffle the answers for each question once when the question index changes, 
   // so that options are randomized but don't re-shuffle every render.
@@ -117,15 +121,80 @@ export default function LoveQuizReader({
     return shuffledOptions;
   }, [shuffledOptions, currentIdx, questions, usedFiftyFifty, lifelines.FiftyFifty]);
 
-  // Load redeemed state from local storage if previously claimed
-  useEffect(() => {
-    const keyPart = (letterKey || "default").slice(0, 10);
-    const claimed = localStorage.getItem(`love_quiz_claimed_${keyPart}`);
-    if (claimed === "true") {
-      setGameWon(true);
-      setPrizeRedeemed(true);
+  const getQuizKey = () => {
+    if (letterId) return letterId;
+    if (letterKey && letterKey !== "preview") {
+      let hash = 0;
+      for (let i = 0; i < letterKey.length; i++) {
+        hash = (hash << 5) - hash + letterKey.charCodeAt(i);
+        hash |= 0;
+      }
+      return Math.abs(hash).toString(36);
     }
-  }, [letterKey]);
+    return "preview";
+  };
+
+  // Load redeemed state from local storage or Firestore props if previously claimed
+  useEffect(() => {
+    if (preview) {
+      setGameWon(false);
+      setPrizeRedeemed(false);
+      setCurrentIdx(0);
+      setSelectedOption(null);
+      setAnswerState("idle");
+      setWrongOptions([]);
+      setHearts(3);
+      setGameOver(false);
+      setGameStarted(false);
+      setIsAnimatingStart(false);
+      setTempReplaying(false);
+      setLifelines({ FiftyFifty: false, Hint: false, Skip: false });
+      setUsedFiftyFifty(false);
+      setUsedHint(false);
+      setUsedSkip(false);
+      setShowHintClue(false);
+      setShowFinalConfirmation(false);
+      setPendingOption(null);
+      setShowWinAnimation(false);
+      setInlineError(null);
+      return;
+    }
+
+    let isWon = !!loveQuiz.won;
+    let isClaimed = !!loveQuiz.claimed;
+
+    if (!isWon || !isClaimed) {
+      const keyPart = getQuizKey();
+      const claimed = localStorage.getItem(`love_quiz_claimed_${keyPart}`);
+      if (claimed === "true") {
+        isWon = true;
+        isClaimed = true;
+      }
+    }
+
+    setGameWon(isWon);
+    setPrizeRedeemed(isClaimed);
+
+    // Reset other quiz states to default values when letter props change
+    setCurrentIdx(0);
+    setSelectedOption(null);
+    setAnswerState("idle");
+    setWrongOptions([]);
+    setHearts(3);
+    setGameOver(false);
+    setGameStarted(false);
+    setIsAnimatingStart(false);
+    setTempReplaying(false);
+    setLifelines({ FiftyFifty: false, Hint: false, Skip: false });
+    setUsedFiftyFifty(false);
+    setUsedHint(false);
+    setUsedSkip(false);
+    setShowHintClue(false);
+    setShowFinalConfirmation(false);
+    setPendingOption(null);
+    setShowWinAnimation(false);
+    setInlineError(null);
+  }, [letterKey, letterId, loveQuiz.won, loveQuiz.claimed]);
 
   // Clear wrong selections and clue display on question change
   useEffect(() => {
@@ -136,7 +205,7 @@ export default function LoveQuizReader({
 
   // Sync game won status to Firestore
   useEffect(() => {
-    if (gameWon && letterId && db) {
+    if (gameWon && letterId && db && !preview) {
       const saveWinToDb = async () => {
         try {
           const { doc, updateDoc } = await import("firebase/firestore");
@@ -167,12 +236,7 @@ export default function LoveQuizReader({
         setTimeout(() => {
           const nextIdx = currentIdx + 1;
           if (nextIdx >= questions.length) {
-            // Trigger spectacular winning animation!
-            setShowWinAnimation(true);
-            setTimeout(() => {
-              setGameWon(true);
-              setShowWinAnimation(false);
-            }, 3000); // 3 seconds of animation
+            setGameWon(true);
           } else {
             setCurrentIdx(nextIdx);
             setSelectedOption(null);
@@ -182,30 +246,39 @@ export default function LoveQuizReader({
       } else {
         setAnswerState("incorrect");
         setTimeout(() => {
-          // Rule: If all lifelines/helplines are exhausted, mistake is fatal!
           const lifelinesExhausted = usedFiftyFifty && usedHint && usedSkip;
           
-          // Trigger lose animation overlay before showing game over state
-          setShowLoseAnimation(true);
-          setTimeout(() => {
-            setShowLoseAnimation(false);
-            if (lifelinesExhausted) {
+          if (lifelinesExhausted) {
+            setInlineError("Incorrect answer! Game Over 💔");
+            setTimeout(() => {
+              setInlineError(null);
               setGameOver(true);
-            } else if (strictness === "hearts") {
-              const nextHearts = hearts - 1;
-              setHearts(nextHearts);
-              if (nextHearts <= 0) {
+            }, 2000);
+          } else if (strictness === "hearts") {
+            const nextHearts = hearts - 1;
+            setHearts(nextHearts);
+            if (nextHearts <= 0) {
+              setInlineError("Incorrect answer! No hearts left 💔");
+              setTimeout(() => {
+                setInlineError(null);
                 setGameOver(true);
-              } else {
-                setWrongOptions(prev => [...prev, option]);
-                setSelectedOption(null);
-                setAnswerState("idle");
-              }
+              }, 2000);
             } else {
-              // strictness === "restart"
-              setGameOver(true);
+              setInlineError("Incorrect answer! -1 Heart 💔");
+              setTimeout(() => {
+                setInlineError(null);
+              }, 2500);
+              setWrongOptions(prev => [...prev, option]);
+              setSelectedOption(null);
+              setAnswerState("idle");
             }
-          }, 2500); // 2.5 seconds of dramatic losing animation
+          } else {
+            setInlineError("Incorrect answer! Game Over 💔");
+            setTimeout(() => {
+              setInlineError(null);
+              setGameOver(true);
+            }, 2000);
+          }
         }, 1000);
       }
     }, 1200); // Suspense delay
@@ -291,11 +364,13 @@ export default function LoveQuizReader({
   // Claim Prize Action
   const handleRedeem = async () => {
     setPrizeRedeemed(true);
-    const keyPart = (letterKey || "default").slice(0, 10);
-    localStorage.setItem(`love_quiz_claimed_${keyPart}`, "true");
+    if (!preview) {
+      const keyPart = getQuizKey();
+      localStorage.setItem(`love_quiz_claimed_${keyPart}`, "true");
+    }
 
     // Save claim status to Firestore
-    if (letterId && db) {
+    if (letterId && db && !preview) {
       try {
         const { doc, updateDoc } = await import("firebase/firestore");
         const docRef = doc(db, "letters", letterId);
@@ -309,7 +384,7 @@ export default function LoveQuizReader({
     }
 
     // Trigger API email notification to sender if emails are provided
-    if (senderEmail || recipientEmail) {
+    if ((senderEmail || recipientEmail) && !preview) {
       try {
         await fetch("/api/send-prize-claim", {
           method: "POST",
@@ -356,23 +431,13 @@ export default function LoveQuizReader({
 
   return (
     <>
-      {/* WIN ANIMATION OVERLAY */}
-      {showWinAnimation && (
-        <div style={{
-          position: "fixed",
-          top: 0, left: 0, right: 0, bottom: 0,
-          zIndex: 10000,
-          background: "rgba(10, 5, 15, 0.9)",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden"
-        }}>
-          {Array.from({ length: 24 }).map((_, i) => {
+      {/* Particles Win Celebration Background (Active on victory) */}
+      {gameWon && !tempReplaying && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 1, pointerEvents: "none", overflow: "hidden" }}>
+          {Array.from({ length: 28 }).map((_, i) => {
             const left = Math.random() * 100;
-            const delay = Math.random() * 2;
-            const duration = 2 + Math.random() * 2;
+            const delay = Math.random() * 5;
+            const duration = 3 + Math.random() * 3;
             const emojis = ["💖", "✨", "🎉", "💘", "🌹", "👑"];
             const emoji = emojis[i % emojis.length];
             return (
@@ -383,67 +448,14 @@ export default function LoveQuizReader({
                   left: `${left}%`, 
                   animationDelay: `${delay}s`,
                   animationDuration: `${duration}s`,
-                  fontSize: `${16 + Math.random() * 24}px`
+                  fontSize: `${16 + Math.random() * 24}px`,
+                  position: "absolute"
                 }}
               >
                 {emoji}
               </span>
             );
           })}
-          <div style={{ fontSize: "84px", marginBottom: "16px" }}>🏆</div>
-          <h1 style={{ color: "var(--accent-gold)", fontSize: "32px", fontWeight: "bold", textAlign: "center", margin: "16px 20px", textShadow: "0 0 20px rgba(201, 162, 39, 0.6)", letterSpacing: "1px" }}>
-            CORRECT!
-          </h1>
-          <p style={{ color: "#fff", fontSize: "16px", fontWeight: "600", letterSpacing: "2px", textTransform: "uppercase", margin: 0 }}>
-            You are a Love Millionaire! 👑
-          </p>
-        </div>
-      )}
-
-      {/* LOSE ANIMATION OVERLAY */}
-      {showLoseAnimation && (
-        <div style={{
-          position: "fixed",
-          top: 0, left: 0, right: 0, bottom: 0,
-          zIndex: 10000,
-          background: "rgba(10, 5, 15, 0.9)",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden"
-        }}>
-          {Array.from({ length: 20 }).map((_, i) => {
-            const left = Math.random() * 100;
-            const delay = Math.random() * 1.5;
-            const duration = 1.5 + Math.random() * 1.5;
-            const emojis = ["💧", "🥺", "💔", "😭"];
-            const emoji = emojis[i % emojis.length];
-            return (
-              <span 
-                key={i} 
-                className="particle-lose" 
-                style={{ 
-                  left: `${left}%`, 
-                  animationDelay: `${delay}s`,
-                  animationDuration: `${duration}s`,
-                  fontSize: `${14 + Math.random() * 20}px`
-                }}
-              >
-                {emoji}
-              </span>
-            );
-          })}
-          <div style={{ fontSize: "96px", display: "flex", justifyContent: "center" }}>
-            <span className="heart-half-left" style={{ color: "var(--accent-rose)" }}>💔</span>
-            <span className="heart-half-right" style={{ color: "var(--accent-rose)", marginLeft: "-24px" }}>💔</span>
-          </div>
-          <h1 style={{ color: "var(--accent-rose)", fontSize: "28px", fontWeight: "bold", textAlign: "center", margin: "16px 20px" }}>
-            Incorrect...
-          </h1>
-          <p style={{ color: "var(--text-muted)", fontSize: "14px", fontStyle: "italic", maxWidth: "80%", textAlign: "center", margin: 0 }}>
-            "A minor setback in a lifetime of love..."
-          </p>
         </div>
       )}
 
@@ -457,15 +469,15 @@ export default function LoveQuizReader({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "rgba(10, 5, 15, 0.8)",
-            backdropFilter: "blur(8px)",
+            background: "rgba(0, 0, 0, 0.15)",
+            backdropFilter: "blur(3px)",
             padding: "20px"
           }}
         >
           <div 
             style={{
-              background: "rgba(22, 12, 30, 0.98)",
-              border: "2px solid var(--accent-rose, #ff4b72)",
+              background: "rgba(20, 15, 30, 0.9)",
+              border: "1.5px solid rgba(255, 75, 114, 0.3)",
               borderRadius: "24px",
               padding: "28px 24px",
               width: "100%",
@@ -474,7 +486,9 @@ export default function LoveQuizReader({
               display: "flex",
               flexDirection: "column",
               gap: "20px",
-              boxShadow: "0 25px 60px rgba(0, 0, 0, 0.85)"
+              backdropFilter: "blur(16px)",
+              WebkitBackdropFilter: "blur(16px)",
+              boxShadow: "0 25px 60px rgba(0, 0, 0, 0.5)"
             }}
           >
             <div style={{ fontSize: "52px" }}>🤔❓</div>
@@ -523,148 +537,35 @@ export default function LoveQuizReader({
         </div>
       )}
 
-      {/* CONFIRMATORY WON MODAL */}
-      {prizeRedeemed && !tempReplaying && (
-        <div 
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 9999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "transparent",
-            backdropFilter: "blur(5px)",
-            padding: "20px",
-            overflow: "hidden"
-          }}
-        >
-          <div 
-            className="animate-reveal"
-            style={{
-              background: "rgba(22, 12, 30, 0.98)",
-              border: "2.5px solid var(--accent-gold, #C9A227)",
-              borderRadius: "24px",
-              padding: "24px",
-              width: "100%",
-              maxWidth: "420px",
-              textAlign: "center",
-              display: "flex",
-              flexDirection: "column",
-              gap: "18px",
-              boxShadow: "0 25px 60px rgba(0, 0, 0, 0.85)",
-              animation: "game-fade-in 0.5s ease-out forwards",
-              maxHeight: "95vh",
-              overflow: "hidden"
-            }}
-          >
-            <div style={{ fontSize: "48px", lineHeight: 1 }}>🏆</div>
-            <h2 style={{ fontSize: "20px", color: "var(--accent-gold)", fontWeight: "bold", margin: 0 }}>A Match Sealed in Gold!</h2>
-            <p style={{ fontSize: "12px", color: "var(--text-muted)", maxWidth: "90%", margin: "0 auto", lineHeight: "1.4" }}>
-              You have already successfully conquered the Love Quiz and claimed your reward certificate:
-            </p>
 
-            {/* Golden Love Coupon Card */}
-            <div 
-              className="coupon-glow"
-              style={{ 
-                border: "3px double var(--accent-gold, #C9A227)", 
-                background: "linear-gradient(135deg, rgba(201, 162, 39, 0.12), rgba(0,0,0,0.85))", 
-                borderRadius: "16px", 
-                padding: "16px 14px",
-                width: "100%",
-                textAlign: "center",
-                position: "relative",
-                overflow: "hidden"
-              }}
-            >
-              <div style={{ position: "absolute", top: "-10px", right: "-10px", fontSize: "56px", opacity: 0.08, pointerEvents: "none" }}>🎟️</div>
-              <div style={{ position: "absolute", bottom: "-10px", left: "-10px", fontSize: "56px", opacity: 0.08, pointerEvents: "none" }}>💖</div>
-              
-              <span style={{ fontSize: "8px", letterSpacing: "2px", color: "var(--accent-gold)", textTransform: "uppercase", fontWeight: "bold", display: "block", marginBottom: "4px" }}>
-                EverAfter Love Certificate
-              </span>
-              <h3 style={{ fontSize: "15px", fontWeight: "bold", color: "#fff", margin: "2px 0" }}>{prizeTitle || "A Romantic Surprise"}</h3>
-              
-              <div style={{ width: "30px", height: "1px", background: "var(--accent-gold)", margin: "8px auto" }} />
-              
-              <p style={{ fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4", padding: "0 4px", margin: 0 }}>{prizeDesc || "This certificate entitles you to one custom romantic reward."}</p>
-              
-              <div style={{ marginTop: "10px", fontSize: "9px", color: "rgba(255,255,255,0.4)" }}>
-                Presented by <strong style={{ color: "#fff" }}>{sender}</strong> to <strong style={{ color: "#fff" }}>{recipient}</strong>
-              </div>
-
-              <div style={{ fontSize: "9px", fontWeight: "bold", color: "#2ec4b6", textTransform: "uppercase", marginTop: "10px", letterSpacing: "1px", background: "rgba(46, 196, 182, 0.1)", padding: "4px", borderRadius: "6px" }}>
-                ✓ REDEEMED & CLAIMED! 🎉
-              </div>
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "4px" }}>
-              <button 
-                type="button" 
-                onClick={onComplete}
-                style={{
-                  background: "var(--accent-purple)",
-                  backgroundImage: "linear-gradient(135deg, #9c6cfa, #7c4bf5)",
-                  border: "none",
-                  color: "#fff",
-                  borderRadius: "12px",
-                  padding: "12px 24px",
-                  fontSize: "13px",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  boxShadow: "0 6px 20px rgba(156, 108, 250, 0.3)",
-                  transition: "transform 0.1s"
-                }}
-                onMouseDown={(e) => e.currentTarget.style.transform = "scale(0.96)"}
-                onMouseUp={(e) => e.currentTarget.style.transform = "scale(1)"}
-              >
-                Continue Journey ➔
-              </button>
-              <button 
-                type="button" 
-                onClick={handleReplayForFun}
-                style={{
-                  background: "transparent",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  color: "var(--text-muted)",
-                  borderRadius: "12px",
-                  padding: "8px 16px",
-                  fontSize: "11px",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  transition: "all 0.2s"
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.color = "#fff"}
-                onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-muted)"}
-              >
-                Replay Quiz (For Fun) 🔄
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div 
-        className="animate-reveal hide-scrollbar"
+        className="animate-reveal hide-scrollbar love-quiz-card"
         style={{
           width: "100%",
-          maxWidth: "600px",
-          padding: "30px 24px",
+          maxWidth: (gameWon && !tempReplaying) ? "800px" : "600px",
+          padding: (gameWon && !tempReplaying) ? "40px 32px" : "30px 24px",
           display: "flex",
           flexDirection: "column",
           gap: "20px",
           animation: "float-up-intro 0.6s ease",
           maxHeight: "calc(100vh - 120px)",
-          overflowY: gameWon ? "hidden" : "auto",
-          background: "rgba(22, 12, 30, 0.96)",
-          border: "1.5px solid var(--accent-purple)",
+          overflowY: "auto",
+          background: (gameWon && !tempReplaying) 
+            ? "rgba(10, 5, 18, 0.45)" 
+            : "rgba(22, 12, 30, 0.96)",
+          border: (gameWon && !tempReplaying)
+            ? "1.5px solid rgba(226, 184, 87, 0.35)"
+            : "1.5px solid var(--accent-purple)",
           borderRadius: "24px",
-          boxShadow: "0 20px 50px rgba(0, 0, 0, 0.6)",
-          position: "relative"
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          boxShadow: (gameWon && !tempReplaying)
+            ? "0 25px 60px rgba(226, 184, 87, 0.15)"
+            : "0 20px 50px rgba(0, 0, 0, 0.6)",
+          position: "relative",
+          zIndex: 5,
+          transition: "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)"
         }}
       >
         <style>{`
@@ -782,6 +683,29 @@ export default function LoveQuizReader({
             pointer-events: none;
             user-select: none;
           }
+          @media (max-width: 600px) {
+            .love-quiz-card {
+              padding: 20px 16px !important;
+              gap: 16px !important;
+              max-height: calc(100vh - 120px) !important;
+            }
+            .love-quiz-card h2 {
+              font-size: 18px !important;
+            }
+            .love-quiz-card p {
+              font-size: 12.5px !important;
+              padding: 8px 10px !important;
+            }
+            .quiz-choice-btn {
+              padding: 10px 14px !important;
+              font-size: 13px !important;
+            }
+            .clue-box {
+              padding: 8px 12px !important;
+              font-size: 12px !important;
+              margin-top: 6px !important;
+            }
+          }
         `}</style>
 
         {!gameStarted ? (
@@ -862,12 +786,24 @@ export default function LoveQuizReader({
         /* GAMEPLAY INTERFACE */
         <div className="fade-in-game">
           {gameOver ? (
-            /* GAME OVER SCREEN */
-            <div style={{ display: "flex", flexDirection: "column", gap: "24px", padding: "30px 10px", textAlign: "center" }}>
-              <div style={{ fontSize: "64px", animation: "bounce 2s infinite" }}>💔</div>
-              <h2 style={{ fontSize: "24px", color: "var(--accent-rose)", fontWeight: "bold" }}>Game Over</h2>
-              <p style={{ fontSize: "14px", color: "#fff", lineHeight: "1.6", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "12px", padding: "16px", fontStyle: "italic", margin: "0 auto", maxWidth: "85%" }}>
-                "{gameOverMsg || `Don't worry, my love! A true romantic never gives up. Let's try again! 😘`}"
+            /* GAME OVER SCREEN - COMPACT WITH PRIZE DETAILS */
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px", padding: "16px 10px", textAlign: "center" }}>
+              <div style={{ fontSize: "48px", animation: "bounce 2s infinite" }}>❤️</div>
+              <h2 style={{ fontSize: "22px", color: "var(--accent-rose)", fontWeight: "bold", margin: 0 }}>
+                Thank you for playing! ❤️
+              </h2>
+              
+              {/* Grand Prize Info to motivate trying again */}
+              <div style={{ background: "rgba(201, 162, 39, 0.05)", border: "1px dashed rgba(201, 162, 39, 0.2)", borderRadius: "12px", padding: "10px 14px", margin: "0 auto", maxWidth: "85%", textAlign: "center" }}>
+                <span style={{ fontSize: "10px", color: "var(--accent-gold)", textTransform: "uppercase", letterSpacing: "1px", fontWeight: "bold", display: "block", marginBottom: "2px" }}>
+                  🏆 Grand Prize at Stake:
+                </span>
+                <strong style={{ fontSize: "14px", color: "#fff", display: "block", fontFamily: "var(--font-cursive)" }}>{prizeTitle || "A Romantic Surprise"}</strong>
+                <span style={{ fontSize: "11px", color: "var(--text-muted)", display: "block" }}>{prizeDesc || "Unlock a special custom reward."}</span>
+              </div>
+
+              <p style={{ fontSize: "13px", color: "#fff", lineHeight: "1.5", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "12px", padding: "12px", fontStyle: "italic", margin: "0 auto", maxWidth: "85%" }}>
+                "{gameOverMsg || "Congratulations on participating in the Love Quiz! You did an amazing job. Don't worry at all—love isn't about perfect scores, it's about the journey we share. It is completely okay, and you can try again anytime you're ready! 😘"}"
               </p>
               <button 
                 type="button" 
@@ -878,137 +814,184 @@ export default function LoveQuizReader({
                   border: "none",
                   color: "#fff",
                   borderRadius: "12px",
-                  padding: "14px 28px",
-                  fontSize: "14px",
+                  padding: "12px 24px",
+                  fontSize: "13px",
                   fontWeight: "bold",
                   cursor: "pointer",
                   boxShadow: "0 6px 20px rgba(255, 75, 114, 0.3)",
-                  margin: "12px auto 0 auto",
+                  margin: "8px auto 0 auto",
                   transition: "transform 0.1s"
                 }}
                 onMouseDown={(e) => e.currentTarget.style.transform = "scale(0.96)"}
                 onMouseUp={(e) => e.currentTarget.style.transform = "scale(1)"}
               >
-                Mend My Heart & Restart 🔓
+                Try Again! 🔄
               </button>
             </div>
           ) : gameWon ? (
-            /* VICTORY & REWARD CARD SCREEN - COMPACT & NO SCROLL */
-            <div style={{ display: "flex", flexDirection: "column", gap: "14px", padding: "10px 5px", textAlign: "center", overflow: "hidden" }}>
-              <div style={{ fontSize: "48px", lineHeight: 1 }}>🏆</div>
-              <h2 style={{ fontSize: "20px", color: "#2ec4b6", fontWeight: "bold", margin: 0 }}>Love Millionaire Winner!</h2>
-              
-              <p style={{ fontSize: "12px", color: "var(--text-muted)", maxWidth: "85%", margin: "0 auto", lineHeight: "1.4" }}>
-                Congratulations! You've navigated through all relationship milestones perfectly. Here is your romantic grand prize coupon:
-              </p>
-
-              {/* Golden Love Coupon Card */}
-              <div 
-                className="coupon-glow"
-                style={{ 
-                  border: "3px double var(--accent-gold, #C9A227)", 
-                  background: "linear-gradient(135deg, rgba(201, 162, 39, 0.12), rgba(0,0,0,0.85))", 
-                  borderRadius: "16px", 
-                  padding: "16px 14px",
-                  margin: "4px auto",
-                  maxWidth: "360px",
-                  width: "100%",
-                  textAlign: "center",
-                  position: "relative",
-                  overflow: "hidden"
-                }}
-              >
-                <div style={{ position: "absolute", top: "-10px", right: "-10px", fontSize: "56px", opacity: 0.08, pointerEvents: "none" }}>🎟️</div>
-                <div style={{ position: "absolute", bottom: "-10px", left: "-10px", fontSize: "56px", opacity: 0.08, pointerEvents: "none" }}>💖</div>
-                
-                <span style={{ fontSize: "8px", letterSpacing: "2px", color: "var(--accent-gold)", textTransform: "uppercase", fontWeight: "bold", display: "block", marginBottom: "4px" }}>
-                  EverAfter Love Certificate
-                </span>
-                <h3 style={{ fontSize: "15px", fontWeight: "bold", color: "#fff", margin: "2px 0" }}>{prizeTitle || "A Romantic Surprise"}</h3>
-                
-                <div style={{ width: "30px", height: "1px", background: "var(--accent-gold)", margin: "8px auto" }} />
-                
-                <p style={{ fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4", padding: "0 4px", margin: 0 }}>{prizeDesc || "This certificate entitles you to one custom romantic reward."}</p>
-                
-                <div style={{ marginTop: "10px", fontSize: "9px", color: "rgba(255,255,255,0.4)" }}>
-                  Presented by <strong style={{ color: "#fff" }}>{sender}</strong> to <strong style={{ color: "#fff" }}>{recipient}</strong>
+            /* VICTORY & REWARD CARD SCREEN - GLORIOUS EXPANDED PAGE */
+            <div 
+              className="fade-in-game"
+              style={{ 
+                display: "flex", 
+                flexDirection: "row", 
+                gap: "32px", 
+                padding: "20px 10px", 
+                textAlign: "left",
+                alignItems: "center",
+                flexWrap: "wrap",
+                justifyContent: "center"
+              }}
+            >
+              {/* Left Column: Congratulations & Actions - Displayed below the prize using order */}
+              <div style={{ flex: "1 1 280px", display: "flex", flexDirection: "column", gap: "20px", order: 2 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <span style={{ fontSize: "40px" }}>🏆</span>
+                  <div>
+                    <h2 style={{ fontSize: "28px", color: "var(--accent-gold)", fontWeight: "bold", margin: 0, fontFamily: "var(--font-cursive)" }}>
+                      Love Millionaire!
+                    </h2>
+                    <span style={{ fontSize: "11px", color: "#fff", textTransform: "uppercase", letterSpacing: "2.5px", fontWeight: "bold" }}>
+                      Victory Certified 👑
+                    </span>
+                  </div>
                 </div>
 
-                {(prizeRedeemed || tempReplaying) && (
-                  <div style={{ fontSize: "9px", fontWeight: "bold", color: "#2ec4b6", textTransform: "uppercase", marginTop: "10px", letterSpacing: "1px", background: "rgba(46, 196, 182, 0.1)", padding: "4px", borderRadius: "6px" }}>
-                    ✓ REDEEMED & CLAIMED! 🎉
-                  </div>
-                )}
+                <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6", margin: 0 }}>
+                  Congratulations, my love! You answered every question correctly and proved that our bond is worth a million. Your reward certificate is unlocked and ready to claim!
+                </p>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "10px" }}>
+                  {!prizeRedeemed ? (
+                    <button 
+                      type="button" 
+                      onClick={handleRedeem}
+                      style={{
+                        background: "var(--accent-gold)",
+                        backgroundImage: "linear-gradient(135deg, #e2b857 0%, #b38f36 100%)",
+                        border: "none",
+                        color: "#fff",
+                        borderRadius: "12px",
+                        padding: "14px 24px",
+                        fontSize: "14px",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                        boxShadow: "0 6px 20px rgba(201, 162, 39, 0.35)",
+                        transition: "transform 0.1s"
+                      }}
+                      onMouseDown={(e) => e.currentTarget.style.transform = "scale(0.96)"}
+                      onMouseUp={(e) => e.currentTarget.style.transform = "scale(1)"}
+                    >
+                      Redeem Grand Prize 🎟️
+                    </button>
+                  ) : tempReplaying ? (
+                    <button 
+                      type="button" 
+                      onClick={handleExitReplay}
+                      style={{
+                        background: "var(--accent-purple)",
+                        backgroundImage: "linear-gradient(135deg, #9c6cfa, #7c4bf5)",
+                        border: "none",
+                        color: "#fff",
+                        borderRadius: "12px",
+                        padding: "14px 24px",
+                        fontSize: "13px",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                        boxShadow: "0 6px 20px rgba(156, 108, 250, 0.3)",
+                        transition: "transform 0.1s"
+                      }}
+                    >
+                      Back to Saved Prize ➔
+                    </button>
+                  ) : (
+                    <button 
+                      type="button" 
+                      onClick={onComplete}
+                      style={{
+                        background: "var(--accent-purple)",
+                        backgroundImage: "linear-gradient(135deg, #9c6cfa, #7c4bf5)",
+                        border: "none",
+                        color: "#fff",
+                        borderRadius: "12px",
+                        padding: "14px 24px",
+                        fontSize: "13px",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                        boxShadow: "0 6px 20px rgba(156, 108, 250, 0.3)",
+                        transition: "transform 0.1s"
+                      }}
+                      onMouseDown={(e) => e.currentTarget.style.transform = "scale(0.96)"}
+                      onMouseUp={(e) => e.currentTarget.style.transform = "scale(1)"}
+                    >
+                      Continue Journey ➔
+                    </button>
+                  )}
+                  
+                  {!tempReplaying && (
+                    <button 
+                      type="button" 
+                      onClick={handleReplayForFun}
+                      style={{
+                        background: "transparent",
+                        border: "1px solid rgba(255,255,255,0.12)",
+                        color: "var(--text-muted)",
+                        borderRadius: "12px",
+                        padding: "10px 16px",
+                        fontSize: "11px",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                        transition: "all 0.2s"
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = "#fff"}
+                      onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-muted)"}
+                    >
+                      Replay Quiz (For Fun) 🔄
+                    </button>
+                  )}
+                </div>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "4px" }}>
-                {!prizeRedeemed && !tempReplaying ? (
-                  <button 
-                    type="button" 
-                    onClick={handleRedeem}
-                    style={{
-                      background: "var(--accent-gold, #C9A227)",
-                      border: "none",
-                      color: "#160c1e",
-                      borderRadius: "12px",
-                      padding: "12px 24px",
-                      fontSize: "13px",
-                      fontWeight: "bold",
-                      cursor: "pointer",
-                      boxShadow: "0 6px 20px rgba(201, 162, 39, 0.35)",
-                      margin: "0 auto",
-                      transition: "transform 0.1s"
-                    }}
-                    onMouseDown={(e) => e.currentTarget.style.transform = "scale(0.96)"}
-                    onMouseUp={(e) => e.currentTarget.style.transform = "scale(1)"}
-                  >
-                    Redeem Grand Prize 🎟️
-                  </button>
-                ) : tempReplaying ? (
-                  <button 
-                    type="button" 
-                    onClick={handleExitReplay}
-                    style={{
-                      background: "var(--accent-purple)",
-                      backgroundImage: "linear-gradient(135deg, #9c6cfa, #7c4bf5)",
-                      border: "none",
-                      color: "#fff",
-                      borderRadius: "12px",
-                      padding: "12px 24px",
-                      fontSize: "13px",
-                      fontWeight: "bold",
-                      cursor: "pointer",
-                      boxShadow: "0 6px 20px rgba(156, 108, 250, 0.3)",
-                      margin: "0 auto",
-                      transition: "transform 0.1s"
-                    }}
-                  >
-                    Back to Saved Prize ➔
-                  </button>
-                ) : (
-                  <button 
-                    type="button" 
-                    onClick={onComplete}
-                    style={{
-                      background: "var(--accent-purple)",
-                      backgroundImage: "linear-gradient(135deg, #9c6cfa, #7c4bf5)",
-                      border: "none",
-                      color: "#fff",
-                      borderRadius: "12px",
-                      padding: "12px 24px",
-                      fontSize: "13px",
-                      fontWeight: "bold",
-                      cursor: "pointer",
-                      boxShadow: "0 6px 20px rgba(156, 108, 250, 0.3)",
-                      margin: "0 auto",
-                      transition: "transform 0.1s"
-                    }}
-                    onMouseDown={(e) => e.currentTarget.style.transform = "scale(0.96)"}
-                    onMouseUp={(e) => e.currentTarget.style.transform = "scale(1)"}
-                  >
-                    Continue Journey ➔
-                  </button>
-                )}
+              {/* Right Column: Giant Golden Love Coupon Card - Displayed on top using order */}
+              <div style={{ flex: "1 1 280px", maxWidth: "340px", display: "flex", justifyContent: "center", width: "100%", order: 1 }}>
+                <div 
+                  className="coupon-glow"
+                  style={{ 
+                    border: "3px double var(--accent-gold, #C9A227)", 
+                    background: "linear-gradient(135deg, rgba(201, 162, 39, 0.12), rgba(10, 5, 18, 0.95))", 
+                    borderRadius: "20px", 
+                    padding: "24px 20px",
+                    width: "100%",
+                    textAlign: "center",
+                    position: "relative",
+                    overflow: "hidden",
+                    boxShadow: "0 10px 30px rgba(226, 184, 87, 0.2)"
+                  }}
+                >
+                  <div style={{ position: "absolute", top: "-10px", right: "-10px", fontSize: "72px", opacity: 0.05, pointerEvents: "none" }}>🎟️</div>
+                  <div style={{ position: "absolute", bottom: "-10px", left: "-10px", fontSize: "72px", opacity: 0.05, pointerEvents: "none" }}>💖</div>
+                  
+                  <span style={{ fontSize: "10px", letterSpacing: "2.5px", color: "var(--accent-gold)", textTransform: "uppercase", fontWeight: "bold", display: "block", marginBottom: "8px" }}>
+                    EverAfter Love Certificate
+                  </span>
+                  <h3 style={{ fontSize: "18px", fontWeight: "bold", color: "#fff", margin: "4px 0", fontFamily: "var(--font-cursive)" }}>
+                    {prizeTitle || "A Romantic Surprise"}
+                  </h3>
+                  
+                  <div style={{ width: "40px", height: "1px", background: "var(--accent-gold)", margin: "12px auto" }} />
+                  
+                  <p style={{ fontSize: "12px", color: "var(--text-muted)", lineHeight: "1.5", margin: 0 }}>
+                    {prizeDesc || "This certificate entitles you to one custom romantic reward."}
+                  </p>
+                  
+                  <div style={{ marginTop: "16px", fontSize: "10px", color: "rgba(255,255,255,0.4)" }}>
+                    Presented by <strong style={{ color: "#fff" }}>{sender}</strong> to <strong style={{ color: "#fff" }}>{recipient}</strong>
+                  </div>
+
+                  <div style={{ fontSize: "10px", fontWeight: "bold", color: prizeRedeemed ? "#2ec4b6" : "var(--accent-rose)", textTransform: "uppercase", marginTop: "16px", letterSpacing: "1px", background: prizeRedeemed ? "rgba(46, 196, 182, 0.1)" : "rgba(255, 75, 114, 0.1)", padding: "6px", borderRadius: "8px" }}>
+                    {prizeRedeemed ? "✓ REDEEMED & CLAIMED! 🎉" : "✨ UNLOCKED GRAND PRIZE"}
+                  </div>
+                </div>
               </div>
             </div>
           ) : (
@@ -1065,6 +1048,27 @@ export default function LoveQuizReader({
                 </h3>
               </div>
 
+              {/* Clue Text revealed by lifeline - Placed directly below the question text */}
+              {showHintClue && questions[currentIdx]?.hint && (
+                <div 
+                  className="animate-reveal"
+                  style={{ 
+                    background: "rgba(201, 162, 39, 0.08)", 
+                    border: "1.5px solid rgba(201, 162, 39, 0.25)", 
+                    borderRadius: "12px", 
+                    padding: "12px 16px", 
+                    fontSize: "13px", 
+                    color: "var(--accent-gold)", 
+                    fontStyle: "italic", 
+                    lineHeight: "1.4",
+                    textAlign: "center",
+                    marginTop: "8px"
+                  }}
+                >
+                  🔑 Clue from {sender}: "{questions[currentIdx].hint}"
+                </div>
+              )}
+
               {/* Multiple Choices Grid */}
               <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "6px" }}>
                 {visibleOptions.map((opt, oIdx) => {
@@ -1098,25 +1102,29 @@ export default function LoveQuizReader({
                 })}
               </div>
 
-              {/* Clue Text revealed by lifeline */}
-              {showHintClue && questions[currentIdx]?.hint && (
+              {/* Inline incorrect answer warning */}
+              {inlineError && (
                 <div 
                   className="animate-reveal"
-                  style={{ 
-                    background: "rgba(201, 162, 39, 0.08)", 
-                    border: "1.5px solid rgba(201, 162, 39, 0.25)", 
-                    borderRadius: "12px", 
-                    padding: "12px 16px", 
-                    fontSize: "13px", 
-                    color: "var(--accent-gold)", 
-                    fontStyle: "italic", 
-                    lineHeight: "1.4",
-                    textAlign: "center"
+                  style={{
+                    background: "rgba(239, 68, 68, 0.1)",
+                    border: "1.5px solid rgba(239, 68, 68, 0.3)",
+                    borderRadius: "12px",
+                    padding: "12px",
+                    color: "#ff4b72",
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    textAlign: "center",
+                    marginTop: "12px",
+                    boxShadow: "0 4px 12px rgba(239, 68, 68, 0.1)"
                   }}
                 >
-                  🔑 Clue from {sender}: "{questions[currentIdx].hint}"
+                  {inlineError}
                 </div>
               )}
+
+              {/* Clue Text revealed by lifeline */}
+
 
               {/* Lifelines Section */}
               <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "16px", marginTop: "8px" }}>

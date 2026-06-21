@@ -74,6 +74,20 @@ function CreateLetterStudio() {
   const toggleAccordion = (id: string) => {
     setOpenAccordion(prev => prev === id ? null : id);
   };
+  const handleConfirm = (addonId: string) => {
+    // Close the current accordion
+    setOpenAccordion(null);
+
+    // Unconfirm and disable all other step-level add-ons to prevent clutter
+    if (addonId !== "security") { form.setSecurityEnabled(false); form.setSecurityConfirmed(false); }
+    if (addonId !== "intro") { form.setIntroEnabled(false); form.setIntroConfirmed(false); }
+    if (addonId !== "closing") { form.setClosingEnabled(false); form.setClosingConfirmed(false); }
+    if (addonId !== "dateInvite") { form.setDateInviteEnabled(false); form.setDateInviteConfirmed(false); }
+    if (addonId !== "survey") { form.setSurveyEnabled(false); form.setSurveyConfirmed(false); }
+    if (addonId !== "audio") { form.setAudioEnabled(false); form.setAudioConfirmed(false); }
+    if (addonId !== "polaroids") { form.setPolaroidsEnabled(false); form.setPolaroidsConfirmed(false); }
+    if (addonId !== "loveQuiz") { form.setQuizEnabled(false); form.setQuizConfirmed(false); }
+  };
   const [pendingSelection, setPendingSelection] = useState<{
     type: "theme" | "backdrop" | "envelope";
     id: string;
@@ -126,9 +140,9 @@ function CreateLetterStudio() {
 
   const previewBackdropUrl = form.backdrop && form.backdrop !== "none"
     ? BACKDROP_PREVIEWS[form.backdrop]
-    : (form.theme === "celestial" ? "/campfire_letter.png" : "");
+    : "";
 
-  const hasBackdrop = (form.backdrop && form.backdrop !== "none") || form.theme === "celestial";
+  const hasBackdrop = form.backdrop && form.backdrop !== "none";
 
   const getGlassyBg = () => {
     if (!hasBackdrop) return "var(--stationery-bg)";
@@ -136,7 +150,9 @@ function CreateLetterStudio() {
       case "royal": return "rgba(247, 241, 227, 0.55)";
       case "scroll": return "rgba(237, 220, 185, 0.55)";
       case "blush": return "rgba(255, 253, 247, 0.5)";
-      case "lavender": return "rgba(247, 244, 252, 0.5)";
+      case "lavender": return "rgba(94, 11, 28, 0.65)";
+      case "midnight_rose": return "rgba(17, 14, 16, 0.55)";
+      case "obsidian_poppy": return "rgba(28, 28, 31, 0.55)";
       default: return "rgba(9, 14, 36, 0.45)";
     }
   };
@@ -147,8 +163,10 @@ function CreateLetterStudio() {
       case "royal": return "rgba(201, 162, 39, 0.5)";
       case "scroll": return "rgba(92, 56, 31, 0.5)";
       case "blush": return "rgba(183, 110, 121, 0.5)";
-      case "lavender": return "rgba(232, 219, 248, 0.45)";
-      default: return "rgba(226, 184, 87, 0.25)";
+      case "lavender": return "rgba(212, 175, 55, 0.4)";
+      case "midnight_rose": return "rgba(156, 28, 46, 0.45)";
+      case "obsidian_poppy": return "rgba(197, 146, 121, 0.4)";
+      default: return "rgba(220, 221, 225, 0.25)";
     }
   };
 
@@ -158,7 +176,9 @@ function CreateLetterStudio() {
       case "royal": return "rgba(247, 241, 227, 0.35)";
       case "scroll": return "rgba(237, 220, 185, 0.35)";
       case "blush": return "rgba(255, 253, 247, 0.4)";
-      case "lavender": return "rgba(247, 244, 252, 0.4)";
+      case "lavender": return "rgba(94, 11, 28, 0.55)";
+      case "midnight_rose": return "rgba(17, 14, 16, 0.45)";
+      case "obsidian_poppy": return "rgba(28, 28, 31, 0.45)";
       default: return "transparent";
     }
   };
@@ -497,15 +517,15 @@ function CreateLetterStudio() {
                 </AccordionItem>
 
                 <AccordionItem title="Security Lock" desc="Lock your letter with a secret question and answer" icon="🔒" enabled={form.securityEnabled} isOpen={openAccordion === "security"} onToggle={() => toggleAccordion("security")}>
-                  <SecurityGateCreator securityEnabled={form.securityEnabled} setSecurityEnabled={form.setSecurityEnabled} securityType={form.securityType} setSecurityType={form.setSecurityType} securityQuestion={form.securityQuestion} setSecurityQuestion={form.setSecurityQuestion} securityAnswer={form.securityAnswer} setSecurityAnswer={form.setSecurityAnswer} securityChoices={form.securityChoices} setSecurityChoices={form.setSecurityChoices} securityConfirmed={form.securityConfirmed} setSecurityConfirmed={form.setSecurityConfirmed} showAlert={form.showRomanticAlert} />
+                  <SecurityGateCreator securityEnabled={form.securityEnabled} setSecurityEnabled={form.setSecurityEnabled} securityType={form.securityType} setSecurityType={form.setSecurityType} securityQuestion={form.securityQuestion} setSecurityQuestion={form.setSecurityQuestion} securityAnswer={form.securityAnswer} setSecurityAnswer={form.setSecurityAnswer} securityChoices={form.securityChoices} setSecurityChoices={form.setSecurityChoices} securityConfirmed={form.securityConfirmed} setSecurityConfirmed={(val) => { form.setSecurityConfirmed(val); if (val) handleConfirm("security"); }} showAlert={form.showRomanticAlert} />
                 </AccordionItem>
 
                 <AccordionItem title="Opening Intro Text" desc="Animate a typewriter message before the envelope appears" icon="✨" enabled={form.introEnabled} isOpen={openAccordion === "intro"} onToggle={() => toggleAccordion("intro")}>
-                  <IntroCreator introEnabled={form.introEnabled} setIntroEnabled={form.setIntroEnabled} introText={form.introText} setIntroText={form.setIntroText} introAnimation={form.introAnimation} setIntroAnimation={form.setIntroAnimation} introConfirmed={form.introConfirmed} setIntroConfirmed={form.setIntroConfirmed} showAlert={form.showRomanticAlert} />
+                  <IntroCreator introEnabled={form.introEnabled} setIntroEnabled={form.setIntroEnabled} introText={form.introText} setIntroText={form.setIntroText} introAnimation={form.introAnimation} setIntroAnimation={form.setIntroAnimation} introConfirmed={form.introConfirmed} setIntroConfirmed={(val) => { form.setIntroConfirmed(val); if (val) handleConfirm("intro"); }} showAlert={form.showRomanticAlert} />
                 </AccordionItem>
 
                 <AccordionItem title="Closing Statement" desc="Display a final romantic message after the letter is closed" icon="✍️" enabled={form.closingEnabled} isOpen={openAccordion === "closing"} onToggle={() => toggleAccordion("closing")}>
-                  <ClosingCreator closingEnabled={form.closingEnabled} setClosingEnabled={form.setClosingEnabled} closingText={form.closingText} setClosingText={form.setClosingText} closingAnimation={form.closingAnimation} setClosingAnimation={form.setClosingAnimation} closingConfirmed={form.closingConfirmed} setClosingConfirmed={form.setClosingConfirmed} showAlert={form.showRomanticAlert} />
+                  <ClosingCreator closingEnabled={form.closingEnabled} setClosingEnabled={form.setClosingEnabled} closingText={form.closingText} setClosingText={form.setClosingText} closingAnimation={form.closingAnimation} setClosingAnimation={form.setClosingAnimation} closingConfirmed={form.closingConfirmed} setClosingConfirmed={(val) => { form.setClosingConfirmed(val); if (val) handleConfirm("closing"); }} showAlert={form.showRomanticAlert} />
                 </AccordionItem>
 
                 <AccordionItem title="Date Night Invitation" desc="Embed a date night RSVP proposal card inside the sequence" icon="🌹" enabled={form.dateInviteEnabled} isOpen={openAccordion === "dateInvite"} onToggle={() => toggleAccordion("dateInvite")}>
@@ -517,7 +537,7 @@ function CreateLetterStudio() {
                       encodedData={form.getEncodedState()}
                     />
                   ) : (
-                    <DateInviteCreator dateInviteEnabled={form.dateInviteEnabled} setDateInviteEnabled={form.setDateInviteEnabled} dateInviteQuestion={form.dateInviteQuestion} setDateInviteQuestion={form.setDateInviteQuestion} dateInviteDate={form.dateInviteDate} setDateInviteDate={form.setDateInviteDate} dateInviteTime={form.dateInviteTime} setDateInviteTime={form.setDateInviteTime} dateInvitePlace={form.dateInvitePlace} setDateInvitePlace={form.setDateInvitePlace} dateInviteMapLink={form.dateInviteMapLink} setDateInviteMapLink={form.setDateInviteMapLink} dateInviteEmail={form.dateInviteEmail} setDateInviteEmail={form.setDateInviteEmail} dateInviteConfirmed={form.dateInviteConfirmed} setDateInviteConfirmed={form.setDateInviteConfirmed} sender={form.sender} recipient={form.recipient} showAlert={form.showRomanticAlert} />
+                    <DateInviteCreator dateInviteEnabled={form.dateInviteEnabled} setDateInviteEnabled={form.setDateInviteEnabled} dateInviteQuestion={form.dateInviteQuestion} setDateInviteQuestion={form.setDateInviteQuestion} dateInviteDate={form.dateInviteDate} setDateInviteDate={form.setDateInviteDate} dateInviteTime={form.dateInviteTime} setDateInviteTime={form.setDateInviteTime} dateInvitePlace={form.dateInvitePlace} setDateInvitePlace={form.setDateInvitePlace} dateInviteMapLink={form.dateInviteMapLink} setDateInviteMapLink={form.setDateInviteMapLink} dateInviteEmail={form.dateInviteEmail} setDateInviteEmail={form.setDateInviteEmail} dateInviteConfirmed={form.dateInviteConfirmed} setDateInviteConfirmed={(val) => { form.setDateInviteConfirmed(val); if (val) handleConfirm("dateInvite"); }} sender={form.sender} recipient={form.recipient} showAlert={form.showRomanticAlert} />
                   )}
                 </AccordionItem>
 
@@ -530,7 +550,7 @@ function CreateLetterStudio() {
                       encodedData={form.getEncodedState()}
                     />
                   ) : (
-                    <SurveyCreator surveyEnabled={form.surveyEnabled} setSurveyEnabled={form.setSurveyEnabled} surveyQuestion={form.surveyQuestion} setSurveyQuestion={form.setSurveyQuestion} surveyType={form.surveyType} setSurveyType={form.setSurveyType} surveyConfirmed={form.surveyConfirmed} setSurveyConfirmed={form.setSurveyConfirmed} showAlert={form.showRomanticAlert} />
+                    <SurveyCreator surveyEnabled={form.surveyEnabled} setSurveyEnabled={form.setSurveyEnabled} surveyQuestion={form.surveyQuestion} setSurveyQuestion={form.setSurveyQuestion} surveyType={form.surveyType} setSurveyType={form.setSurveyType} surveyConfirmed={form.surveyConfirmed} setSurveyConfirmed={(val) => { form.setSurveyConfirmed(val); if (val) handleConfirm("survey"); }} showAlert={form.showRomanticAlert} />
                   )}
                 </AccordionItem>
 
@@ -557,7 +577,7 @@ function CreateLetterStudio() {
                       quizStrictness={form.quizStrictness}
                       setQuizStrictness={form.setQuizStrictness}
                       quizConfirmed={form.quizConfirmed} 
-                      setQuizConfirmed={form.setQuizConfirmed} 
+                      setQuizConfirmed={(val) => { form.setQuizConfirmed(val); if (val) handleConfirm("loveQuiz"); }} 
                       showAlert={form.showRomanticAlert} 
                     />
                   )}
@@ -572,7 +592,7 @@ function CreateLetterStudio() {
                       encodedData={form.getEncodedState()}
                     />
                   ) : (
-                    <AudioMessageCreator audioEnabled={form.audioEnabled} setAudioEnabled={form.setAudioEnabled} audioUrl={form.audioUrl} setAudioUrl={form.setAudioUrl} audioFile={form.audioFile} setAudioFile={form.setAudioFile} audioCustomMessage={form.audioCustomMessage} setAudioCustomMessage={form.setAudioCustomMessage} audioConfirmed={form.audioConfirmed} setAudioConfirmed={form.setAudioConfirmed} showAlert={form.showRomanticAlert} />
+                    <AudioMessageCreator audioEnabled={form.audioEnabled} setAudioEnabled={form.setAudioEnabled} audioUrl={form.audioUrl} setAudioUrl={form.setAudioUrl} audioFile={form.audioFile} setAudioFile={form.setAudioFile} audioCustomMessage={form.audioCustomMessage} setAudioCustomMessage={form.setAudioCustomMessage} audioConfirmed={form.audioConfirmed} setAudioConfirmed={(val) => { form.setAudioConfirmed(val); if (val) handleConfirm("audio"); }} showAlert={form.showRomanticAlert} />
                   )}
                 </AccordionItem>
 
@@ -591,7 +611,7 @@ function CreateLetterStudio() {
                       polaroids={form.polaroids}
                       setPolaroids={form.setPolaroids}
                       polaroidsConfirmed={form.polaroidsConfirmed}
-                      setPolaroidsConfirmed={form.setPolaroidsConfirmed}
+                      setPolaroidsConfirmed={(val) => { form.setPolaroidsConfirmed(val); if (val) handleConfirm("polaroids"); }}
                       showAlert={form.showRomanticAlert}
                     />
                   )}
@@ -888,32 +908,50 @@ function CreateLetterStudio() {
               {pendingSelection.type === "theme" && (() => {
                 const isLavender = pendingSelection.id === "lavender";
                 const isCelestial = pendingSelection.id === "celestial";
+                const isMidnightRose = pendingSelection.id === "midnight_rose";
+                const isObsidianPoppy = pendingSelection.id === "obsidian_poppy";
                 const isRoyal = pendingSelection.id === "royal";
                 const isScroll = pendingSelection.id === "scroll";
 
                 const cardStyle: React.CSSProperties = {
                   width: "100%",
                   height: "140px",
-                  backgroundColor: isCelestial ? "#070a1c" : "var(--stationery-bg, #F7F1E3)",
+                  backgroundColor: isCelestial ? "#070a1c" : isLavender ? "#150b24" : isMidnightRose ? "#110e10" : isObsidianPoppy ? "#1c1c1f" : "var(--stationery-bg, #F7F1E3)",
                   backgroundImage: isCelestial 
                     ? "radial-gradient(circle at center, #151a3a, #070a1c)" 
                     : isLavender 
-                      ? "linear-gradient(rgba(123, 44, 191, 0.08) 1px, transparent 1px)" 
-                      : "none",
+                      ? "linear-gradient(rgba(199, 125, 255, 0.05) 1px, transparent 1px)" 
+                      : isMidnightRose
+                        ? "radial-gradient(circle at center, #1b0c10, #110e10)"
+                        : isObsidianPoppy
+                          ? "radial-gradient(circle at center, #352520, #1c1c1f)"
+                          : "none",
                   backgroundSize: isLavender ? "100% 16px" : "auto",
                   border: isRoyal 
                     ? "4px double var(--stationery-border, #C9A227)" 
                     : isScroll 
                       ? "2px solid #5c381f" 
-                      : "1.5px solid var(--stationery-border, #C9A227)",
+                      : isMidnightRose
+                        ? "1.5px solid #ff4b72"
+                        : isObsidianPoppy
+                          ? "1.5px solid #c59279"
+                          : "1.5px solid var(--stationery-border, #C9A227)",
                   borderRadius: isScroll ? "4px" : "8px",
                   padding: "16px",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
-                  color: "var(--stationery-text, #3A2618)",
-                  fontFamily: "var(--stationery-font, serif)",
-                  boxShadow: "inset 0 0 15px rgba(0,0,0,0.05)",
+                  color: isCelestial ? "#e2b857" : isLavender ? "#e0aaff" : isMidnightRose ? "#f5e6e8" : isObsidianPoppy ? "#e8c4b0" : "var(--stationery-text, #3A2618)",
+                  fontFamily: isCelestial ? "var(--stationery-font)" : isLavender ? "var(--stationery-font)" : isMidnightRose ? "var(--stationery-font)" : isObsidianPoppy ? "var(--stationery-font)" : "var(--stationery-font, serif)",
+                  boxShadow: isCelestial
+                    ? "0 0 15px rgba(226, 184, 87, 0.15), inset 0 0 10px rgba(226, 184, 87, 0.1)"
+                    : isLavender
+                      ? "0 0 15px rgba(199, 125, 255, 0.15), inset 0 0 10px rgba(123, 44, 191, 0.2)"
+                      : isMidnightRose
+                        ? "0 0 15px rgba(255, 75, 114, 0.12), inset 0 0 10px rgba(156, 28, 46, 0.15)"
+                        : isObsidianPoppy
+                          ? "0 0 15px rgba(197, 146, 121, 0.15), inset 0 0 10px rgba(74, 51, 40, 0.2)"
+                          : "inset 0 0 15px rgba(0,0,0,0.05)",
                   position: "relative",
                   boxSizing: "border-box"
                 };
@@ -926,13 +964,13 @@ function CreateLetterStudio() {
                         <div style={{ position: "absolute", bottom: "-5px", left: "0", right: "0", height: "5px", backgroundColor: "#8b5a2b", borderRadius: "1px" }} />
                       </>
                     )}
-                    <div style={{ fontSize: "11px", fontWeight: "bold", opacity: 0.8 }}>Dearest {form.recipient || "Beloved"},</div>
+                    <div style={{ fontSize: "11px", fontWeight: "bold", opacity: 0.8, fontFamily: "var(--stationery-greeting-font, var(--stationery-font, serif))" }}>Dearest {form.recipient || "Beloved"},</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "6px", margin: "6px 0" }}>
                       <div style={{ height: "1px", background: "var(--stationery-text, #3A2618)", opacity: 0.15, width: "90%" }} />
                       <div style={{ height: "1px", background: "var(--stationery-text, #3A2618)", opacity: 0.15, width: "80%" }} />
                       <div style={{ height: "1px", background: "var(--stationery-text, #3A2618)", opacity: 0.15, width: "85%" }} />
                     </div>
-                    <div style={{ fontSize: "11px", textAlign: "right", fontStyle: "italic", opacity: 0.8, color: "var(--stationery-accent, #7B1E1E)" }}>
+                    <div style={{ fontSize: "11px", textAlign: "right", opacity: 0.8, color: "var(--stationery-accent, #7B1E1E)", fontFamily: "var(--stationery-sig-font, var(--stationery-font, serif))" }}>
                       With love, {form.sender || "Sender"} ❤️
                     </div>
                   </div>

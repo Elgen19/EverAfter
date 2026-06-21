@@ -8,33 +8,70 @@ interface SurveyFeedbackProps {
   survey: {
     question: string;
     type: "emoji" | "text" | "both";
+    responseEmoji?: string;
+    responseFeedback?: string;
+    responseTimestamp?: number;
   };
   sender: string;
   recipient: string;
   letterKey: string;
   letterId?: string;
+  preview?: boolean;
   onComplete?: () => void;
 }
 
-export default function SurveyFeedback({ survey, sender, recipient, letterKey, letterId, onComplete }: SurveyFeedbackProps) {
+export default function SurveyFeedback({ survey, sender, recipient, letterKey, letterId, preview = false, onComplete }: SurveyFeedbackProps) {
   const [actualSurveyType, setActualSurveyType] = useState<"emoji" | "text" | "both">(survey.type);
-  const [surveyEmoji, setSurveyEmoji] = useState("");
-  const [surveyText, setSurveyText] = useState("");
-  const [surveySubmitted, setSurveySubmitted] = useState(false);
+  const [surveyEmoji, setSurveyEmoji] = useState(survey.responseEmoji || "");
+  const [surveyText, setSurveyText] = useState(survey.responseFeedback || "");
+  const [surveySubmitted, setSurveySubmitted] = useState(!!survey.responseTimestamp);
+
+  const getSurveyKey = () => {
+    if (letterId) return letterId;
+    if (letterKey && letterKey !== "preview") {
+      let hash = 0;
+      for (let i = 0; i < letterKey.length; i++) {
+        hash = (hash << 5) - hash + letterKey.charCodeAt(i);
+        hash |= 0;
+      }
+      return Math.abs(hash).toString(36);
+    }
+    return "preview";
+  };
 
   React.useEffect(() => {
-    const cachedSurveyStr = localStorage.getItem(`survey_response_${letterKey.slice(0, 10)}`);
+    if (preview) {
+      setSurveyEmoji("");
+      setSurveyText("");
+      setSurveySubmitted(false);
+      return;
+    }
+
+    if (survey.responseTimestamp) {
+      setSurveyEmoji(survey.responseEmoji || "");
+      setSurveyText(survey.responseFeedback || "");
+      setSurveySubmitted(true);
+      return;
+    }
+    const keyPart = getSurveyKey();
+    const cachedSurveyStr = localStorage.getItem(`survey_response_${keyPart}`);
     if (cachedSurveyStr) {
       try {
         const cached = JSON.parse(cachedSurveyStr);
         setSurveyEmoji(cached.emoji || "");
         setSurveyText(cached.feedback || "");
         setSurveySubmitted(true);
+        return;
       } catch (e) {
         console.error("Failed to parse cached survey response:", e);
       }
     }
-  }, [letterKey]);
+
+    // Reset state if not completed and not cached
+    setSurveyEmoji("");
+    setSurveyText("");
+    setSurveySubmitted(false);
+  }, [letterKey, letterId, survey.responseEmoji, survey.responseFeedback, survey.responseTimestamp]);
 
   const submitSurvey = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,9 +86,12 @@ export default function SurveyFeedback({ survey, sender, recipient, letterKey, l
         feedback: surveyText,
         timestamp
       };
-      localStorage.setItem(`survey_response_${letterKey.slice(0, 10)}`, JSON.stringify(surveyResult));
+      const keyPart = getSurveyKey();
+      if (!preview) {
+        localStorage.setItem(`survey_response_${keyPart}`, JSON.stringify(surveyResult));
+      }
 
-      if (letterId && db) {
+      if (letterId && db && !preview) {
         const { doc, updateDoc } = await import("firebase/firestore");
         const docRef = doc(db, "letters", letterId);
         await updateDoc(docRef, {
@@ -83,14 +123,14 @@ export default function SurveyFeedback({ survey, sender, recipient, letterKey, l
       className="animate-reveal hide-scrollbar"
       style={{
         width: "100%",
-        maxWidth: "500px",
-        padding: "40px 30px",
+        maxWidth: "460px",
+        padding: "24px 20px",
         textAlign: "center",
         display: "flex",
         flexDirection: "column",
-        gap: "24px",
+        gap: "16px",
         animation: "float-up-intro 0.6s ease",
-        maxHeight: "calc(100vh - 160px)",
+        maxHeight: "90vh",
         overflowY: "auto",
         background: "rgba(25, 12, 22, 0.95)",
         border: "1.5px solid var(--accent-gold)",
@@ -99,10 +139,10 @@ export default function SurveyFeedback({ survey, sender, recipient, letterKey, l
       }}
     >
       {surveySubmitted ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px", padding: "20px 0" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px", padding: "10px 0" }}>
           <div 
             style={{ 
-              fontSize: "56px", 
+              fontSize: "48px", 
               animation: "heartbeat-survey 1.5s infinite ease-in-out" 
             }}
           >
@@ -110,7 +150,7 @@ export default function SurveyFeedback({ survey, sender, recipient, letterKey, l
           </div>
           <h2 
             style={{ 
-              fontSize: "32px", 
+              fontSize: "28px", 
               fontWeight: "normal", 
               fontFamily: "'Allura', 'Sacramento', 'Great Vibes', 'Dancing Script', cursive",
               color: "var(--accent-rose)"
@@ -118,10 +158,10 @@ export default function SurveyFeedback({ survey, sender, recipient, letterKey, l
           >
             Response Sealed!
           </h2>
-          <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6" }}>
+          <p style={{ fontSize: "13.5px", color: "var(--text-muted)", lineHeight: "1.5" }}>
             Your feelings have been captured and saved in my heart. Thank you for sharing this moment.
           </p>
-          <div style={{ marginTop: "12px" }}>
+          <div style={{ marginTop: "8px" }}>
             <button
               onClick={() => {
                 if (onComplete) {
@@ -157,15 +197,15 @@ export default function SurveyFeedback({ survey, sender, recipient, letterKey, l
           </div>
         </div>
       ) : (
-        <form onSubmit={submitSurvey} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-            <div style={{ fontSize: "56px", marginBottom: "4px", animation: "heartbeat-survey 1.5s infinite ease-in-out" }}>📊</div>
+        <form onSubmit={submitSurvey} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
+            <div style={{ fontSize: "40px", animation: "heartbeat-survey 1.5s infinite ease-in-out" }}>📊</div>
             <div 
               style={{ 
-                fontSize: "34px", 
+                fontSize: "26px", 
                 fontWeight: "normal",
                 color: "#fff",
-                lineHeight: "1.4",
+                lineHeight: "1.3",
                 textAlign: "center",
                 fontFamily: "'Allura', 'Sacramento', 'Great Vibes', 'Dancing Script', cursive"
               }}
@@ -176,7 +216,7 @@ export default function SurveyFeedback({ survey, sender, recipient, letterKey, l
 
           {/* Tab Selector Switches */}
           {survey.type === "both" && (
-            <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginBottom: "8px" }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginBottom: "0px" }}>
               {[
                 { id: "emoji", name: "Emoji" },
                 { id: "text", name: "Text" },
@@ -206,7 +246,7 @@ export default function SurveyFeedback({ survey, sender, recipient, letterKey, l
 
           {/* Emoji selector */}
           {(actualSurveyType === "emoji" || actualSurveyType === "both") && (
-            <div className="survey-emoji-grid">
+            <div className="survey-emoji-grid" style={{ margin: "8px 0" }}>
               {[
                 { char: "🥹", label: "Touched" },
                 { char: "🥰", label: "Loved" },
@@ -220,6 +260,7 @@ export default function SurveyFeedback({ survey, sender, recipient, letterKey, l
                   onClick={() => setSurveyEmoji(emoji.char)}
                   className={`survey-emoji-box ${surveyEmoji === emoji.char ? "selected" : ""}`}
                   title={emoji.label}
+                  style={{ width: "52px", height: "52px", fontSize: "26px" }}
                 >
                   {emoji.char}
                 </button>
@@ -229,22 +270,22 @@ export default function SurveyFeedback({ survey, sender, recipient, letterKey, l
 
           {/* Text feedback box */}
           {(actualSurveyType === "text" || actualSurveyType === "both") && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px", textAlign: "left", animation: "float-up-intro 0.3s ease" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px", textAlign: "left", animation: "float-up-intro 0.3s ease" }}>
               <label style={{ fontSize: "11px", color: "var(--text-muted)" }}>Your Feelings / Message</label>
               <textarea
                 value={surveyText}
                 onChange={(e) => setSurveyText(e.target.value)}
                 placeholder="Write how you feel or a response message..."
-                rows={4}
+                rows={3}
                 required={actualSurveyType === "text"}
                 style={{
                   backgroundColor: "rgba(0,0,0,0.2)",
                   border: "1px solid var(--border-card)",
                   borderRadius: "8px",
-                  padding: "12px",
+                  padding: "10px 12px",
                   color: "#fff",
                   fontSize: "13px",
-                  lineHeight: "1.5",
+                  lineHeight: "1.4",
                   outline: "none",
                   resize: "none"
                 }}
@@ -258,13 +299,13 @@ export default function SurveyFeedback({ survey, sender, recipient, letterKey, l
             disabled={isSubmitDisabled}
             style={{
               width: "100%",
-              padding: "14px",
+              padding: "12px",
               borderRadius: "8px",
               backgroundColor: "var(--accent-rose)",
               backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)",
               color: "#fff",
               fontWeight: 600,
-              fontSize: "14px",
+              fontSize: "13px",
               border: "none",
               cursor: "pointer",
               opacity: isSubmitDisabled ? 0.5 : 1,

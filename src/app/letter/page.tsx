@@ -34,17 +34,17 @@ const BACKDROP_IMAGES: Record<string, string> = {
 const getBackdropOverlay = (theme: string) => {
   switch (theme) {
     case "celestial":
-      return "rgba(9, 14, 36, 0.45)";
+      return "rgba(9, 14, 36, 0.78)";
     case "royal":
-      return "rgba(247, 241, 227, 0.35)";
+      return "rgba(20, 15, 12, 0.78)";
     case "scroll":
-      return "rgba(237, 220, 185, 0.35)";
+      return "rgba(18, 14, 10, 0.78)";
     case "blush":
-      return "rgba(255, 253, 247, 0.4)";
+      return "rgba(20, 12, 14, 0.78)";
     case "lavender":
-      return "rgba(247, 244, 252, 0.4)";
+      return "rgba(26, 5, 10, 0.85)";
     default:
-      return "transparent";
+      return "rgba(10, 7, 18, 0.78)";
   }
 };
 
@@ -551,7 +551,7 @@ function LetterReader() {
       // Determine backdrop image path
       const backdropUrl = data.backdrop && data.backdrop !== "none"
         ? BACKDROP_IMAGES[data.backdrop]
-        : (data.theme === "celestial" ? "/campfire_letter.png" : "");
+        : "";
 
       return (
         <div 
@@ -601,10 +601,10 @@ function LetterReader() {
           )}
       <FloatingHearts />
       
-      {/* Background music is normally off, requiring recipient click to play */}
+      {/* Background music autoplay enabled for preview/view */}
       {data.music && (
         <AudioPlayer 
-          autoplay={false} 
+          autoplay={true} 
           musicType={data.musicType} 
           musicUrl={data.musicUrl} 
         />
@@ -867,6 +867,7 @@ function LetterReader() {
             letterId={id}
             senderEmail={dbData?.senderEmail || ""}
             recipientEmail={dbData?.email || data?.email || ""}
+            preview={preview}
             onComplete={handleNextStep}
           />
         )}
@@ -903,6 +904,7 @@ function LetterReader() {
             recipient={data.recipient}
             letterKey={d}
             letterId={id}
+            preview={preview}
             onComplete={handleNextStep}
           />
         )}
@@ -939,6 +941,14 @@ function LetterReader() {
       {triggerFlash && <div className="blinding-flash-active" />}
     </div>
   );
+}
+
+function LetterReaderWrapper() {
+  const searchParams = useSearchParams();
+  const d = searchParams.get("d") || "";
+  const id = searchParams.get("id") || "";
+  const keyPart = `${id}_${d ? d.slice(0, 12) : ""}`;
+  return <LetterReader key={keyPart} />;
 }
 
 export default function LetterPage() {
@@ -989,7 +999,7 @@ export default function LetterPage() {
           </div>
         </div>
       }>
-        <LetterReader />
+        <LetterReaderWrapper />
       </Suspense>
     </div>
   );

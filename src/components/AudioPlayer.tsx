@@ -12,9 +12,10 @@ export default function AudioPlayer({ autoplay = false, musicType = "synth", mus
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isPlayingRef = useRef(false);
+  const isTryingToPlayRef = useRef(false);
 
   const startAudio = () => {
-    if (isPlayingRef.current) return;
+    if (isPlayingRef.current || isTryingToPlayRef.current) return;
 
     // Use custom uploaded soundtrack if available, otherwise fall back to the system default soundtrack
     const finalUrl = (musicType === "url" && musicUrl) ? musicUrl : "/cant_help_falling_in_love.mp3";
@@ -25,11 +26,14 @@ export default function AudioPlayer({ autoplay = false, musicType = "synth", mus
       audioRef.current.volume = 0.35;
     }
 
+    isTryingToPlayRef.current = true;
     audioRef.current.play().then(() => {
       isPlayingRef.current = true;
       setIsPlaying(true);
+      isTryingToPlayRef.current = false;
     }).catch(err => {
       console.error("Audio play failed:", err);
+      isTryingToPlayRef.current = false;
     });
   };
 
@@ -49,9 +53,13 @@ export default function AudioPlayer({ autoplay = false, musicType = "synth", mus
     }
   };
 
-  // Try to play if autoplay is true and clicked anywhere
+  // Try to play if autoplay is true
   useEffect(() => {
     if (autoplay) {
+      // Try playing immediately on mount
+      startAudio();
+
+      // Fallback: play on first user interaction if blocked
       const handleUserInteraction = () => {
         startAudio();
         window.removeEventListener("click", handleUserInteraction);
