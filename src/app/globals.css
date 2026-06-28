@@ -2042,12 +2042,16 @@ button:hover .quiz-option-badge {
     padding-top: 20px !important;
   }
   .stationery-sheet-portal .stationery-sheet {
-    height: calc(100dvh - 88px) !important; /* Explicit height matching portal paddings (72 + 16 = 88) */
+    width: calc(100% - 32px) !important;
+    height: calc(100dvh - 140px) !important; /* Decreased height to prevent bottom clipping */
     max-height: none !important;
-    margin: 0 !important;
+    margin: 0 auto !important; /* Center horizontally */
   }
   .stationery-sheet-portal.no-timeline .stationery-sheet {
-    height: calc(100dvh - 36px) !important;
+    width: calc(100% - 32px) !important;
+    height: calc(100dvh - 80px) !important; /* Decreased height to prevent bottom clipping */
+    max-height: none !important;
+    margin: 0 auto !important; /* Center horizontally */
   }
   .studio-preview-card {
     height: 480px !important; /* Scale down preview card height on mobile */
