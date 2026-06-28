@@ -987,101 +987,7 @@ export default function Envelope({
                 </div>
               )}
 
-              {/* Voice Narration Audio Player Card */}
-              {narration?.enabled && narration.audioUrl && (
-                <div 
-                  style={{
-                    background: "rgba(255, 255, 255, 0.05)",
-                    border: "1px solid rgba(255, 255, 255, 0.08)",
-                    borderRadius: "12px",
-                    padding: "12px 18px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "14px",
-                    boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
-                    margin: "4px 0 16px 0",
-                    animation: "fade-in-btn 0.5s ease-out forwards",
-                    fontFamily: "sans-serif"
-                  }}
-                >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!narrationAudioRef.current) return;
-                      if (narrationPlaying) {
-                        narrationAudioRef.current.pause();
-                        setNarrationPlaying(false);
-                      } else {
-                        narrationAudioRef.current.play().then(() => {
-                          setNarrationPlaying(true);
-                        });
-                      }
-                    }}
-                    style={{
-                      width: "36px",
-                      height: "36px",
-                      borderRadius: "50%",
-                      backgroundColor: theme === "blush" ? "#B76E79" : "var(--accent-rose)",
-                      color: "#fff",
-                      border: "none",
-                      cursor: "pointer",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0
-                    }}
-                  >
-                    {narrationPlaying ? (
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                        <rect x="6" y="4" width="4" height="16" />
-                        <rect x="14" y="4" width="4" height="16" />
-                      </svg>
-                    ) : (
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: "2px" }}>
-                        <polygon points="5 3 19 12 5 21" />
-                      </svg>
-                    )}
-                  </button>
-
-                  <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "var(--stationery-text)", fontWeight: 600 }}>
-                      <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        🎙️ Play Voice Narration
-                      </span>
-                      {narrationPlaying && (
-                        <div style={{ display: "flex", gap: "3px", alignItems: "center", height: "12px" }}>
-                          <style>{`
-                            @keyframes bounce-bar-audio {
-                              0% { transform: scaleY(0.3); }
-                              100% { transform: scaleY(1.2); }
-                            }
-                          `}</style>
-                          <div style={{ width: "2px", height: "10px", background: theme === "blush" ? "#B76E79" : "var(--accent-rose)", transformOrigin: "bottom", animation: "bounce-bar-audio 0.6s infinite alternate 0.1s" }} />
-                          <div style={{ width: "2px", height: "10px", background: theme === "blush" ? "#B76E79" : "var(--accent-rose)", transformOrigin: "bottom", animation: "bounce-bar-audio 0.6s infinite alternate 0.3s" }} />
-                          <div style={{ width: "2px", height: "10px", background: theme === "blush" ? "#B76E79" : "var(--accent-rose)", transformOrigin: "bottom", animation: "bounce-bar-audio 0.6s infinite alternate 0.5s" }} />
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div style={{ height: "4px", backgroundColor: "rgba(0,0,0,0.1)", borderRadius: "2px", overflow: "hidden" }}>
-                      <div style={{ height: "100%", backgroundColor: theme === "blush" ? "#B76E79" : "var(--accent-rose)", width: `${narrationDuration ? (narrationTime / narrationDuration) * 100 : 0}%` }} />
-                    </div>
-                  </div>
-
-                  <audio
-                    ref={narrationAudioRef}
-                    src={narration.audioUrl}
-                    onTimeUpdate={handleTimeUpdate}
-                    onLoadedMetadata={(e) => setNarrationDuration(e.currentTarget.duration)}
-                    onEnded={() => {
-                      setNarrationPlaying(false);
-                      setNarrationTime(0);
-                      setActiveSentenceIndex(-1);
-                    }}
-                    style={{ display: "none" }}
-                  />
-                </div>
-              )}
+              {/* Removed top banner to make room for bottom right floater */}
 
               <div
                 className="letter-body"
@@ -1263,6 +1169,79 @@ export default function Envelope({
                       Close & Exit 💌
                     </button>
                   </div>
+                )}
+                {/* Floating Voice Narration Play/Pause FAB */}
+                {narration?.enabled && narration.audioUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!narrationAudioRef.current) return;
+                      if (narrationPlaying) {
+                        narrationAudioRef.current.pause();
+                        setNarrationPlaying(false);
+                      } else {
+                        narrationAudioRef.current.play().then(() => {
+                          setNarrationPlaying(true);
+                        });
+                      }
+                    }}
+                    style={{
+                      position: "absolute",
+                      bottom: "24px",
+                      right: "24px",
+                      width: "52px",
+                      height: "52px",
+                      borderRadius: "50%",
+                      backgroundColor: theme === "blush" ? "#B76E79" : "var(--accent-rose)",
+                      backgroundImage: theme === "blush" ? "none" : "linear-gradient(135deg, #ff4b72, #ff758f)",
+                      border: "2px solid rgba(255, 255, 255, 0.4)",
+                      boxShadow: narrationPlaying 
+                        ? "0 0 20px var(--accent-rose), 0 6px 20px rgba(255, 75, 114, 0.4)" 
+                        : "0 6px 20px rgba(0, 0, 0, 0.3)",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      zIndex: 200,
+                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                      transform: narrationPlaying ? "scale(1.08)" : "scale(1)",
+                    }}
+                    title={narrationPlaying ? "Pause Narration" : "Play Narration"}
+                  >
+                    {narrationPlaying ? (
+                      <div style={{ display: "flex", gap: "3px", alignItems: "center", height: "18px" }}>
+                        <style>{`
+                          @keyframes bounce-bar-audio-float {
+                            0% { transform: scaleY(0.3); }
+                            100% { transform: scaleY(1.3); }
+                          }
+                        `}</style>
+                        <div style={{ width: "3.5px", height: "14px", background: "#fff", transformOrigin: "bottom", animation: "bounce-bar-audio-float 0.5s infinite alternate 0.1s" }} />
+                        <div style={{ width: "3.5px", height: "14px", background: "#fff", transformOrigin: "bottom", animation: "bounce-bar-audio-float 0.5s infinite alternate 0.3s" }} />
+                        <div style={{ width: "3.5px", height: "14px", background: "#fff", transformOrigin: "bottom", animation: "bounce-bar-audio-float 0.5s infinite alternate 0.5s" }} />
+                      </div>
+                    ) : (
+                      // Microphone SVG icon
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#fff" }}>
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                        <path d="M19 10v1a7 7 0 0 1-14 0v-1" />
+                        <line x1="12" x2="12" y1="19" y2="22" />
+                      </svg>
+                    )}
+
+                    <audio
+                      ref={narrationAudioRef}
+                      src={narration.audioUrl}
+                      onTimeUpdate={handleTimeUpdate}
+                      onLoadedMetadata={(e) => setNarrationDuration(e.currentTarget.duration)}
+                      onEnded={() => {
+                        setNarrationPlaying(false);
+                        setNarrationTime(0);
+                        setActiveSentenceIndex(-1);
+                      }}
+                      style={{ display: "none" }}
+                    />
+                  </button>
                 )}
               </div>
             </div>
