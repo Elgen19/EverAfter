@@ -37,7 +37,7 @@ const dancingScript = Dancing_Script({
 
 export const metadata: Metadata = {
   title: "EverAfter | Create and Send Interactive Digital Love Letters",
-  description: "Express your feelings with beautiful custom stationery, romantic music, floating hearts, and an interactive 3D wax-sealed envelope that opens physically in your partner's browser.",
+  description: "Express your feelings with custom stationery, romantic music, and an interactive 3D wax-sealed envelope. Create digital keepsakes your partner will treasure.",
   keywords: "love letter, valentine, anniversary, anniversary gift, digital letter, animated envelope, wax seal, everafter, digital stationery, romantic card",
   authors: [{ name: "EverAfter Team" }],
   metadataBase: new URL("https://everafterletters.xyz"),
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "EverAfter | Create and Send Interactive Digital Love Letters",
-    description: "Express your feelings with beautiful custom stationery, romantic music, floating hearts, and an interactive 3D wax-sealed envelope that opens physically in your partner's browser.",
+    description: "Express your feelings with custom stationery, romantic music, and an interactive 3D wax-sealed envelope. Create digital keepsakes your partner will treasure.",
     type: "website",
     url: "https://everafterletters.xyz",
     siteName: "EverAfter",
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "EverAfter | Create and Send Interactive Digital Love Letters",
-    description: "Express your feelings with beautiful custom stationery, romantic music, floating hearts, and an interactive 3D wax-sealed envelope that opens physically in your partner's browser.",
+    description: "Express your feelings with custom stationery, romantic music, and an interactive 3D wax-sealed envelope. Create digital keepsakes your partner will treasure.",
     images: ["/og-image.png"],
   },
   verification: {
