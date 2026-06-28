@@ -235,6 +235,16 @@ export function useLetterForm() {
   const [polaroidsCollageBgZoom, setPolaroidsCollageBgZoom] = useState<number>(100);
   const [polaroidsTitle, setPolaroidsTitle] = useState("Captured Memories");
   const [polaroidsShowHearts, setPolaroidsShowHearts] = useState(true);
+  const [mailboxThemeEnabled, setMailboxThemeEnabled] = useState(false);
+  const [mailboxCustomBgUrl, setMailboxCustomBgUrl] = useState("");
+  const [mailboxCustomBgFile, setMailboxCustomBgFile] = useState<File | null>(null);
+  const [mailboxCustomBgFileName, setMailboxCustomBgFileName] = useState("");
+  const [mailboxMusicUrl, setMailboxMusicUrl] = useState("");
+  const [mailboxMusicFile, setMailboxMusicFile] = useState<File | null>(null);
+  const [mailboxMusicFileName, setMailboxMusicFileName] = useState("");
+  const [mailboxMusicAutoplay, setMailboxMusicAutoplay] = useState(false);
+  const [mailboxStatement, setMailboxStatement] = useState("");
+  const [mailboxThemeConfirmed, setMailboxThemeConfirmed] = useState(false);
 
   const [quizEnabled, setQuizEnabled] = useState(false);
   const [quizPrizeTitle, setQuizPrizeTitle] = useState("A Sweet Reward");
@@ -401,6 +411,14 @@ export function useLetterForm() {
               }
               setPolaroids(loadedPolaroids);
               setPolaroidsConfirmed(true);
+            }
+            if (data.mailboxTheme) {
+              setMailboxThemeEnabled(data.mailboxTheme.enabled || false);
+              setMailboxCustomBgUrl(data.mailboxTheme.customBgUrl || "");
+              setMailboxMusicUrl(data.mailboxTheme.musicUrl || "");
+              setMailboxMusicAutoplay(data.mailboxTheme.musicAutoplay || false);
+              setMailboxStatement(data.mailboxTheme.statement || "");
+              setMailboxThemeConfirmed(true);
             }
             if (data.stepOrder) {
               const loadedOrder = [...data.stepOrder];
@@ -583,6 +601,14 @@ export function useLetterForm() {
           }
           setPolaroids(loadedPolaroids);
           setPolaroidsConfirmed(true);
+        }
+        if (decoded.mailboxTheme) {
+          setMailboxThemeEnabled(decoded.mailboxTheme.enabled || false);
+          setMailboxCustomBgUrl(decoded.mailboxTheme.customBgUrl || "");
+          setMailboxMusicUrl(decoded.mailboxTheme.musicUrl || "");
+          setMailboxMusicAutoplay(decoded.mailboxTheme.musicAutoplay || false);
+          setMailboxStatement(decoded.mailboxTheme.statement || "");
+          setMailboxThemeConfirmed(true);
         }
         if (decoded.stepOrder) {
           setStepOrder(decoded.stepOrder);
@@ -1050,6 +1076,13 @@ export function useLetterForm() {
           caption: p.caption.trim() || null
         }))
       } : undefined,
+      mailboxTheme: mailboxThemeEnabled ? {
+        enabled: true,
+        customBgUrl: mailboxCustomBgUrl.trim() || undefined,
+        musicUrl: mailboxMusicUrl.trim() || undefined,
+        musicAutoplay: mailboxMusicAutoplay,
+        statement: mailboxStatement.trim() || undefined,
+      } : undefined,
       stepOrder
     };
 
@@ -1062,6 +1095,13 @@ export function useLetterForm() {
         ...item,
         imageUrl: item.imageUrl?.startsWith("blob:") ? undefined : item.imageUrl
       }));
+    }
+    if (letterDataForEncoding.mailboxTheme) {
+      letterDataForEncoding.mailboxTheme = {
+        ...letterDataForEncoding.mailboxTheme,
+        customBgUrl: letterDataForEncoding.mailboxTheme.customBgUrl?.startsWith("blob:") ? undefined : letterDataForEncoding.mailboxTheme.customBgUrl,
+        musicUrl: letterDataForEncoding.mailboxTheme.musicUrl?.startsWith("blob:") ? undefined : letterDataForEncoding.mailboxTheme.musicUrl
+      };
     }
     if (musicFile) {
       letterDataForEncoding.musicUrl = undefined;
@@ -1167,6 +1207,21 @@ export function useLetterForm() {
               }
               if (hasNewUploads) {
                 await updateDoc(docRef, { "polaroids.items": updatedItems });
+              }
+            }
+            if (mailboxThemeEnabled) {
+              const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
+              if (mailboxCustomBgFile) {
+                const storageRef = ref(storage, `letters/${letterId}/mailbox_custom_bg`);
+                const snapshot = await uploadBytes(storageRef, mailboxCustomBgFile);
+                const finalBgUrl = await getDownloadURL(snapshot.ref);
+                await updateDoc(docRef, { "mailboxTheme.customBgUrl": finalBgUrl });
+              }
+              if (mailboxMusicFile) {
+                const storageRef = ref(storage, `letters/${letterId}/mailbox_music`);
+                const snapshot = await uploadBytes(storageRef, mailboxMusicFile);
+                const finalPolMusicUrl = await getDownloadURL(snapshot.ref);
+                await updateDoc(docRef, { "mailboxTheme.musicUrl": finalPolMusicUrl });
               }
             }
             finalLink = `${origin}/letter?d=${encoded}&id=${letterId}`;
@@ -1296,6 +1351,16 @@ export function useLetterForm() {
     polaroidsCollageBgZoom, setPolaroidsCollageBgZoom,
     polaroidsTitle, setPolaroidsTitle,
     polaroidsShowHearts, setPolaroidsShowHearts,
+    mailboxThemeEnabled, setMailboxThemeEnabled,
+    mailboxCustomBgUrl, setMailboxCustomBgUrl,
+    mailboxCustomBgFile, setMailboxCustomBgFile,
+    mailboxCustomBgFileName, setMailboxCustomBgFileName,
+    mailboxMusicUrl, setMailboxMusicUrl,
+    mailboxMusicFile, setMailboxMusicFile,
+    mailboxMusicFileName, setMailboxMusicFileName,
+    mailboxMusicAutoplay, setMailboxMusicAutoplay,
+    mailboxStatement, setMailboxStatement,
+    mailboxThemeConfirmed, setMailboxThemeConfirmed,
     // Step order
     stepOrder, activeSteps, getStepLabel,
     // Share modal

@@ -15,7 +15,6 @@ export interface LetterData {
   music: boolean;
   timestamp: number;
 
-  // New optional customizations
   polaroids?: {
     enabled: boolean;
     items: PolaroidItem[];
@@ -25,6 +24,13 @@ export interface LetterData {
     collageBgZoom?: number;
     title?: string;
     showHearts?: boolean;
+  };
+  mailboxTheme?: {
+    enabled: boolean;
+    customBgUrl?: string;
+    musicUrl?: string;
+    musicAutoplay?: boolean;
+    statement?: string;
   };
   email?: string;
   backdrop?: string;
