@@ -1456,14 +1456,16 @@ function MailboxContent() {
                 zIndex: 10
               }}
             >
-              <div style={{ fontSize: "48px" }}>🕊️</div>
-              <div style={{ fontSize: "16px", fontWeight: 600, color: "#fff" }}>
-                {activeTab === "sent" ? "No replies written yet" : "No letters found"}
+              <div style={{ fontSize: "48px", filter: "drop-shadow(0 2px 10px rgba(255, 75, 114, 0.35))" }}>
+                {activeTab === "sent" ? "✍️" : "💌"}
               </div>
-              <div style={{ fontSize: "12px", maxWidth: "320px", lineHeight: "1.4" }}>
+              <div style={{ fontSize: "18px", fontWeight: 600, color: "#fff", fontFamily: "var(--font-cursive)" }}>
+                {activeTab === "sent" ? "Echoes of an Unspoken Love" : "A Quiet Sanctuary for Your Story"}
+              </div>
+              <div style={{ fontSize: "12px", maxWidth: "340px", lineHeight: "1.5", color: "var(--text-muted)", fontStyle: "italic" }}>
                 {activeTab === "sent" 
-                  ? "When you read a letter, click 'Write Back' to seal and send a response!"
-                  : "This chest is waiting to be filled with memories."}
+                  ? "Your words hold the power to light up their world. When you open one of their letters, touch the wax seal and write back to send your own heart's echo back to them."
+                  : "This chest is waiting to be filled with the whispers of your hearts. Soon, letters of warmth, love, and shared moments will find their home here."}
               </div>
             </div>
           )
