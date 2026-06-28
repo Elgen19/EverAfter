@@ -1012,7 +1012,7 @@ export default function Envelope({
                         style={{
                           transition: "all 0.4s ease",
                           color: isActive ? (theme === "blush" ? "#B76E79" : "var(--accent-gold)") : "var(--stationery-text)",
-                          opacity: isActive ? 1 : 0.45,
+                          opacity: isActive ? 1 : 0.8,
                           textShadow: isActive ? (theme === "blush" ? "0 0 8px rgba(183, 110, 121, 0.35)" : "0 0 10px rgba(226, 184, 87, 0.45)") : "none",
                           fontWeight: isActive ? "bold" : "normal"
                         }}
