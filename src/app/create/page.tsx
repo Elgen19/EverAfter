@@ -10,7 +10,8 @@ import SealingAnimation from "@/components/creator/SealingAnimation";
 import StationeryPreview from "@/components/creator/StationeryPreview";
 import ShareLinkModal from "@/components/creator/ShareLinkModal";
 import RomanticAlertModal from "@/components/creator/RomanticAlertModal";
-import MobilePreviewOverlay from "@/components/creator/MobilePreviewOverlay";
+import SequencePreview from "@/components/creator/SequencePreview";
+import { usePagePerformanceLogger } from "@/utils/performance";
 
 // Modular configurators
 import EmojiPicker from "@/components/creator/EmojiPicker";
@@ -66,6 +67,7 @@ function AccordionItem({ title, desc, icon, enabled, isOpen, onToggle, children 
 }
 
 function CreateLetterStudio() {
+  usePagePerformanceLogger("create");
   const form = useLetterForm();
   const [activeTab, setActiveTab] = useState<"write" | "design" | "addons" | "flow">("write");
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
@@ -404,11 +406,7 @@ function CreateLetterStudio() {
                   {BACKDROPS.map((b) => (
                     <button key={b.id} type="button" 
                       onClick={() => {
-                        if (window.innerWidth < 992) {
-                          setPendingSelection({ type: "backdrop", id: b.id, name: b.name, desc: b.desc });
-                        } else {
-                          form.setBackdrop(b.id);
-                        }
+                        setPendingSelection({ type: "backdrop", id: b.id, name: b.name, desc: b.desc });
                       }}
                       style={{ padding: "12px", borderRadius: "10px", border: form.backdrop === b.id ? "1.5px solid var(--accent-rose)" : "1px solid var(--border-card)", background: form.backdrop === b.id ? "rgba(255, 75, 114, 0.08)" : "transparent", color: form.backdrop === b.id ? "#fff" : "var(--text-muted)", textAlign: "left", cursor: "pointer", transition: "all 0.2s ease" }}
                     >
@@ -613,6 +611,18 @@ function CreateLetterStudio() {
                       polaroidsConfirmed={form.polaroidsConfirmed}
                       setPolaroidsConfirmed={(val) => { form.setPolaroidsConfirmed(val); if (val) handleConfirm("polaroids"); }}
                       showAlert={form.showRomanticAlert}
+                      polaroidsLayout={form.polaroidsLayout}
+                      setPolaroidsLayout={form.setPolaroidsLayout}
+                      polaroidsCollageStyle={form.polaroidsCollageStyle}
+                      setPolaroidsCollageStyle={form.setPolaroidsCollageStyle}
+                      polaroidsCollageBgPosition={form.polaroidsCollageBgPosition}
+                      setPolaroidsCollageBgPosition={form.setPolaroidsCollageBgPosition}
+                      polaroidsCollageBgZoom={form.polaroidsCollageBgZoom}
+                      setPolaroidsCollageBgZoom={form.setPolaroidsCollageBgZoom}
+                      polaroidsTitle={form.polaroidsTitle}
+                      setPolaroidsTitle={form.setPolaroidsTitle}
+                      polaroidsShowHearts={form.polaroidsShowHearts}
+                      setPolaroidsShowHearts={form.setPolaroidsShowHearts}
                     />
                   )}
                 </AccordionItem>
@@ -731,6 +741,31 @@ function CreateLetterStudio() {
                 >
                   Back to Add-ons
                 </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    form.setPreviewMode("sequence");
+                    setIsMobilePreviewOpen(true);
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: "16px",
+                    borderRadius: "12px",
+                    backgroundColor: "var(--accent-purple)",
+                    backgroundImage: "linear-gradient(135deg, #9c6cfa, #7c4bf5)",
+                    border: "none",
+                    color: "#fff",
+                    fontWeight: 600,
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px"
+                  }}
+                >
+                  👁️ Preview
+                </button>
               </div>
             </div>
 
@@ -755,10 +790,12 @@ function CreateLetterStudio() {
           <div className="studio-preview-col hidden-mobile" style={{ display: "flex", flexDirection: "column", gap: "16px", position: "sticky", top: "20px" }}>
             <div className="studio-preview-mode-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ display: "flex", gap: "8px" }}>
-                {(["letter", "envelope"] as const).map((mode) => (
+                {(["letter", "envelope", "background"] as const).map((mode) => (
                   <button key={mode} type="button" onClick={() => form.setPreviewMode(mode)}
                     style={{ padding: "6px 12px", borderRadius: "6px", fontSize: "11px", fontWeight: "bold", backgroundColor: form.previewMode === mode ? "var(--accent-rose)" : "rgba(255, 255, 255, 0.05)", border: "1px solid " + (form.previewMode === mode ? "var(--accent-rose)" : "rgba(255, 255, 255, 0.1)"), color: "#fff", cursor: "pointer", transition: "all 0.2s" }}
-                  >{mode === "letter" ? "📄 Stationery View" : "✉️ Envelope & Seal"}</button>
+                  >
+                    {mode === "letter" ? "📄 Stationery View" : mode === "envelope" ? "✉️ Envelope & Seal" : "🖼️ Background View"}
+                  </button>
                 ))}
               </div>
               <span className="hidden-mobile" style={{ fontSize: "11px", backgroundColor: "rgba(156, 108, 250, 0.15)", color: "var(--accent-purple)", padding: "3px 8px", borderRadius: "12px", border: "1px solid rgba(156, 108, 250, 0.25)" }}>Live Editor</span>
@@ -772,7 +809,6 @@ function CreateLetterStudio() {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                overflow: "hidden",
                 position: "relative",
                 backgroundImage: previewBackdropUrl 
                   ? `linear-gradient(${getBackdropOverlay()}, ${getBackdropOverlay()}), url(${previewBackdropUrl})` 
@@ -780,6 +816,7 @@ function CreateLetterStudio() {
                 backgroundColor: previewBackdropUrl ? "transparent" : "rgba(20, 15, 30, 0.4)",
                 backgroundSize: "cover",
                 backgroundPosition: "center",
+                overflow: "hidden",
                 borderRadius: "16px"
               }}>
                 <button type="button" onClick={() => form.setEnvelopeResetKey(prev => prev + 1)}
@@ -788,8 +825,53 @@ function CreateLetterStudio() {
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)"}
                 >🔄 Reset Animation</button>
                 <div className="studio-preview-envelope-scaler" style={{ transform: "scale(0.8)" }}>
-                  <Envelope key={form.envelopeResetKey} recipient={form.recipient} sender={form.sender} content={form.content} theme={form.theme} sealSymbol={form.sealSymbol} sealColor={form.sealColor} envelopeStyle={form.envelopeStyle} greeting={form.greeting} farewell={form.farewell} backdrop={form.backdrop} onClose={() => {}} />
+                  <Envelope key={form.envelopeResetKey} recipient={form.recipient} sender={form.sender} content={form.content} theme={form.theme} sealSymbol={form.sealSymbol} sealColor={form.sealColor} envelopeStyle={form.envelopeStyle} greeting={form.greeting} farewell={form.farewell} backdrop={form.backdrop} onClose={() => {}} preview={true} />
                 </div>
+              </div>
+            ) : form.previewMode === "background" ? (
+              <div style={{
+                width: "100%",
+                height: "680px",
+                borderRadius: "16px",
+                backgroundImage: previewBackdropUrl ? `linear-gradient(${getBackdropOverlay()}, ${getBackdropOverlay()}), url(${previewBackdropUrl})` : "none",
+                backgroundColor: previewBackdropUrl ? "transparent" : "#161110",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#fff",
+                textAlign: "center",
+                padding: "30px",
+                boxSizing: "border-box",
+                border: "1px solid var(--border-card)",
+                position: "relative"
+              }}>
+                {!previewBackdropUrl ? (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", color: "var(--text-muted)" }}>
+                    <span style={{ fontSize: "36px" }}>✨</span>
+                    <h4 style={{ fontSize: "16px", fontWeight: "bold" }}>No Backdrop Selected</h4>
+                    <p style={{ fontSize: "13px", maxWidth: "250px" }}>Select a backdrop in the Design tab to preview it here.</p>
+                  </div>
+                ) : (
+                  <div style={{
+                    backgroundColor: "rgba(11, 7, 17, 0.65)",
+                    backdropFilter: "blur(8px)",
+                    padding: "20px 30px",
+                    borderRadius: "12px",
+                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                    boxShadow: "0 10px 25px rgba(0,0,0,0.3)"
+                  }}>
+                    <h4 style={{ fontSize: "18px", fontWeight: "bold", color: "var(--accent-rose)", marginBottom: "8px" }}>
+                      {BACKDROPS.find(b => b.id === form.backdrop)?.name}
+                    </h4>
+                    <p style={{ fontSize: "13px", opacity: 0.8, maxWidth: "280px", margin: "0" }}>
+                      {BACKDROPS.find(b => b.id === form.backdrop)?.desc}
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               <StationeryPreview
@@ -1028,40 +1110,26 @@ function CreateLetterStudio() {
         </div>
       )}
 
-      {/* Mobile Floating Eyeball Preview FAB */}
-      <button
-        type="button"
-        className="mobile-fab-preview"
-        onClick={() => setIsMobilePreviewOpen(true)}
-        title="Open Preview"
-      >
-        👁️
-      </button>
+      {/* Mobile Floating Eyeball Preview FAB (hidden when preview is active) */}
+      {!isMobilePreviewOpen && (
+        <button
+          type="button"
+          className="mobile-fab-preview"
+          onClick={() => setIsMobilePreviewOpen(true)}
+          title="Open Preview"
+        >
+          👁️
+        </button>
+      )}
 
-      {/* Full-screen Mobile Preview Overlay Modal */}
-      <MobilePreviewOverlay
-        isOpen={isMobilePreviewOpen}
-        onClose={() => setIsMobilePreviewOpen(false)}
-        previewMode={form.previewMode}
-        setPreviewMode={form.setPreviewMode}
-        envelopeResetKey={form.envelopeResetKey}
-        setEnvelopeResetKey={form.setEnvelopeResetKey}
-        recipient={form.recipient}
-        sender={form.sender}
-        content={form.content}
-        theme={form.theme}
-        sealSymbol={form.sealSymbol}
-        sealColor={form.sealColor}
-        envelopeStyle={form.envelopeStyle}
-        greeting={form.greeting}
-        farewell={form.farewell}
-        backdrop={form.backdrop}
-        previewBackdropUrl={previewBackdropUrl}
-        hasBackdrop={!!hasBackdrop}
-        getGlassyBg={getGlassyBg}
-        getGlassyBorder={getGlassyBorder}
-        getBackdropOverlay={getBackdropOverlay}
-      />
+      {/* Full-screen Sequence Preview Player overlay */}
+      {isMobilePreviewOpen && (
+        <SequencePreview
+          form={form}
+          isMobile={true}
+          onClose={() => setIsMobilePreviewOpen(false)}
+        />
+      )}
     </div>
   );
 }

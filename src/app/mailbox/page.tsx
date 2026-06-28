@@ -7,6 +7,7 @@ import { db } from "@/utils/firebase";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import FloatingHearts from "@/components/FloatingHearts";
 import { useAuth } from "@/context/AuthContext";
+import { usePagePerformanceLogger } from "@/utils/performance";
 
 interface MailboxLetter {
   id: string;
@@ -24,6 +25,7 @@ interface MailboxLetter {
 }
 
 function MailboxContent() {
+  usePagePerformanceLogger("mailbox");
   const searchParams = useSearchParams();
   const router = useRouter();
   const refId = searchParams.get("ref") || "";
@@ -127,7 +129,7 @@ function MailboxContent() {
   useEffect(() => {
     if (authLoading) return;
 
-    let targetRefId = refId;
+    const targetRefId = refId;
 
     const loadMailbox = async () => {
       try {

@@ -7,8 +7,6 @@ import {
   Allura, 
   Cinzel_Decorative, 
   Cormorant_Garamond, 
-  Geist, 
-  Geist_Mono, 
   Libre_Baskerville,
   Lora,
   DM_Serif_Display,
@@ -44,17 +42,17 @@ const cormorant = Cormorant_Garamond({
   display: "swap",
 });
 
-const geist = Geist({
-  subsets: ["latin"],
+const geist = {
   variable: "--font-geist-google",
-  display: "swap",
-});
+  className: "geist-fallback-sans",
+  style: { fontFamily: "sans-serif" }
+};
 
-const geistMono = Geist_Mono({
-  subsets: ["latin"],
+const geistMono = {
   variable: "--font-geist-mono-google",
-  display: "swap",
-});
+  className: "geist-fallback-mono",
+  style: { fontFamily: "monospace" }
+};
 
 const libreBaskerville = Libre_Baskerville({
   weight: ["400", "700"],
@@ -89,6 +87,18 @@ interface CustomCSSProperties extends React.CSSProperties {
   "--rot"?: string;
 }
 
+interface MaybePortalProps {
+  children: React.ReactNode;
+  preview: boolean;
+}
+
+function MaybePortal({ children, preview }: MaybePortalProps) {
+  if (preview) {
+    return <>{children}</>;
+  }
+  return createPortal(children, document.body);
+}
+
 interface EnvelopeProps {
   recipient: string;
   sender: string;
@@ -106,10 +116,17 @@ interface EnvelopeProps {
 
   // Adjacent polaroids configuration
   polaroids?: PolaroidItem[];
+  polaroidsLayout?: "stack" | "collage";
+  polaroidsCollageStyle?: "simple" | "forever" | "sunset";
+  polaroidsCollageBgPosition?: "top" | "center" | "bottom";
+  polaroidsCollageBgZoom?: number;
+  polaroidsTitle?: string;
+  polaroidsShowHearts?: boolean;
   activeStep?: string;
   onStepComplete?: () => void;
   isAdjacentToPolaroids?: boolean;
   polaroidsFirst?: boolean;
+  preview?: boolean;
 }
 
 export default function Envelope({
@@ -127,10 +144,17 @@ export default function Envelope({
   onOpen,
   onClose,
   polaroids,
+  polaroidsLayout = "stack",
+  polaroidsCollageStyle = "simple",
+  polaroidsCollageBgPosition = "center",
+  polaroidsCollageBgZoom = 100,
+  polaroidsTitle = "Captured Memories",
+  polaroidsShowHearts = true,
   activeStep,
   onStepComplete,
   isAdjacentToPolaroids = false,
   polaroidsFirst = false,
+  preview = false,
 }: EnvelopeProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSealBroken, setIsSealBroken] = useState(false);
@@ -368,11 +392,14 @@ export default function Envelope({
         alignItems: "center",
         justifyContent: "center",
         minHeight: "var(--envelope-min-height, 500px)",
+        width: "100%",
+        height: "100%",
+        flex: preview ? 1 : undefined,
         position: "relative",
         gap: "24px",
       }}
     >
-      <div className="envelope-container">
+      <div className="envelope-container" style={{ transform: preview ? "scale(0.82)" : "scale(1)", transformOrigin: "center" }}>
         <div 
           className={`envelope-wrapper ${themeClass} vintage-rose-style ${showIdleAnim ? "envelope-idle" : ""}`}
         onClick={handleOpen}
@@ -536,33 +563,42 @@ export default function Envelope({
     </div>
 
       {/* Expanded Full Screen Stationery Sheet (Fade-in portal style) */}
-      {activeSheet === "letter" && mounted && createPortal(
-        <div
-          className={`stationery-sheet-portal ${isOnlyStep || !activeStep ? "no-timeline" : ""} ${playfair.variable} ${allura.variable} ${cinzelDec.variable} ${cormorant.variable} ${geist.variable} ${geistMono.variable} ${libreBaskerville.variable} ${lora.variable} ${dmSerifDisplay.variable} ${sourceSerif4.variable}`}
-          style={{
-            opacity: isSheetExpanded ? 1 : 0,
-            pointerEvents: isSheetExpanded ? "auto" : "none",
-            transition: "opacity 1.4s cubic-bezier(0.4, 0, 0.2, 1)",
-          }}
-        >
-          {/* The beautiful letter paper page */}
+      {activeSheet === "letter" && mounted && (
+        <MaybePortal preview={preview}>
           <div
-            className={`stationery-sheet ${themeClass} ${hasBackdrop ? "has-backdrop" : ""}`}
+            className={`stationery-sheet-portal ${isOnlyStep || !activeStep ? "no-timeline" : ""} ${playfair.variable} ${allura.variable} ${cinzelDec.variable} ${cormorant.variable} ${geist.variable} ${geistMono.variable} ${libreBaskerville.variable} ${lora.variable} ${dmSerifDisplay.variable} ${sourceSerif4.variable}`}
             style={{
-              position: "relative",
+              opacity: isSheetExpanded ? 1 : 0,
+              pointerEvents: isSheetExpanded ? "auto" : "none",
+              transition: "opacity 1.4s cubic-bezier(0.4, 0, 0.2, 1)",
+              position: preview ? "absolute" : "fixed",
+              inset: 0,
+              zIndex: 100,
               width: "100%",
-              maxWidth: "680px",
-              height: "80vh",
-              maxHeight: "calc(100vh - 160px)",
-              backgroundColor: getGlassyBg(),
-              backgroundImage: hasBackdrop ? "none" : "var(--bg-image)",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-              backdropFilter: hasBackdrop ? "blur(16px)" : "none",
-              WebkitBackdropFilter: hasBackdrop ? "blur(16px)" : "none",
-              border: `1px solid ${getGlassyBorder()}`,
-              borderRadius: "16px",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {/* The beautiful letter paper page */}
+             <div
+              className={`stationery-sheet ${themeClass}`}
+              style={{
+                position: "relative",
+                width: "100%",
+                maxWidth: preview ? "90%" : "680px",
+                height: preview ? "85%" : "80vh",
+                maxHeight: preview ? "520px" : "calc(100vh - 160px)",
+                backgroundColor: "var(--stationery-bg)",
+                backgroundImage: "var(--bg-image)",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                backdropFilter: "none",
+                WebkitBackdropFilter: "none",
+                border: "1.5px solid var(--stationery-border)",
+                borderRadius: "16px",
               boxShadow: "0 25px 60px -15px rgba(0,0,0,0.6)",
               color: "var(--stationery-text)",
               fontFamily: "var(--stationery-font)",
@@ -582,11 +618,11 @@ export default function Envelope({
                 {/* Twinkling Star Sparkles */}
                 <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 3, overflow: "hidden" }}>
                   {Array.from({ length: 14 }).map((_, idx) => {
-                    const size = 3 + Math.random() * 4;
-                    const top = Math.random() * 100;
-                    const left = Math.random() * 100;
-                    const delay = Math.random() * 4;
-                    const duration = 2 + Math.random() * 3;
+                    const size = 3 + ((idx * 5) % 5);
+                    const top = (idx * 17) % 100;
+                    const left = (idx * 29) % 100;
+                    const delay = (idx * 0.9) % 4;
+                    const duration = 2 + ((idx * 1.1) % 4);
                     return (
                       <div
                         key={idx}
@@ -606,8 +642,8 @@ export default function Envelope({
                   })}
                 </div>
 
-                {/* Celestial Corner Ornaments - only show in glassy backdrop mode fallback */}
-                {hasBackdrop && (
+                {/* Celestial Corner Ornaments */}
+                {true && (
                   <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 5 }}>
                     <svg width="100%" height="100%" style={{ position: "absolute", top: 0, left: 0 }}>
                       <defs>
@@ -635,11 +671,11 @@ export default function Envelope({
                 {/* Wavy Gold Stardust */}
                 <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 3, overflow: "hidden" }}>
                   {Array.from({ length: 16 }).map((_, idx) => {
-                    const size = 2 + Math.random() * 5;
-                    const top = Math.random() * 100;
-                    const left = Math.random() * 100;
-                    const delay = Math.random() * 6;
-                    const duration = 4 + Math.random() * 5;
+                    const size = 2 + ((idx * 7) % 6);
+                    const top = (idx * 23) % 100;
+                    const left = (idx * 37) % 100;
+                    const delay = (idx * 1.3) % 6;
+                    const duration = 4 + ((idx * 1.9) % 5);
                     const colors = ["#ffeea1", "#d4af37", "#f3e5ab"];
                     const bgColor = colors[idx % colors.length];
                     return (
@@ -662,61 +698,7 @@ export default function Envelope({
                 </div>
 
 
-                {/* Left & Right Climbing Golden Vines */}
-                {hasBackdrop && (
-                  <>
-                    <div style={{ position: "absolute", top: "45px", bottom: "45px", left: "6px", width: "20px", zIndex: 5, pointerEvents: "none", opacity: 0.65 }}>
-                      <svg width="100%" height="100%">
-                        {Array.from({ length: 16 }).map((_, i) => (
-                          <g key={i} transform={`translate(0, ${10 + i * 36})`}>
-                            <path d="M 6,0 Q 14,-10 6,-20 Q -2,-10 6,0 Z" fill="none" stroke="#d4af37" strokeWidth="0.8" />
-                            <path d="M 6,-10 L 14,-14" fill="none" stroke="#d4af37" strokeWidth="0.8" />
-                            <circle cx="14" cy="-14" r="1.5" fill="#d4af37" />
-                          </g>
-                        ))}
-                      </svg>
-                    </div>
-                    <div style={{ position: "absolute", top: "45px", bottom: "45px", right: "6px", width: "20px", zIndex: 5, pointerEvents: "none", opacity: 0.65, transform: "scaleX(-1)" }}>
-                      <svg width="100%" height="100%">
-                        {Array.from({ length: 16 }).map((_, i) => (
-                          <g key={i} transform={`translate(0, ${10 + i * 36})`}>
-                            <path d="M 6,0 Q 14,-10 6,-20 Q -2,-10 6,0 Z" fill="none" stroke="#d4af37" strokeWidth="0.8" />
-                            <path d="M 6,-10 L 14,-14" fill="none" stroke="#d4af37" strokeWidth="0.8" />
-                            <circle cx="14" cy="-14" r="1.5" fill="#d4af37" />
-                          </g>
-                        ))}
-                      </svg>
-                    </div>
-                  </>
-                )}
 
-                {/* Intricate Gold Filigree Frame & Corners */}
-                {hasBackdrop && (
-                  <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 5 }}>
-                    <svg width="100%" height="100%" style={{ position: "absolute", top: 0, left: 0 }}>
-                      <defs>
-                        <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#ffeea1" />
-                          <stop offset="50%" stopColor="#d4af37" />
-                          <stop offset="100%" stopColor="#aa7c11" />
-                        </linearGradient>
-                        <g id="gold-rose-corner-filigree">
-                          <path d="M 8,8 Q 28,10 36,26 C 40,32 34,38 28,32 C 22,26 28,14 40,18 C 46,20 44,28 38,26" fill="none" stroke="url(#goldGrad)" strokeWidth="1.2" />
-                          <path d="M 8,8 Q 10,28 26,36 C 32,40 38,34 32,28 C 26,22 14,28 18,40 C 20,46 28,44 26,38" fill="none" stroke="url(#goldGrad)" strokeWidth="1.2" />
-                          <path d="M 14,20 Q 18,17 21,14 M 20,14 C 21,12 24,12 25,14 C 26,16 24,19 22,18 Z" fill="url(#goldGrad)" fillOpacity="0.2" stroke="url(#goldGrad)" strokeWidth="0.8" />
-                          <path d="M 14,20 C 12,21 12,24 14,25 C 16,26 19,24 18,22 Z" fill="url(#goldGrad)" fillOpacity="0.2" stroke="url(#goldGrad)" strokeWidth="0.8" />
-                          <circle cx="30" cy="30" r="4.5" fill="#3d020a" stroke="url(#goldGrad)" strokeWidth="1" />
-                          <path d="M 28,28 C 30,26 32,30 30,32 Z" fill="url(#goldGrad)" />
-                        </g>
-                      </defs>
-                      <rect x="12" y="12" width="calc(100% - 24px)" height="calc(100% - 24px)" fill="none" stroke="url(#goldGrad)" strokeWidth="1" opacity="0.4" />
-                      <use href="#gold-rose-corner-filigree" x="0" y="0" />
-                      <use href="#gold-rose-corner-filigree" x="0" y="0" transform="translate(100%, 0) scale(-1, 1)" style={{ transformOrigin: "right top" }} />
-                      <use href="#gold-rose-corner-filigree" x="0" y="0" transform="translate(0, 100%) scale(1, -1)" style={{ transformOrigin: "left bottom" }} />
-                      <use href="#gold-rose-corner-filigree" x="0" y="0" transform="translate(100%, 100%) scale(-1, -1)" style={{ transformOrigin: "right bottom" }} />
-                    </svg>
-                  </div>
-                )}
 
                 {/* 3D Golden Rose Emblem (Bottom-Right) */}
                 <div style={{ position: "absolute", bottom: "16px", right: "16px", width: "64px", height: "64px", zIndex: 6, pointerEvents: "none" }}>
@@ -745,11 +727,11 @@ export default function Envelope({
                 {/* Fluttering Green Leaves */}
                 <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 3, overflow: "hidden" }}>
                   {Array.from({ length: 8 }).map((_, idx) => {
-                    const left = Math.random() * 100;
-                    const size = 10 + Math.random() * 12;
-                    const delay = Math.random() * 6;
-                    const duration = 6 + Math.random() * 6;
-                    const rotation = Math.random() * 360;
+                    const left = (idx * 47) % 100;
+                    const size = 10 + ((idx * 13) % 13);
+                    const delay = (idx * 1.7) % 6;
+                    const duration = 6 + ((idx * 2.3) % 7);
+                    const rotation = (idx * 53) % 360;
                     const leafEmoji = idx % 2 === 0 ? "🍃" : "🌿";
                     return (
                       <div
@@ -770,25 +752,7 @@ export default function Envelope({
                   })}
                 </div>
 
-                {/* Ivy Corner Ornaments - only show in glassy backdrop mode fallback */}
-                {hasBackdrop && (
-                  <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 5 }}>
-                    <svg width="100%" height="100%" style={{ position: "absolute", top: 0, left: 0 }}>
-                      <defs>
-                        <g id="ivy-corner-reader">
-                          <path d="M 12,12 Q 22,14 30,26 M 12,12 Q 14,22 26,30" fill="none" stroke="#8c6c30" strokeWidth="1.2" opacity="0.75" />
-                          <circle cx="30" cy="26" r="3" fill="#355c3c" stroke="#8c6c30" strokeWidth="0.5" />
-                          <circle cx="26" cy="30" r="3" fill="#355c3c" stroke="#8c6c30" strokeWidth="0.5" />
-                          <circle cx="18" cy="18" r="1.5" fill="#8c6c30" />
-                        </g>
-                      </defs>
-                      <use href="#ivy-corner-reader" x="0" y="0" />
-                      <use href="#ivy-corner-reader" x="0" y="0" transform="translate(100%, 0) scale(-1, 1)" style={{ transformOrigin: "right top" }} />
-                      <use href="#ivy-corner-reader" x="0" y="0" transform="translate(0, 100%) scale(1, -1)" style={{ transformOrigin: "left bottom" }} />
-                      <use href="#ivy-corner-reader" x="0" y="0" transform="translate(100%, 100%) scale(-1, -1)" style={{ transformOrigin: "right bottom" }} />
-                    </svg>
-                  </div>
-                )}
+
               </>
             )}
 
@@ -797,11 +761,11 @@ export default function Envelope({
                 {/* Floating Rose Gold Stardust */}
                 <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 3, overflow: "hidden" }}>
                   {Array.from({ length: 16 }).map((_, idx) => {
-                    const size = 2 + Math.random() * 5;
-                    const top = Math.random() * 100;
-                    const left = Math.random() * 100;
-                    const delay = Math.random() * 6;
-                    const duration = 4 + Math.random() * 5;
+                    const size = 2 + ((idx * 7) % 6);
+                    const top = (idx * 23) % 100;
+                    const left = (idx * 37) % 100;
+                    const delay = (idx * 1.3) % 6;
+                    const duration = 4 + ((idx * 1.9) % 5);
                     const colors = ["#ebd1c5", "#c59279", "#e8c4b0", "#ffdcd0"];
                     const bgColor = colors[idx % colors.length];
                     return (
@@ -823,8 +787,8 @@ export default function Envelope({
                   })}
                 </div>
 
-                {/* Geometric Rose Gold Corner Ornaments - only show in glassy backdrop mode fallback */}
-                {hasBackdrop && (
+                {/* Geometric Rose Gold Corner Ornaments */}
+                {true && (
                   <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 5 }}>
                     <svg width="100%" height="100%" style={{ position: "absolute", top: 0, left: 0 }}>
                       <defs>
@@ -1176,49 +1140,58 @@ export default function Envelope({
               </svg>
             </button>
           </div>
-        </div>,
-        document.body
+        </div>
+      </MaybePortal>
       )}
 
       {/* Expanded Full Screen Polaroid Stack (Fade-in portal style) */}
-      {activeSheet === "polaroids" && mounted && createPortal(
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 90,
-            background: "transparent",
-            backdropFilter: "none",
-            WebkitBackdropFilter: "none",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: isSheetExpanded ? 1 : 0,
-            pointerEvents: isSheetExpanded ? "auto" : "none",
-            transition: "opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
-            padding: "20px",
-          }}
-        >
+      {activeSheet === "polaroids" && mounted && (
+        <MaybePortal preview={preview}>
           <div
             style={{
+              position: preview ? "absolute" : "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 90,
+              background: "transparent",
+              backdropFilter: "none",
+              WebkitBackdropFilter: "none",
               display: "flex",
-              justifyContent: "center",
               alignItems: "center",
-              width: "100%",
+              justifyContent: "center",
+              opacity: isSheetExpanded ? 1 : 0,
+              pointerEvents: isSheetExpanded ? "auto" : "none",
+              transition: "opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+              padding: "20px",
             }}
           >
-            <PolaroidsReader
-              polaroids={polaroids || []}
-              theme={theme}
-              onComplete={() => handleClose()}
-              isSheetExpanded={isSheetExpanded}
-            />
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                width: "100%",
+              }}
+            >
+              <PolaroidsReader
+                polaroids={polaroids || []}
+                theme={theme}
+                onComplete={() => handleClose()}
+                isSheetExpanded={isSheetExpanded}
+                layout={polaroidsLayout}
+                collageStyle={polaroidsCollageStyle}
+                collageBgPosition={polaroidsCollageBgPosition}
+                collageBgZoom={polaroidsCollageBgZoom}
+                title={polaroidsTitle}
+                showHearts={polaroidsShowHearts}
+                sender={sender}
+                preview={preview}
+              />
+            </div>
           </div>
-        </div>,
-        document.body
+        </MaybePortal>
       )}
 
       {isOnlyStep && isSealBroken && !isOpen && !isFullView && !isBreaking && (

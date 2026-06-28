@@ -38,9 +38,10 @@ interface ClosingStatementProps {
   animation: "typewriter" | "fade-float" | "pulse";
   isLastStep: boolean;
   onComplete: () => void;
+  preview?: boolean;
 }
 
-export default function ClosingStatement({ text, animation, isLastStep, onComplete }: ClosingStatementProps) {
+export default function ClosingStatement({ text, animation, isLastStep, onComplete, preview = false }: ClosingStatementProps) {
   const [closingStage, setClosingStage] = useState<"before" | "animating" | "completed" | "exiting">("before");
 
   useEffect(() => {
@@ -62,6 +63,7 @@ export default function ClosingStatement({ text, animation, isLastStep, onComple
   }, [text, animation]);
 
   useEffect(() => {
+    if (preview) return; // Disable auto-advancing in preview mode
     if (closingStage === "completed") {
       if (isLastStep) {
         // Do not auto-advance or fade out if it is the last step
@@ -75,7 +77,7 @@ export default function ClosingStatement({ text, animation, isLastStep, onComple
       }, readingDelay);
       return () => clearTimeout(timer);
     }
-  }, [closingStage, text, isLastStep]);
+  }, [closingStage, text, isLastStep, preview]);
 
   useEffect(() => {
     if (closingStage === "exiting") {
@@ -122,6 +124,32 @@ export default function ClosingStatement({ text, animation, isLastStep, onComple
           <span>{text}</span>
         )}
       </div>
+
+      {preview && (
+        <button
+          type="button"
+          onClick={onComplete}
+          style={{
+            marginTop: "10px",
+            padding: "12px 28px",
+            borderRadius: "30px",
+            background: "var(--accent-rose)",
+            backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)",
+            color: "#fff",
+            border: "none",
+            fontSize: "14px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            boxShadow: "0 6px 20px rgba(255, 75, 114, 0.3)",
+            outline: "none",
+            transition: "transform 0.2s"
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.04)"}
+          onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
+        >
+          Proceed to Survey ➔
+        </button>
+      )}
 
       {isLastStep && closingStage === "completed" && (
         <div style={{ animation: "float-up-intro 0.6s ease" }}>

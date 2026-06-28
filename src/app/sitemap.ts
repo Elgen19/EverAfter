@@ -24,40 +24,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/animation`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/letter`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.6,
-    },
-    {
       url: `${baseUrl}/coming-soon`,
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/dashboard`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.4,
-    },
-    {
-      url: `${baseUrl}/profile`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.4,
-    },
-    {
-      url: `${baseUrl}/recipient-setup`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.4,
     },
   ];
 }

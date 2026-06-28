@@ -9,8 +9,10 @@ import { db } from "@/utils/firebase";
 import { collection, query, where, orderBy, getDocs, deleteDoc, onSnapshot, doc, updateDoc } from "firebase/firestore";
 import LetterCard, { SavedLetter } from "@/components/dashboard/LetterCard";
 import DashboardModals from "@/components/dashboard/DashboardModals";
+import { usePagePerformanceLogger, logPerformanceMetric } from "@/utils/performance";
 
 export default function DashboardPage() {
+  usePagePerformanceLogger("dashboard");
   const { user, recipient, loading, logout } = useAuth();
   const router = useRouter();
   const [letters, setLetters] = useState<SavedLetter[]>([]);
@@ -71,11 +73,14 @@ export default function DashboardPage() {
     if (!emailRegex.test(sendEmailInput.trim())) { setSendEmailStatus("Please enter a valid email address."); return; }
     setSendingEmail(true);
     setSendEmailStatus("Sending letter...");
+    const start = performance.now();
     try {
       const res = await fetch("/api/send-letter", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recipientEmail: sendEmailInput.trim(), letterLink: sendLetterTarget.link, senderName: sendLetterTarget.sender || "Yours Truly", recipientName: sendLetterTarget.recipient || "My Love", title: sendLetterTarget.title || "A Love Letter" })
       });
+      const latency = performance.now() - start;
+      logPerformanceMetric("api_send-letter", latency, res.ok ? "success" : "error");
       const data = await res.json();
       if (data.success) {
         setSendEmailStatus("✓ Email sent successfully!");
@@ -87,7 +92,9 @@ export default function DashboardPage() {
       } else {
         setSendEmailStatus("Failed to send email. Please try again.");
       }
-    } catch (err) {
+    } catch (err: any) {
+      const latency = performance.now() - start;
+      logPerformanceMetric("api_send-letter", latency, "error", { error: err.message || err });
       console.error("Failed to send email from dashboard:", err);
       setSendEmailStatus("Failed to send email. Please try again.");
     } finally {
@@ -245,6 +252,34 @@ export default function DashboardPage() {
 
   return (
     <div className="dashboard-page-container" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", position: "relative" }}>
+      {/* Fixed Full Screen Page Backdrop */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: "url('/campfire_letter.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          zIndex: -1,
+          pointerEvents: "none"
+        }}
+      >
+        {/* Overlay wash to dim/soften background for readability */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(10, 7, 18, 0.82)"
+          }}
+        />
+      </div>
       <FloatingHearts />
       <style>{`
         @media (max-width: 768px) {

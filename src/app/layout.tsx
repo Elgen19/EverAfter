@@ -36,7 +36,7 @@ const dancingScript = Dancing_Script({
 });
 
 export const metadata: Metadata = {
-  title: "EverAfter | Write & Send Interactive Wax-Sealed Letters",
+  title: "EverAfter | Create and Send Interactive Digital Love Letters",
   description: "Express your feelings with beautiful custom stationery, romantic music, floating hearts, and an interactive 3D wax-sealed envelope that opens physically in your partner's browser.",
   keywords: "love letter, valentine, anniversary, anniversary gift, digital letter, animated envelope, wax seal, everafter, digital stationery, romantic card",
   authors: [{ name: "EverAfter Team" }],
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "EverAfter | Write & Send Interactive Wax-Sealed Letters",
+    title: "EverAfter | Create and Send Interactive Digital Love Letters",
     description: "Express your feelings with beautiful custom stationery, romantic music, floating hearts, and an interactive 3D wax-sealed envelope that opens physically in your partner's browser.",
     type: "website",
     url: "https://everafterletters.xyz",
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "EverAfter | Write & Send Interactive Wax-Sealed Letters",
+    title: "EverAfter | Create and Send Interactive Digital Love Letters",
     description: "Express your feelings with beautiful custom stationery, romantic music, floating hearts, and an interactive 3D wax-sealed envelope that opens physically in your partner's browser.",
     images: ["/og-image.png"],
   },
@@ -92,7 +92,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${dancingScript.variable} ${sacramento.variable} ${greatVibes.variable}`}>
+    <html lang="en" className={`${inter.variable} ${dancingScript.variable} ${sacramento.variable} ${greatVibes.variable}`} suppressHydrationWarning>
       <body>
         <AuthProvider>
           {children}

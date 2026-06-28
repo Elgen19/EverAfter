@@ -10,11 +10,12 @@ interface AudioMessageProps {
   };
   onComplete: () => void;
   theme?: string;
+  onPlayStateChange?: (isPlaying: boolean) => void;
 }
 
 type Stage = "statement-enter" | "statement-visible" | "statement-exit" | "player-enter" | "player-ready";
 
-export default function AudioMessage({ audioMessage, onComplete, theme = "scroll" }: AudioMessageProps) {
+export default function AudioMessage({ audioMessage, onComplete, theme = "scroll", onPlayStateChange }: AudioMessageProps) {
   const [stage, setStage] = useState<Stage>("statement-enter");
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -90,6 +91,7 @@ export default function AudioMessage({ audioMessage, onComplete, theme = "scroll
   const handleAudioEnded = () => {
     setIsPlaying(false);
     setCurrentTime(0);
+    if (onPlayStateChange) onPlayStateChange(false);
   };
 
   const toggleAudio = () => {
@@ -97,11 +99,13 @@ export default function AudioMessage({ audioMessage, onComplete, theme = "scroll
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
+      if (onPlayStateChange) onPlayStateChange(false);
     } else {
       audioRef.current.play()
         .then(() => {
           setIsPlaying(true);
           setHasPlayedOnce(true);
+          if (onPlayStateChange) onPlayStateChange(true);
         })
         .catch((err) => {
           console.error("Playback failed:", err);
@@ -140,8 +144,9 @@ export default function AudioMessage({ audioMessage, onComplete, theme = "scroll
       if (audioRef.current) {
         audioRef.current.pause();
       }
+      if (onPlayStateChange) onPlayStateChange(false);
     };
-  }, []);
+  }, [onPlayStateChange]);
 
   const getThemeColors = () => {
     switch (theme) {

@@ -41,5 +41,29 @@ if (typeof window !== "undefined") {
 const storage = getStorage(app);
 const googleProvider = new GoogleAuthProvider();
 
+// Initialize Firebase Analytics (client-side only)
+import { getAnalytics, isSupported, logEvent, Analytics } from "firebase/analytics";
+let analytics: Analytics | null = null;
+if (typeof window !== "undefined") {
+  isSupported().then((supported) => {
+    if (supported) {
+      analytics = getAnalytics(app);
+    }
+  });
+}
+
+/**
+ * Logs a custom event to Firebase Analytics. Safe to call anywhere (client/server).
+ */
+export function logFirebaseEvent(eventName: string, eventParams?: Record<string, any>) {
+  if (typeof window !== "undefined" && analytics) {
+    try {
+      logEvent(analytics, eventName, eventParams);
+    } catch (err) {
+      console.warn("Failed to log Firebase Analytics event:", err);
+    }
+  }
+}
+
 export const IS_MOCK = false;
-export { auth, db, googleProvider, storage };
+export { auth, db, googleProvider, storage, analytics };

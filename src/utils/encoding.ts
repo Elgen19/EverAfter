@@ -1,6 +1,7 @@
 export interface PolaroidItem {
   imageUrl?: string;
   caption?: string;
+  backText?: string;
 }
 
 export interface LetterData {
@@ -18,6 +19,12 @@ export interface LetterData {
   polaroids?: {
     enabled: boolean;
     items: PolaroidItem[];
+    layout?: "stack" | "collage";
+    collageStyle?: "simple" | "forever" | "sunset";
+    collageBgPosition?: "top" | "center" | "bottom";
+    collageBgZoom?: number;
+    title?: string;
+    showHearts?: boolean;
   };
   email?: string;
   backdrop?: string;

@@ -360,7 +360,7 @@ export default function DateInvitation({
         borderRadius: isTicketView ? undefined : "20px",
         background: isTicketView ? "transparent" : "rgba(25, 12, 22, 0.95)",
         boxShadow: isTicketView ? "none" : "0 15px 40px rgba(0, 0, 0, 0.5)",
-        marginTop: isTicketView ? "-55px" : undefined
+        marginTop: isTicketView ? (preview ? "16px" : "-55px") : undefined
       }}
     >
       {/* Sealing transition flash overlay */}
@@ -434,7 +434,7 @@ export default function DateInvitation({
             </p>
           )}
 
-          {buildGoogleCalendarUrl() && (
+          {!preview && buildGoogleCalendarUrl() && (
             <a
               href={buildGoogleCalendarUrl()}
               target="_blank"
@@ -824,7 +824,7 @@ export default function DateInvitation({
 
             {isConfirmed ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
-                {buildGoogleCalendarUrl() && (
+                {!preview && buildGoogleCalendarUrl() && (
                   <a
                     href={buildGoogleCalendarUrl()}
                     target="_blank"

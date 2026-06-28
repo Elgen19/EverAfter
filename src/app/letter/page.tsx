@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useState, useEffect, useMemo } from "react";
+import React, { Suspense, useState, useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useSearchParams } from "next/navigation";
 import { decodeLetterData } from "@/utils/encoding";
@@ -10,6 +10,7 @@ import Envelope from "@/components/Envelope";
 import Link from "next/link";
 import { db } from "@/utils/firebase";
 import { doc, updateDoc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { usePagePerformanceLogger } from "@/utils/performance";
 
 // Import modular reader components
 import CountdownLock from "@/components/reader/CountdownLock";
@@ -22,6 +23,7 @@ import AudioMessage from "@/components/reader/AudioMessage";
 import LoveQuizReader from "@/components/reader/LoveQuizReader";
 import PolaroidsReader from "@/components/reader/PolaroidsReader";
 import ThankYou from "@/components/reader/ThankYou";
+import CoverScreen from "@/components/reader/CoverScreen";
 
 const BACKDROP_IMAGES: Record<string, string> = {
   campfire: "/campfire_letter.png",
@@ -49,6 +51,7 @@ const getBackdropOverlay = (theme: string) => {
 };
 
 function LetterReader() {
+  usePagePerformanceLogger("letter");
   const searchParams = useSearchParams();
   const d = searchParams.get("d") || "";
   const id = searchParams.get("id") || "";
@@ -60,7 +63,7 @@ function LetterReader() {
   }, [d]);
 
   const [dbData, setDbData] = useState<any>(null);
-  const [fetchingDb, setFetchingDb] = useState(!!id);
+  const [fetchingDb, setFetchingDb] = useState(!!id && (!preview || !d));
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -69,7 +72,7 @@ function LetterReader() {
 
   useEffect(() => {
     const fetchFromDb = async () => {
-      if (!id) return;
+      if (!id || (preview && d)) return;
       setFetchingDb(true);
       try {
         if (db) {
@@ -90,11 +93,14 @@ function LetterReader() {
 
   const data = dbData || decodedData;
 
-  const isGuestExpired = useMemo(() => {
+  const [isGuestExpired, setIsGuestExpired] = useState(false);
+
+  useEffect(() => {
     if (!id && decodedData?.timestamp) {
-      return Date.now() - decodedData.timestamp > 24 * 60 * 60 * 1000;
+      setIsGuestExpired(Date.now() - decodedData.timestamp > 24 * 60 * 60 * 1000);
+    } else {
+      setIsGuestExpired(false);
     }
-    return false;
   }, [id, decodedData]);
 
   // Scheduled Send Lock state
@@ -228,6 +234,9 @@ function LetterReader() {
       if (stepId === "survey" && data.survey?.enabled) return true;
       return false;
     });
+    // Cover screen starts immediately after the preparing/decrypting loader animation
+    steps.unshift("cover");
+
     steps.push("thankYou");
     return steps;
   }, [data]);
@@ -235,8 +244,9 @@ function LetterReader() {
   // Check if envelope and polaroids are adjacent steps in the wizard
   const envelopeAdjacency = useMemo(() => {
     if (!data?.polaroids?.enabled) return { isAdjacent: false, polaroidsFirst: false };
-    const envIdx = activeSteps.indexOf("envelope");
-    const polIdx = activeSteps.indexOf("polaroids");
+    const stepsWithoutCover = activeSteps.filter(step => step !== "cover");
+    const envIdx = stepsWithoutCover.indexOf("envelope");
+    const polIdx = stepsWithoutCover.indexOf("polaroids");
     if (envIdx === -1 || polIdx === -1) return { isAdjacent: false, polaroidsFirst: false };
     const isAdjacent = Math.abs(envIdx - polIdx) === 1;
     const polaroidsFirst = polIdx < envIdx;
@@ -247,7 +257,19 @@ function LetterReader() {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [visibleStepIndex, setVisibleStepIndex] = useState(0);
-  const [triggerFlash, setTriggerFlash] = useState(true);
+  const [triggerFlash, setTriggerFlash] = useState(false);
+  const [isVoiceMessagePlaying, setIsVoiceMessagePlaying] = useState(false);
+
+  const currentStep = activeSteps[visibleStepIndex];
+  const [isMusicForcePaused, setIsMusicForcePaused] = useState(false);
+  const prevStepRef = useRef(currentStep);
+
+  useEffect(() => {
+    if (prevStepRef.current === "audioMessage" && currentStep !== "audioMessage") {
+      setIsMusicForcePaused(true);
+    }
+    prevStepRef.current = currentStep;
+  }, [currentStep]);
 
   // Automatically reset the blinding flash after it triggers
   useEffect(() => {
@@ -533,7 +555,6 @@ function LetterReader() {
     }
   };
 
-  const currentStep = activeSteps[visibleStepIndex];
   const hasTimeline = activeSteps.filter(id => id !== "thankYou").length > 1 && currentStep !== "thankYou";
 
   // If letter is locked under Send Later scheduler, render lock screen countdown
@@ -607,11 +628,18 @@ function LetterReader() {
           autoplay={true} 
           musicType={data.musicType} 
           musicUrl={data.musicUrl} 
+          isForcePaused={isVoiceMessagePlaying || isMusicForcePaused}
+          onTogglePlayback={(playing) => {
+            if (playing) {
+              setIsMusicForcePaused(false);
+            }
+          }}
+          visible={currentStep !== "cover"}
         />
       )}
 
       {/* Progress timeline navigation dots */}
-      {mounted && activeSteps.filter(id => id !== "thankYou").length > 1 && currentStep !== "thankYou" && createPortal(
+      {mounted && activeSteps.filter(id => id !== "thankYou" && id !== "cover").length > 1 && currentStep !== "thankYou" && currentStep !== "cover" && createPortal(
         <div 
           className="letter-timeline-container"
           style={{ 
@@ -641,8 +669,18 @@ function LetterReader() {
               top: "var(--timeline-line-top, 30px)",
               height: "2px",
               background: `linear-gradient(to right, 
-                var(--accent-purple) ${(currentStepIndex / (activeSteps.filter(id => id !== "thankYou").length - 1)) * 100}%, 
-                rgba(255, 255, 255, 0.3) ${(currentStepIndex / (activeSteps.filter(id => id !== "thankYou").length - 1)) * 100}%
+                var(--accent-purple) ${(() => {
+                  const filteredList = activeSteps.filter(id => id !== "thankYou" && id !== "cover");
+                  const furthestStepId = activeSteps[currentStepIndex];
+                  const furthestFilteredIdx = filteredList.indexOf(furthestStepId);
+                  return filteredList.length > 1 ? (Math.max(0, furthestFilteredIdx) / (filteredList.length - 1)) * 100 : 0;
+                })()}%, 
+                rgba(255, 255, 255, 0.3) ${(() => {
+                  const filteredList = activeSteps.filter(id => id !== "thankYou" && id !== "cover");
+                  const furthestStepId = activeSteps[currentStepIndex];
+                  const furthestFilteredIdx = filteredList.indexOf(furthestStepId);
+                  return filteredList.length > 1 ? (Math.max(0, furthestFilteredIdx) / (filteredList.length - 1)) * 100 : 0;
+                })()}%
               )`,
               zIndex: 1,
               transition: "all 0.5s ease"
@@ -650,10 +688,15 @@ function LetterReader() {
           />
 
           <div style={{ display: "flex", justifyContent: "space-between", width: "100%", zIndex: 2 }}>
-            {activeSteps.filter(id => id !== "thankYou").map((stepId, idx) => {
-              const isCompleted = idx < currentStepIndex;
-              const isActive = idx === visibleStepIndex;
-              const isClickable = idx <= currentStepIndex;
+            {activeSteps.filter(id => id !== "thankYou" && id !== "cover").map((stepId, idx) => {
+              const filteredList = activeSteps.filter(id => id !== "thankYou" && id !== "cover");
+              const currentFilteredIdx = filteredList.indexOf(currentStep);
+              const visibleFilteredIdx = filteredList.indexOf(activeSteps[visibleStepIndex]);
+              const furthestFilteredIdx = filteredList.indexOf(activeSteps[currentStepIndex]);
+
+              const isCompleted = idx < currentFilteredIdx;
+              const isActive = idx === visibleFilteredIdx;
+              const isClickable = idx <= furthestFilteredIdx;
               
               let stepIcon = "⚫";
               let stepTitle = "Step";
@@ -662,6 +705,7 @@ function LetterReader() {
               else if (stepId === "envelope") { stepIcon = "✉"; stepTitle = "Letter"; }
               else if (stepId === "polaroids") { stepIcon = "📸"; stepTitle = "Photos"; }
               else if (stepId === "audioMessage") { stepIcon = "🎤"; stepTitle = "Voice"; }
+              else if (stepId === "loveQuiz") { stepIcon = "🎮"; stepTitle = "Quiz"; }
               else if (stepId === "dateInvite") { stepIcon = "🌹"; stepTitle = "Date"; }
               else if (stepId === "closing") { stepIcon = "✍"; stepTitle = "Closing"; }
               else if (stepId === "survey") { stepIcon = "📊"; stepTitle = "Survey"; }
@@ -675,20 +719,22 @@ function LetterReader() {
                   <button
                     onClick={() => {
                       if (isClickable && !isTransitioning) {
-                        const targetStepId = activeSteps[idx];
-                        const isEnvPolTransition = envelopeAdjacency.isAdjacent && (
-                           (currentStep === "envelope" && targetStepId === "polaroids") ||
-                           (currentStep === "polaroids" && targetStepId === "envelope")
-                        );
+                        const targetIdxInActive = activeSteps.indexOf(stepId);
+                        if (targetIdxInActive !== -1) {
+                          const isEnvPolTransition = envelopeAdjacency.isAdjacent && (
+                             (currentStep === "envelope" && stepId === "polaroids") ||
+                             (currentStep === "polaroids" && stepId === "envelope")
+                          );
 
-                        if (isEnvPolTransition) {
-                          setVisibleStepIndex(idx);
-                        } else {
-                          setIsTransitioning(true);
-                          setTimeout(() => {
-                            setVisibleStepIndex(idx);
-                            setIsTransitioning(false);
-                          }, 700);
+                          if (isEnvPolTransition) {
+                            setVisibleStepIndex(targetIdxInActive);
+                          } else {
+                            setIsTransitioning(true);
+                            setTimeout(() => {
+                              setVisibleStepIndex(targetIdxInActive);
+                              setIsTransitioning(false);
+                            }, 700);
+                          }
                         }
                       }
                     }}
@@ -793,6 +839,15 @@ function LetterReader() {
           />
         )}
 
+        {/* Step: Cover Splash Screen */}
+        {currentStep === "cover" && (
+          <CoverScreen 
+            sender={data.sender}
+            recipient={data.recipient}
+            onComplete={handleNextStep}
+          />
+        )}
+
         {/* Step: Introductory Statement */}
         {currentStep === "intro" && data.intro && (
           <IntroStatement 
@@ -817,6 +872,12 @@ function LetterReader() {
             backdrop={data.backdrop}
             isOnlyStep={activeSteps.length === 1}
             polaroids={data.polaroids?.items}
+            polaroidsLayout={data.polaroids?.layout}
+            polaroidsCollageStyle={data.polaroids?.collageStyle}
+            polaroidsCollageBgPosition={data.polaroids?.collageBgPosition}
+            polaroidsCollageBgZoom={data.polaroids?.collageBgZoom}
+            polaroidsTitle={data.polaroids?.title}
+            polaroidsShowHearts={data.polaroids?.showHearts}
             activeStep={currentStep}
             onStepComplete={handleNextStep}
             isAdjacentToPolaroids={envelopeAdjacency.isAdjacent}
@@ -844,6 +905,13 @@ function LetterReader() {
               onComplete={handleNextStep}
               isSheetExpanded={true} // Always expanded in standalone mode
               isStandalone={true}
+              layout={data.polaroids.layout}
+              collageStyle={data.polaroids.collageStyle}
+              collageBgPosition={data.polaroids.collageBgPosition}
+              collageBgZoom={data.polaroids.collageBgZoom}
+              title={data.polaroids.title}
+              showHearts={data.polaroids.showHearts}
+              sender={data.sender}
             />
           </div>
         )}
@@ -854,6 +922,7 @@ function LetterReader() {
             audioMessage={data.audioMessage}
             theme={data.theme}
             onComplete={handleNextStep}
+            onPlayStateChange={setIsVoiceMessagePlaying}
           />
         )}
 

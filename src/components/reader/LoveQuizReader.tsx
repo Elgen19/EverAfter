@@ -94,9 +94,14 @@ export default function LoveQuizReader({
 
   // We want to shuffle the answers for each question once when the question index changes, 
   // so that options are randomized but don't re-shuffle every render.
-  const shuffledOptions = useMemo(() => {
+  const [shuffledOptions, setShuffledOptions] = useState<string[]>([]);
+  
+  useEffect(() => {
     const currentQ = questions[currentIdx];
-    if (!currentQ) return [];
+    if (!currentQ) {
+      setShuffledOptions([]);
+      return;
+    }
     
     const allOptions = [currentQ.correctAnswer, ...currentQ.incorrectAnswers].filter(Boolean);
     // Fisher-Yates shuffle
@@ -104,7 +109,7 @@ export default function LoveQuizReader({
       const j = Math.floor(Math.random() * (i + 1));
       [allOptions[i], allOptions[j]] = [allOptions[j], allOptions[i]];
     }
-    return allOptions;
+    setShuffledOptions(allOptions);
   }, [currentIdx, questions]);
 
   // If 50:50 is activated, we filter out 2 incorrect options
@@ -435,9 +440,11 @@ export default function LoveQuizReader({
       {gameWon && !tempReplaying && (
         <div style={{ position: "fixed", inset: 0, zIndex: 1, pointerEvents: "none", overflow: "hidden" }}>
           {Array.from({ length: 28 }).map((_, i) => {
-            const left = Math.random() * 100;
-            const delay = Math.random() * 5;
-            const duration = 3 + Math.random() * 3;
+            // Pre-calculate deterministic variations to avoid Math.random() in render
+            const left = (i * 7 + 11) % 100;
+            const delay = (i * 0.4) % 5;
+            const duration = 3 + (i * 0.3) % 3;
+            const fontSize = 16 + (i * 3) % 24;
             const emojis = ["💖", "✨", "🎉", "💘", "🌹", "👑"];
             const emoji = emojis[i % emojis.length];
             return (
@@ -448,7 +455,7 @@ export default function LoveQuizReader({
                   left: `${left}%`, 
                   animationDelay: `${delay}s`,
                   animationDuration: `${duration}s`,
-                  fontSize: `${16 + Math.random() * 24}px`,
+                  fontSize: `${fontSize}px`,
                   position: "absolute"
                 }}
               >
@@ -551,18 +558,12 @@ export default function LoveQuizReader({
           animation: "float-up-intro 0.6s ease",
           maxHeight: "calc(100vh - 120px)",
           overflowY: "auto",
-          background: (gameWon && !tempReplaying) 
-            ? "rgba(10, 5, 18, 0.45)" 
-            : "rgba(22, 12, 30, 0.96)",
-          border: (gameWon && !tempReplaying)
-            ? "1.5px solid rgba(226, 184, 87, 0.35)"
-            : "1.5px solid var(--accent-purple)",
+          background: "linear-gradient(135deg, rgba(20, 15, 30, 0.82) 0%, rgba(10, 7, 18, 0.95) 100%)",
+          border: "1.5px solid rgba(212, 175, 55, 0.3)",
           borderRadius: "24px",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          boxShadow: (gameWon && !tempReplaying)
-            ? "0 25px 60px rgba(226, 184, 87, 0.15)"
-            : "0 20px 50px rgba(0, 0, 0, 0.6)",
+          boxShadow: "0 25px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(156, 108, 250, 0.1)",
           position: "relative",
           zIndex: 5,
           transition: "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -571,22 +572,24 @@ export default function LoveQuizReader({
         <style>{`
           .quiz-choice-btn {
             position: relative;
-            padding: 14px 20px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 16px 20px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(74, 21, 27, 0.45) 0%, rgba(140, 37, 48, 0.3) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.25);
             color: #fff;
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 15px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.25s ease;
             outline: none;
             text-align: left;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
           }
           .quiz-choice-btn:hover:not(:disabled) {
-            background: rgba(156, 108, 250, 0.08);
-            border-color: rgba(156, 108, 250, 0.3);
+            background: linear-gradient(135deg, rgba(140, 37, 48, 0.6) 0%, rgba(191, 67, 81, 0.4) 100%);
+            border-color: #ffd700;
             transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.15);
           }
           .quiz-choice-btn.verifying {
             background: rgba(201, 162, 39, 0.15);
@@ -607,13 +610,17 @@ export default function LoveQuizReader({
           }
           .quiz-lifeline-btn {
             flex: 1;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 11px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 12px;
             font-weight: bold;
             cursor: pointer;
             border: none;
             transition: all 0.2s;
+          }
+          .quiz-lifeline-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.25);
           }
           @keyframes pulse-yellow {
             from { opacity: 0.8; }
@@ -722,7 +729,7 @@ export default function LoveQuizReader({
           }}
         >
           <div style={{ fontSize: "64px" }}>🎮</div>
-          <h2 style={{ fontSize: "26px", fontWeight: "bold", background: "linear-gradient(to right, #ff4b72, #9c6cfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+          <h2 style={{ fontSize: "36px", fontWeight: "normal", color: "#ffd700", fontFamily: "var(--font-cursive)", textShadow: "0 2px 10px rgba(255, 215, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.8)" }}>
             Love Millionaire Quiz
           </h2>
           
@@ -957,28 +964,28 @@ export default function LoveQuizReader({
                 <div 
                   className="coupon-glow"
                   style={{ 
-                    border: "3px double var(--accent-gold, #C9A227)", 
-                    background: "linear-gradient(135deg, rgba(201, 162, 39, 0.12), rgba(10, 5, 18, 0.95))", 
+                    border: "4px double #ffd700", 
+                    background: "linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(20, 10, 30, 0.95) 50%, rgba(212, 175, 55, 0.05) 100%)", 
                     borderRadius: "20px", 
                     padding: "24px 20px",
                     width: "100%",
                     textAlign: "center",
                     position: "relative",
                     overflow: "hidden",
-                    boxShadow: "0 10px 30px rgba(226, 184, 87, 0.2)"
+                    boxShadow: "0 20px 45px rgba(212, 175, 55, 0.25), inset 0 0 20px rgba(212, 175, 55, 0.15)"
                   }}
                 >
                   <div style={{ position: "absolute", top: "-10px", right: "-10px", fontSize: "72px", opacity: 0.05, pointerEvents: "none" }}>🎟️</div>
                   <div style={{ position: "absolute", bottom: "-10px", left: "-10px", fontSize: "72px", opacity: 0.05, pointerEvents: "none" }}>💖</div>
                   
-                  <span style={{ fontSize: "10px", letterSpacing: "2.5px", color: "var(--accent-gold)", textTransform: "uppercase", fontWeight: "bold", display: "block", marginBottom: "8px" }}>
+                  <span style={{ fontSize: "10px", letterSpacing: "2.5px", color: "#ffd700", textTransform: "uppercase", fontWeight: "bold", display: "block", marginBottom: "8px" }}>
                     EverAfter Love Certificate
                   </span>
-                  <h3 style={{ fontSize: "18px", fontWeight: "bold", color: "#fff", margin: "4px 0", fontFamily: "var(--font-cursive)" }}>
+                  <h3 style={{ fontSize: "20px", fontWeight: "bold", color: "#fff", margin: "4px 0", fontFamily: "var(--font-cursive)" }}>
                     {prizeTitle || "A Romantic Surprise"}
                   </h3>
                   
-                  <div style={{ width: "40px", height: "1px", background: "var(--accent-gold)", margin: "12px auto" }} />
+                  <div style={{ width: "40px", height: "1px", background: "#ffd700", margin: "12px auto" }} />
                   
                   <p style={{ fontSize: "12px", color: "var(--text-muted)", lineHeight: "1.5", margin: 0 }}>
                     {prizeDesc || "This certificate entitles you to one custom romantic reward."}
@@ -988,7 +995,7 @@ export default function LoveQuizReader({
                     Presented by <strong style={{ color: "#fff" }}>{sender}</strong> to <strong style={{ color: "#fff" }}>{recipient}</strong>
                   </div>
 
-                  <div style={{ fontSize: "10px", fontWeight: "bold", color: prizeRedeemed ? "#2ec4b6" : "var(--accent-rose)", textTransform: "uppercase", marginTop: "16px", letterSpacing: "1px", background: prizeRedeemed ? "rgba(46, 196, 182, 0.1)" : "rgba(255, 75, 114, 0.1)", padding: "6px", borderRadius: "8px" }}>
+                  <div style={{ fontSize: "10px", fontWeight: "bold", color: prizeRedeemed ? "#2ec4b6" : "#ffd700", textTransform: "uppercase", marginTop: "16px", letterSpacing: "1px", background: prizeRedeemed ? "rgba(46, 196, 182, 0.1)" : "rgba(255, 215, 0, 0.1)", padding: "6px", borderRadius: "8px", border: prizeRedeemed ? "1px solid rgba(46, 196, 182, 0.2)" : "1px solid rgba(255, 215, 0, 0.2)" }}>
                     {prizeRedeemed ? "✓ REDEEMED & CLAIMED! 🎉" : "✨ UNLOCKED GRAND PRIZE"}
                   </div>
                 </div>
@@ -1095,8 +1102,23 @@ export default function LoveQuizReader({
                       onClick={() => handleSelectOption(opt)}
                       className={classes}
                     >
-                      <span style={{ color: "var(--accent-gold, #C9A227)", fontWeight: "bold", marginRight: "10px" }}>{prefix}:</span>
-                      {opt}
+                      <span style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "24px",
+                        height: "24px",
+                        borderRadius: "50%",
+                        background: "linear-gradient(135deg, #b38f36 0%, #ffd700 50%, #b38f36 100%)",
+                        border: "1px solid #fff5c0",
+                        color: "#3a2305",
+                        fontWeight: "bold",
+                        fontSize: "11px",
+                        marginRight: "12px",
+                        boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                        verticalAlign: "middle"
+                      }}>{prefix}</span>
+                      <span style={{ verticalAlign: "middle" }}>{opt}</span>
                     </button>
                   );
                 })}

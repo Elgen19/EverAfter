@@ -28,7 +28,7 @@ export const BACKDROPS = [
   { id: "none", name: "No Backdrop", desc: "Solid theme background" },
   { id: "campfire", name: "Campfire Night", desc: "Couples stargazing near a warm campfire" },
   { id: "ocean_sunset", name: "Ocean Sunset", desc: "A warm walk along a sandy beach at sunset" },
-  { id: "cozy_cafe", name: "Cozy Café", desc: "Warm city lights through a rainy window" },
+  { id: "cozy_cafe", name: "Sunset Silhouettes", desc: "A couple standing in silhouette by the lake at sunset" },
   { id: "cherry_blossoms", name: "Cherry Blossoms", desc: "Dreamy cherry blossom trees path in full bloom" },
   { id: "vintage_library", name: "Vintage Library", desc: "Bookshelves, leather chairs, and fireplace" }
 ];

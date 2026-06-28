@@ -36,9 +36,10 @@ interface IntroStatementProps {
   text: string;
   animation: "typewriter" | "fade-float" | "pulse";
   onComplete: () => void;
+  preview?: boolean;
 }
 
-export default function IntroStatement({ text, animation, onComplete }: IntroStatementProps) {
+export default function IntroStatement({ text, animation, onComplete, preview = false }: IntroStatementProps) {
   const [introStage, setIntroStage] = useState<"before" | "animating" | "completed" | "exiting">("before");
 
   useEffect(() => {
@@ -60,6 +61,7 @@ export default function IntroStatement({ text, animation, onComplete }: IntroSta
   }, [text, animation]);
 
   useEffect(() => {
+    if (preview) return; // Disable auto-advancing in preview mode so user has manual control
     if (introStage === "completed") {
       const textLength = text.length;
       const readingDelay = Math.max(2000, textLength * 55 + 1500);
@@ -68,7 +70,7 @@ export default function IntroStatement({ text, animation, onComplete }: IntroSta
       }, readingDelay);
       return () => clearTimeout(timer);
     }
-  }, [introStage, text]);
+  }, [introStage, text, preview]);
 
   useEffect(() => {
     if (introStage === "exiting") {
@@ -115,6 +117,32 @@ export default function IntroStatement({ text, animation, onComplete }: IntroSta
           <span>{text}</span>
         )}
       </div>
+
+      {preview && (
+        <button
+          type="button"
+          onClick={onComplete}
+          style={{
+            marginTop: "10px",
+            padding: "12px 28px",
+            borderRadius: "30px",
+            background: "var(--accent-rose)",
+            backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)",
+            color: "#fff",
+            border: "none",
+            fontSize: "14px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            boxShadow: "0 6px 20px rgba(255, 75, 114, 0.3)",
+            outline: "none",
+            transition: "transform 0.2s"
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.04)"}
+          onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
+        >
+          Open Letter ✉️
+        </button>
+      )}
     </div>
   );
 }

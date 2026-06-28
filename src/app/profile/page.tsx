@@ -8,8 +8,9 @@ import FloatingHearts from "@/components/FloatingHearts";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, recipient, loading, saveRecipientProfile, logout } = useAuth();
+  const { user, recipient, loading, saveRecipientProfile, updateSenderName, logout } = useAuth();
   
+  const [senderName, setSenderName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -28,6 +29,13 @@ export default function ProfilePage() {
     }
   }, [recipient]);
 
+  // Sync sender state to form input once loaded
+  useEffect(() => {
+    if (user) {
+      setSenderName(user.displayName || user.email.split("@")[0] || "");
+    }
+  }, [user]);
+
   // Authenticate & Profile Check redirects
   useEffect(() => {
     if (!loading) {
@@ -39,6 +47,24 @@ export default function ProfilePage() {
       }
     }
   }, [user, recipient, loading, router]);
+
+  // Prevent vertical page scroll
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      document.documentElement.style.overflow = "hidden";
+      document.documentElement.style.height = "100vh";
+      document.body.style.overflow = "hidden";
+      document.body.style.height = "100vh";
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        document.documentElement.style.overflow = "";
+        document.documentElement.style.height = "";
+        document.body.style.overflow = "";
+        document.body.style.height = "";
+      }
+    };
+  }, []);
 
   const validateEmail = (val: string) => {
     setEmail(val);
@@ -56,13 +82,14 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firstName.trim() || !lastName.trim() || !email.trim() || emailError) return;
+    if (!senderName.trim() || !firstName.trim() || !lastName.trim() || !email.trim() || emailError) return;
 
     setSaving(true);
     setError("");
     setSuccess(false);
 
     try {
+      await updateSenderName(senderName);
       await saveRecipientProfile(firstName, lastName, email);
       setSuccess(true);
       setSaving(false);
@@ -84,33 +111,84 @@ export default function ProfilePage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", position: "relative", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
+    <div style={{ height: "100vh", width: "100vw", position: "relative", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px", overflow: "hidden" }}>
       <FloatingHearts />
 
       <main 
-        className="glass"
+        className="glass animate-reveal"
         style={{
           width: "100%",
-          maxWidth: "500px",
-          padding: "40px 30px",
+          maxWidth: "460px",
+          maxHeight: "calc(100vh - 32px)",
+          padding: "24px 24px",
           display: "flex",
           flexDirection: "column",
-          gap: "24px",
+          gap: "16px",
           position: "relative",
           zIndex: 10,
           boxShadow: "0 20px 50px rgba(0, 0, 0, 0.4)",
-          borderRadius: "16px"
+          borderRadius: "16px",
+          overflowY: "auto",
         }}
       >
+        {/* Close Button to Return to Dashboard */}
+        <Link
+          href="/dashboard"
+          style={{
+            position: "absolute",
+            top: "16px",
+            right: "16px",
+            width: "30px",
+            height: "30px",
+            borderRadius: "50%",
+            backgroundColor: "rgba(255, 255, 255, 0.05)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "rgba(255, 255, 255, 0.6)",
+            transition: "all 0.2s ease-in-out",
+            cursor: "pointer",
+            zIndex: 20,
+            textDecoration: "none"
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "rgba(255, 75, 114, 0.15)";
+            e.currentTarget.style.color = "var(--accent-rose)";
+            e.currentTarget.style.borderColor = "rgba(255, 75, 114, 0.3)";
+            e.currentTarget.style.transform = "scale(1.05)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.05)";
+            e.currentTarget.style.color = "rgba(255, 255, 255, 0.6)";
+            e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.1)";
+            e.currentTarget.style.transform = "scale(1)";
+          }}
+          title="Close and Return to Dashboard"
+        >
+          <svg 
+            width="12" 
+            height="12" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2.5" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </Link>
         {/* Header Branding */}
         <div style={{ textAlign: "center" }}>
-          <span style={{ fontSize: "36px" }}>⚙️</span>
+          <span style={{ fontSize: "28px" }}>⚙️</span>
           <h1 
             style={{ 
-              fontSize: "36px", 
+              fontSize: "26px", 
               fontWeight: "normal",
               fontFamily: "var(--font-cursive)",
-              marginTop: "8px", 
+              marginTop: "4px", 
               background: "linear-gradient(to right, #ff4b72, #9c6cfa)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent"
@@ -118,35 +196,57 @@ export default function ProfilePage() {
           >
             EverAfter Settings
           </h1>
-          <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "4px" }}>
+          <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "2px" }}>
             Configure your sender credentials and receiver profile settings.
           </p>
         </div>
 
-        {/* Sender details (Read-only Account Profile) */}
-        <div 
-          style={{ 
-            backgroundColor: "rgba(255, 255, 255, 0.02)", 
-            border: "1px solid var(--border-card)", 
-            borderRadius: "10px", 
-            padding: "16px 20px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px"
-          }}
-        >
-          <span style={{ fontSize: "11px", fontWeight: "bold", textTransform: "uppercase", color: "var(--accent-purple)", letterSpacing: "0.5px" }}>
-            Sender Profile (You)
-          </span>
-          <div style={{ fontSize: "14px", display: "flex", flexDirection: "column", gap: "2px" }}>
-            <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>Registered Email</span>
-            <strong style={{ color: "#fff", wordBreak: "break-all" }}>{user.email}</strong>
-          </div>
-        </div>
+        {/* Profile configuration form */}
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          
+          {/* Sender details (Editable Sender Name + Read-only Email) */}
+          <div 
+            style={{ 
+              backgroundColor: "rgba(255, 255, 255, 0.02)", 
+              border: "1px solid var(--border-card)", 
+              borderRadius: "10px", 
+              padding: "12px 16px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px"
+            }}
+          >
+            <span style={{ fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", color: "var(--accent-purple)", letterSpacing: "0.5px" }}>
+              Sender Profile (You)
+            </span>
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <label style={{ fontSize: "10px", color: "var(--text-muted)" }}>Your Name</label>
+              <input
+                type="text"
+                required
+                value={senderName}
+                onChange={(e) => setSenderName(e.target.value)}
+                placeholder="Your Name"
+                style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.03)",
+                  border: "1px solid var(--border-card)",
+                  borderRadius: "8px",
+                  padding: "10px",
+                  color: "#fff",
+                  fontSize: "13px",
+                  outline: "none",
+                }}
+              />
+            </div>
 
-        {/* Receiver details (Editable Partner Profile) */}
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          <span style={{ fontSize: "11px", fontWeight: "bold", textTransform: "uppercase", color: "var(--accent-rose)", letterSpacing: "0.5px" }}>
+            <div style={{ fontSize: "13px", display: "flex", flexDirection: "column", gap: "2px" }}>
+              <span style={{ color: "var(--text-muted)", fontSize: "10px" }}>Registered Email</span>
+              <strong style={{ color: "rgba(255, 255, 255, 0.5)", wordBreak: "break-all", fontWeight: "normal" }}>{user.email}</strong>
+            </div>
+          </div>
+
+          <span style={{ fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", color: "var(--accent-rose)", letterSpacing: "0.5px", marginTop: "2px" }}>
             Receiver Profile (Your Partner)
           </span>
 
@@ -156,9 +256,9 @@ export default function ProfilePage() {
                 backgroundColor: "rgba(255, 75, 114, 0.1)", 
                 border: "1px solid rgba(255, 75, 114, 0.2)", 
                 borderRadius: "8px", 
-                padding: "10px 12px", 
+                padding: "8px 10px", 
                 color: "var(--accent-rose)", 
-                fontSize: "12px",
+                fontSize: "11px",
                 lineHeight: "1.4"
               }}
             >
@@ -172,20 +272,20 @@ export default function ProfilePage() {
                 backgroundColor: "rgba(46, 196, 182, 0.1)", 
                 border: "1px solid rgba(46, 196, 182, 0.2)", 
                 borderRadius: "8px", 
-                padding: "10px 12px", 
+                padding: "8px 10px", 
                 color: "#2ec4b6", 
-                fontSize: "12px",
+                fontSize: "11px",
                 fontWeight: 600,
                 lineHeight: "1.4"
               }}
             >
-              ✅ Partner profile updated successfully! 💖
+              ✅ Profile updated successfully! 💖
             </div>
           )}
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <label style={{ fontSize: "11px", color: "var(--text-muted)" }}>First Name</label>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "10px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <label style={{ fontSize: "10px", color: "var(--text-muted)" }}>First Name</label>
               <input
                 type="text"
                 required
@@ -196,15 +296,15 @@ export default function ProfilePage() {
                   backgroundColor: "rgba(255, 255, 255, 0.03)",
                   border: "1px solid var(--border-card)",
                   borderRadius: "8px",
-                  padding: "12px",
+                  padding: "10px",
                   color: "#fff",
                   fontSize: "13px",
                   outline: "none",
                 }}
               />
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <label style={{ fontSize: "11px", color: "var(--text-muted)" }}>Last Name</label>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <label style={{ fontSize: "10px", color: "var(--text-muted)" }}>Last Name</label>
               <input
                 type="text"
                 required
@@ -215,7 +315,7 @@ export default function ProfilePage() {
                   backgroundColor: "rgba(255, 255, 255, 0.03)",
                   border: "1px solid var(--border-card)",
                   borderRadius: "8px",
-                  padding: "12px",
+                  padding: "10px",
                   color: "#fff",
                   fontSize: "13px",
                   outline: "none",
@@ -224,8 +324,8 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label style={{ fontSize: "11px", color: "var(--text-muted)" }}>Recipient's Email Address</label>
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+            <label style={{ fontSize: "10px", color: "var(--text-muted)" }}>Recipient's Email Address</label>
             <input
               type="email"
               required
@@ -236,7 +336,7 @@ export default function ProfilePage() {
                 backgroundColor: "rgba(255, 255, 255, 0.03)",
                 border: emailError ? "1px solid var(--accent-rose)" : "1px solid var(--border-card)",
                 borderRadius: "8px",
-                padding: "12px",
+                padding: "10px",
                 color: "#fff",
                 fontSize: "13px",
                 outline: "none",
@@ -251,20 +351,20 @@ export default function ProfilePage() {
 
           <button
             type="submit"
-            disabled={saving || !firstName.trim() || !lastName.trim() || !email.trim() || !!emailError}
+            disabled={saving || !senderName.trim() || !firstName.trim() || !lastName.trim() || !email.trim() || !!emailError}
             style={{
-              padding: "12px",
+              padding: "10px",
               borderRadius: "8px",
               backgroundColor: "var(--accent-rose)",
               backgroundImage: "linear-gradient(135deg, #ff4b72, #d9264c)",
               color: "#fff",
               border: "none",
               fontWeight: 600,
-              fontSize: "14px",
+              fontSize: "13px",
               cursor: saving ? "not-allowed" : "pointer",
               transition: "all 0.2s",
-              opacity: saving || !firstName.trim() || !lastName.trim() || !email.trim() || !!emailError ? 0.7 : 1,
-              marginTop: "4px"
+              opacity: saving || !senderName.trim() || !firstName.trim() || !lastName.trim() || !email.trim() || !!emailError ? 0.7 : 1,
+              marginTop: "2px"
             }}
           >
             {saving ? "Saving changes..." : "Save Changes ✨"}
@@ -272,34 +372,12 @@ export default function ProfilePage() {
         </form>
 
         {/* Navigation / Logout Section */}
-        <div style={{ display: "flex", gap: "12px", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "20px" }}>
-          <Link
-            href="/dashboard"
-            style={{
-              flex: 1,
-              padding: "12px",
-              borderRadius: "8px",
-              border: "1px solid var(--border-card)",
-              background: "transparent",
-              color: "var(--text-main)",
-              fontSize: "13px",
-              fontWeight: 500,
-              textDecoration: "none",
-              textAlign: "center",
-              cursor: "pointer",
-              transition: "background-color 0.2s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-          >
-            🏠 Dashboard
-          </Link>
-
+        <div style={{ display: "flex", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "12px" }}>
           <button
             onClick={() => logout()}
             style={{
-              flex: 1,
-              padding: "12px",
+              width: "100%",
+              padding: "10px",
               borderRadius: "8px",
               border: "1px solid rgba(255, 75, 114, 0.25)",
               background: "rgba(255, 75, 114, 0.05)",

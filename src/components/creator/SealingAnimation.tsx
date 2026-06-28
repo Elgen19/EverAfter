@@ -265,10 +265,10 @@ export default function SealingAnimation({
       className={`sealing-animation-container ${isInline ? "sealing-animation-container-inline" : ""}`}
       style={{
         position: isInline ? "absolute" : "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
+        top: isInline ? "50%" : 0,
+        left: isInline ? "50%" : 0,
+        width: isInline ? "550px" : "100vw",
+        height: isInline ? "450px" : "100vh",
         backgroundColor: isInline ? "transparent" : "rgba(11, 7, 17, 0.96)",
         zIndex: isInline ? 10 : 9999,
         display: "flex",
@@ -281,29 +281,39 @@ export default function SealingAnimation({
         fontFamily: "var(--font-ui)",
         animation: isInline ? "none" : "fadeInStudioOverlay 0.5s ease forwards",
         overflow: "hidden",
-        transform: isInline ? "scale(0.55)" : "none",
+        transform: isInline ? "translate(-50%, -50%) scale(0.55)" : "none",
         transformOrigin: "center"
       }}
     >
       <style>{`
         @media (max-width: 900px) {
           .sealing-animation-container-inline {
-            transform: scale(0.42) !important;
+            transform: translate(-50%, -50%) scale(0.42) !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .sealing-animation-container-inline {
+            transform: translate(-50%, -50%) scale(0.36) !important;
+          }
+        }
+        @media (max-width: 360px) {
+          .sealing-animation-container-inline {
+            transform: translate(-50%, -50%) scale(0.30) !important;
           }
         }
         @media (max-width: 768px) {
           .sealing-animation-container:not(.sealing-animation-container-inline) .sealing-animation-inner-scaler {
-            transform: scale(0.75) !important;
+            transform: scale(0.65) !important;
           }
         }
         @media (max-width: 480px) {
           .sealing-animation-container:not(.sealing-animation-container-inline) .sealing-animation-inner-scaler {
-            transform: scale(0.58) !important;
+            transform: scale(0.48) !important;
           }
         }
         @media (max-width: 360px) {
           .sealing-animation-container:not(.sealing-animation-container-inline) .sealing-animation-inner-scaler {
-            transform: scale(0.48) !important;
+            transform: scale(0.40) !important;
           }
         }
         @keyframes fadeInStudioOverlay {

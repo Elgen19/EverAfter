@@ -6,13 +6,18 @@ interface AudioPlayerProps {
   autoplay?: boolean;
   musicType?: "synth" | "url";
   musicUrl?: string;
+  preview?: boolean;
+  isForcePaused?: boolean;
+  onTogglePlayback?: (isPlaying: boolean) => void;
+  visible?: boolean;
 }
 
-export default function AudioPlayer({ autoplay = false, musicType = "synth", musicUrl }: AudioPlayerProps) {
+export default function AudioPlayer({ autoplay = false, musicType = "synth", musicUrl, preview = false, isForcePaused = false, onTogglePlayback, visible = true }: AudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isPlayingRef = useRef(false);
   const isTryingToPlayRef = useRef(false);
+  const wasPlayingBeforeForcePauseRef = useRef(false);
 
   const startAudio = () => {
     if (isPlayingRef.current || isTryingToPlayRef.current) return;
@@ -48,8 +53,10 @@ export default function AudioPlayer({ autoplay = false, musicType = "synth", mus
   const togglePlayback = () => {
     if (isPlaying) {
       stopAudio();
+      if (onTogglePlayback) onTogglePlayback(false);
     } else {
       startAudio();
+      if (onTogglePlayback) onTogglePlayback(true);
     }
   };
 
@@ -71,6 +78,21 @@ export default function AudioPlayer({ autoplay = false, musicType = "synth", mus
     }
   }, [autoplay]);
 
+  // Handle force pause from parent component (e.g. when voice note plays)
+  useEffect(() => {
+    if (isForcePaused) {
+      if (isPlayingRef.current) {
+        wasPlayingBeforeForcePauseRef.current = true;
+        stopAudio();
+      }
+    } else {
+      if (wasPlayingBeforeForcePauseRef.current) {
+        startAudio();
+        wasPlayingBeforeForcePauseRef.current = false;
+      }
+    }
+  }, [isForcePaused]);
+
   // Cleanup
   useEffect(() => {
     return () => {
@@ -85,9 +107,9 @@ export default function AudioPlayer({ autoplay = false, musicType = "synth", mus
     <button
       onClick={togglePlayback}
       style={{
-        position: "fixed",
-        bottom: "24px",
-        right: "24px",
+        position: preview ? "absolute" : "fixed",
+        bottom: preview ? "16px" : "24px",
+        right: preview ? "16px" : "24px",
         zIndex: 100,
         width: "48px",
         height: "48px",
@@ -97,7 +119,7 @@ export default function AudioPlayer({ autoplay = false, musicType = "synth", mus
         backdropFilter: "blur(8px)",
         color: isPlaying ? "#ff4b72" : "#a59fb1",
         cursor: "pointer",
-        display: "flex",
+        display: visible ? "flex" : "none",
         alignItems: "center",
         justifyContent: "center",
         boxShadow: isPlaying 

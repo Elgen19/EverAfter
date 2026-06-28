@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { encodeLetterData, decodeLetterData, LetterData } from "@/utils/encoding";
 import { db, storage } from "@/utils/firebase";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
+import { logPerformanceMetric } from "@/utils/performance";
 
 const DEFAULT_QUIZ_QUESTIONS = [
   {
@@ -59,7 +60,7 @@ export function useLetterForm() {
   const queryD = searchParams.get("d") || "";
 
   // Preview options state
-  const [previewMode, setPreviewMode] = useState<"letter" | "envelope">("letter");
+  const [previewMode, setPreviewMode] = useState<"letter" | "envelope" | "sequence" | "background">("letter");
   const [envelopeResetKey, setEnvelopeResetKey] = useState(0);
   const [hasLoadedD, setHasLoadedD] = useState(false);
 
@@ -228,6 +229,12 @@ export function useLetterForm() {
     { id: 2, url: "", file: null, caption: "" }
   ]);
   const [polaroidsConfirmed, setPolaroidsConfirmed] = useState(false);
+  const [polaroidsLayout, setPolaroidsLayout] = useState<"stack" | "collage">("stack");
+  const [polaroidsCollageStyle, setPolaroidsCollageStyle] = useState<"simple" | "forever" | "sunset">("simple");
+  const [polaroidsCollageBgPosition, setPolaroidsCollageBgPosition] = useState<"top" | "center" | "bottom">("center");
+  const [polaroidsCollageBgZoom, setPolaroidsCollageBgZoom] = useState<number>(100);
+  const [polaroidsTitle, setPolaroidsTitle] = useState("Captured Memories");
+  const [polaroidsShowHearts, setPolaroidsShowHearts] = useState(true);
 
   const [quizEnabled, setQuizEnabled] = useState(false);
   const [quizPrizeTitle, setQuizPrizeTitle] = useState("A Sweet Reward");
@@ -369,6 +376,12 @@ export function useLetterForm() {
             }
             if (data.polaroids) {
               setPolaroidsEnabled(data.polaroids.enabled || false);
+              setPolaroidsLayout(data.polaroids.layout || "stack");
+              setPolaroidsCollageStyle(data.polaroids.collageStyle || "simple");
+              setPolaroidsCollageBgPosition(data.polaroids.collageBgPosition || "center");
+              setPolaroidsCollageBgZoom(data.polaroids.collageBgZoom || 100);
+              setPolaroidsTitle(data.polaroids.title || "Captured Memories");
+              setPolaroidsShowHearts(data.polaroids.showHearts !== false);
               const loadedPolaroids = [
                 { id: 0, url: "", file: null, caption: "" },
                 { id: 1, url: "", file: null, caption: "" },
@@ -545,6 +558,12 @@ export function useLetterForm() {
         }
         if (decoded.polaroids) {
           setPolaroidsEnabled(decoded.polaroids.enabled || false);
+          setPolaroidsLayout(decoded.polaroids.layout || "stack");
+          setPolaroidsCollageStyle(decoded.polaroids.collageStyle || "simple");
+          setPolaroidsCollageBgPosition(decoded.polaroids.collageBgPosition || "center");
+          setPolaroidsCollageBgZoom(decoded.polaroids.collageBgZoom || 100);
+          setPolaroidsTitle(decoded.polaroids.title || "Captured Memories");
+          setPolaroidsShowHearts(decoded.polaroids.showHearts !== false);
           const loadedPolaroids = [
             { id: 0, url: "", file: null, caption: "" },
             { id: 1, url: "", file: null, caption: "" },
@@ -652,6 +671,12 @@ export function useLetterForm() {
       } : undefined,
       polaroids: polaroidsEnabled ? {
         enabled: true,
+        layout: polaroidsLayout,
+        collageStyle: polaroidsLayout === "collage" ? polaroidsCollageStyle : undefined,
+        collageBgPosition: polaroidsLayout === "collage" ? polaroidsCollageBgPosition : undefined,
+        collageBgZoom: polaroidsLayout === "collage" ? polaroidsCollageBgZoom : undefined,
+        title: polaroidsTitle,
+        showHearts: polaroidsShowHearts,
         items: polaroids.filter(p => p.url.trim() !== "").map(p => ({
           imageUrl: p.url.startsWith("blob:") ? undefined : p.url,
           caption: p.caption.trim() || undefined
@@ -1017,6 +1042,9 @@ export function useLetterForm() {
       } : undefined,
       polaroids: polaroidsEnabled ? {
         enabled: true,
+        layout: polaroidsLayout,
+        title: polaroidsTitle,
+        showHearts: polaroidsShowHearts,
         items: polaroids.map(p => ({
           imageUrl: p.url.startsWith("blob:") ? null : (p.url.trim() || null),
           caption: p.caption.trim() || null
@@ -1167,6 +1195,7 @@ export function useLetterForm() {
     if (!emailToSend.trim()) return;
     setSendingEmail(true);
     setEmailStatus("Sending letter invitation...");
+    const start = performance.now();
     try {
       const res = await fetch("/api/send-letter", {
         method: "POST",
@@ -1179,6 +1208,8 @@ export function useLetterForm() {
           title: title.trim() || "A Love Letter"
         })
       });
+      const latency = performance.now() - start;
+      logPerformanceMetric("api_send-letter", latency, res.ok ? "success" : "error");
       const data = await res.json();
       if (data.success) {
         setEmailStatus("✓ Email sent successfully!");
@@ -1194,7 +1225,9 @@ export function useLetterForm() {
       } else {
         setEmailStatus("Failed to send email. Please try again.");
       }
-    } catch (err) {
+    } catch (err: any) {
+      const latency = performance.now() - start;
+      logPerformanceMetric("api_send-letter", latency, "error", { error: err.message || err });
       console.error("Failed to send email:", err);
       setEmailStatus("Failed to send email. Please try again.");
     } finally {
@@ -1257,6 +1290,12 @@ export function useLetterForm() {
     polaroidsEnabled, setPolaroidsEnabled,
     polaroids, setPolaroids,
     polaroidsConfirmed, setPolaroidsConfirmed,
+    polaroidsLayout, setPolaroidsLayout,
+    polaroidsCollageStyle, setPolaroidsCollageStyle,
+    polaroidsCollageBgPosition, setPolaroidsCollageBgPosition,
+    polaroidsCollageBgZoom, setPolaroidsCollageBgZoom,
+    polaroidsTitle, setPolaroidsTitle,
+    polaroidsShowHearts, setPolaroidsShowHearts,
     // Step order
     stepOrder, activeSteps, getStepLabel,
     // Share modal

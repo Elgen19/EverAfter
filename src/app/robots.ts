@@ -4,9 +4,20 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
-      allow: "/",
-      disallow: ["/dashboard/", "/profile/", "/create/", "/recipient-setup/"],
+      allow: ["/", "/create", "/login", "/coming-soon"],
+      disallow: [
+        "/dashboard", 
+        "/dashboard/", 
+        "/profile", 
+        "/profile/", 
+        "/recipient-setup", 
+        "/recipient-setup/",
+        "/letter",
+        "/letter/",
+        "/animation",
+        "/animation/"
+      ],
     },
-    sitemap: "https://everafterletters.xyz/sitemap.xml", // Make sure to replace this with your custom domain if you connect one
+    sitemap: "https://everafterletters.xyz/sitemap.xml",
   };
 }

@@ -23,6 +23,7 @@ interface ThankYouProps {
   mailboxLink?: string;
   replyToId?: string;
   onReplay?: () => void;
+  preview?: boolean;
 }
 
 const STYLE_OPTIONS = [
@@ -56,7 +57,8 @@ export default function ThankYou({
   showMailboxButton = false,
   mailboxLink = "",
   replyToId = "",
-  onReplay
+  onReplay,
+  preview = false
 }: ThankYouProps) {
   const [showStylePicker, setShowStylePicker] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -278,13 +280,15 @@ export default function ThankYou({
                 Original Letter ↩
               </button>
             )}
-            <button onClick={() => setShowStylePicker(true)}
-              style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#fff", fontWeight: 600, fontSize: "13px", cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; }}
-            >
-              📥 Download
-            </button>
+            {!preview && (
+              <button onClick={() => setShowStylePicker(true)}
+                style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#fff", fontWeight: 600, fontSize: "13px", cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; }}
+              >
+                📥 Download
+              </button>
+            )}
             <button 
               onClick={handleReplay}
               style={{ 
