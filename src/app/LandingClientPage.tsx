@@ -665,6 +665,7 @@ export default function LandingClientPage() {
             {/* Tagline of the App */}
             <div style={{ 
               display: "inline-flex", 
+              flexWrap: "wrap",
               alignItems: "center", 
               gap: "6px", 
               backgroundColor: "rgba(255, 75, 114, 0.1)", 
@@ -675,6 +676,8 @@ export default function LandingClientPage() {
               fontWeight: 600, 
               letterSpacing: "0.5px",
               width: "fit-content",
+              maxWidth: "100%",
+              boxSizing: "border-box",
               textTransform: "uppercase",
               border: "1px solid rgba(255, 75, 114, 0.15)"
             }}>
@@ -718,6 +721,7 @@ export default function LandingClientPage() {
               color: "var(--text-muted)", 
               lineHeight: "1.6",
               maxWidth: "540px",
+              width: "100%",
               margin: "0"
             }}>
               Express your heart in a private, media-rich letter experience. Design envelopes with digital wax seals, lock content for special dates, attach Polaroid photo frames, test your partner with love quizzes, and embed voice recordings.
