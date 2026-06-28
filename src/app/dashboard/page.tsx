@@ -954,7 +954,7 @@ export default function DashboardPage() {
       <footer style={{ marginTop: "auto", textAlign: "center", padding: "40px 20px", fontSize: "14px", color: "var(--text-muted)", borderTop: "1px solid var(--border-card)", background: "rgba(7, 5, 11, 0.95)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", fontFamily: "var(--font-ui)", letterSpacing: "0.5px", display: "flex", flexDirection: "column", gap: "8px", justifyContent: "center", alignItems: "center", width: "100%", position: "relative", zIndex: 10 }}>
         <div style={{ color: "var(--text-main)", fontWeight: 500 }}>EverAfter © {new Date().getFullYear()}</div>
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><span>Made with love by Elgen for Faith</span></div>
-        <div style={{ fontSize: "11px", opacity: 0.6, marginTop: "4px" }}>A digital love letter creation suite for unforgettable sentiments.</div>
+        <div style={{ fontSize: "11px", opacity: 0.6, marginTop: "4px" }}>Create and send digital love letters for unforgettable sentiments.</div>
       </footer>
 
       {/* Dramatic transition overlay */}
