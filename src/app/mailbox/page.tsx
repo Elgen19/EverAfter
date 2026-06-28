@@ -9,6 +9,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import FloatingHearts from "@/components/FloatingHearts";
 import { useAuth } from "@/context/AuthContext";
 import { usePagePerformanceLogger } from "@/utils/performance";
+import AudioPlayer from "@/components/AudioPlayer";
 
 interface MailboxLetter {
   id: string;
@@ -39,9 +40,6 @@ function MailboxContent() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isTransitioningToLetter, setIsTransitioningToLetter] = useState(false);
   const [activeTab, setActiveTab] = useState<"received" | "sent">("received");
-
-  const mailboxAudioRef = useRef<HTMLAudioElement | null>(null);
-  const [isMailboxAudioMuted, setIsMailboxAudioMuted] = useState(true);
 
   const mailboxMusicUrl = refLetter?.mailboxTheme?.musicUrl;
   const mailboxMusicAutoplay = refLetter?.mailboxTheme?.musicAutoplay;
@@ -113,24 +111,7 @@ function MailboxContent() {
     }
   };
 
-  useEffect(() => {
-    if (mailboxMusicUrl && mailboxAudioRef.current) {
-      if (mailboxMusicAutoplay) {
-        mailboxAudioRef.current.play().catch((err: any) => {
-          console.log("Mailbox autoplay blocked or failed:", err);
-          setIsMailboxAudioMuted(true);
-        });
-        setIsMailboxAudioMuted(false);
-      } else {
-        setIsMailboxAudioMuted(true);
-      }
-    }
-    return () => {
-      if (mailboxAudioRef.current) {
-        mailboxAudioRef.current.pause();
-      }
-    };
-  }, [mailboxMusicUrl, mailboxMusicAutoplay]);
+
 
   const displayedLetters = useMemo(() => {
     if (activeTab === "received") {
@@ -505,62 +486,17 @@ function MailboxContent() {
       )}
 
       {mailboxMusicUrl && (
-        <>
-          <audio
-            ref={mailboxAudioRef}
-            src={mailboxMusicUrl}
-            loop
-            autoPlay={mailboxMusicAutoplay}
-            muted={isMailboxAudioMuted}
-            style={{ display: "none" }}
-          />
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (mailboxAudioRef.current) {
-                if (mailboxAudioRef.current.paused) {
-                  mailboxAudioRef.current.play().catch((err: any) => console.log(err));
-                  setIsMailboxAudioMuted(false);
-                } else {
-                  mailboxAudioRef.current.pause();
-                  setIsMailboxAudioMuted(true);
-                }
-              }
-            }}
-            style={{
-              position: "fixed",
-              top: "20px",
-              left: "20px",
-              width: "42px",
-              height: "42px",
-              borderRadius: "50%",
-              border: "1px solid rgba(255, 255, 255, 0.12)",
-              background: "rgba(16, 9, 7, 0.65)",
-              color: "#e2b857",
-              fontSize: "18px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              zIndex: 10000,
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
-              boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
-              transition: "all 0.3s ease",
-            }}
-            title={isMailboxAudioMuted ? "Play Background Music" : "Mute Background Music"}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "scale(1.08)";
-              e.currentTarget.style.borderColor = "rgba(226, 184, 87, 0.4)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "scale(1)";
-              e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.12)";
-            }}
-          >
-            {isMailboxAudioMuted ? "🔇" : "🎵"}
-          </button>
-        </>
+        <AudioPlayer
+          autoplay={mailboxMusicAutoplay}
+          musicType="url"
+          musicUrl={mailboxMusicUrl}
+          isForcePaused={false}
+          floatingPosition={{
+            top: "20px",
+            left: "20px",
+            right: "auto"
+          }}
+        />
       )}
 
       {isSender && (
