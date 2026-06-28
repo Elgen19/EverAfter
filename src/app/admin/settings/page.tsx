@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { doc, getDoc, setDoc, collection, getDocs, query, where, deleteDoc } from "firebase/firestore";
-import { db, logFirebaseEvent } from "@/utils/firebase";
+import { db, storage, logFirebaseEvent } from "@/utils/firebase";
 
 export default function AdminSettings() {
   // Maintenance Mode
@@ -16,6 +16,10 @@ export default function AdminSettings() {
 
   // Log Purging
   const [purgingLogs, setPurgingLogs] = useState(false);
+
+  // Storage Cache-Control Migration
+  const [migratingCache, setMigratingCache] = useState(false);
+  const [migrationLog, setMigrationLog] = useState("");
 
   // Fetch initial maintenance mode status
   useEffect(() => {
@@ -100,6 +104,55 @@ export default function AdminSettings() {
       alert("Failed to execute logs purge.");
     } finally {
       setPurgingLogs(false);
+    }
+  };
+
+  // Run Cache-Control header migration for all existing letters media files
+  const handleMigrateMediaCache = async () => {
+    if (!confirm("Are you sure you want to scan all files under 'letters/' in Firebase Storage and apply Cache-Control metadata? This will take a moment depending on the number of files.")) {
+      return;
+    }
+
+    try {
+      setMigratingCache(true);
+      setMigrationLog("Initiating storage scanner...\n");
+      
+      const { ref, listAll, updateMetadata } = await import("firebase/storage");
+      if (!storage) throw new Error("Firebase Storage is not initialized.");
+      
+      const rootRef = ref(storage, "letters");
+      let total = 0;
+      let updated = 0;
+      let failed = 0;
+      
+      const scanFolder = async (folderRef: any) => {
+        const res = await listAll(folderRef);
+        for (const itemRef of res.items) {
+          total++;
+          try {
+            await updateMetadata(itemRef, {
+              cacheControl: "public,max-age=31536000"
+            });
+            updated++;
+            setMigrationLog(prev => prev + `✓ Cached: ${itemRef.fullPath}\n`);
+          } catch (itemErr: any) {
+            failed++;
+            setMigrationLog(prev => prev + `✗ Failed: ${itemRef.fullPath} - ${itemErr.message}\n`);
+          }
+        }
+        for (const prefixRef of res.prefixes) {
+          await scanFolder(prefixRef);
+        }
+      };
+      
+      await scanFolder(rootRef);
+      setMigrationLog(prev => prev + `\n✓ Migration Completed!\nTotal items scanned: ${total}\nSuccessfully updated: ${updated}\nFailed: ${failed}`);
+      logFirebaseEvent("admin_migrate_storage_cache", { total, updated, failed });
+    } catch (err: any) {
+      console.error("Migration error:", err);
+      setMigrationLog(prev => prev + `\n✗ Migration failed: ${err.message || err}`);
+    } finally {
+      setMigratingCache(false);
     }
   };
 
@@ -190,6 +243,57 @@ export default function AdminSettings() {
           >
             {purgingLogs ? "Executing Purge..." : "Purge Performance logs (>7d) 🗑️"}
           </button>
+        </div>
+
+        {/* Storage Migration Panel */}
+        <div style={panelStyle}>
+          <h3 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>
+            Media Caching Migration
+          </h3>
+          <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.5, margin: "0 0 20px 0" }}>
+            Retroactively apply a 1-year Cache-Control header to all existing files (recorded audios, music, Polaroids) in Firebase Storage so the browser caches them permanently.
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <div>
+              <button
+                onClick={handleMigrateMediaCache}
+                disabled={migratingCache}
+                style={{
+                  padding: "12px 24px",
+                  borderRadius: "8px",
+                  backgroundColor: "rgba(168, 85, 247, 0.1)",
+                  border: "1.5px solid var(--accent-purple, #a855f7)",
+                  color: "var(--accent-purple, #a855f7)",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  opacity: migratingCache ? 0.7 : 1
+                }}
+              >
+                {migratingCache ? "Scanning Storage..." : "Run Cache-Control Migration ⚙️"}
+              </button>
+            </div>
+
+            {migrationLog && (
+              <pre style={{
+                maxHeight: "150px",
+                overflowY: "auto",
+                backgroundColor: "rgba(0, 0, 0, 0.3)",
+                padding: "12px",
+                borderRadius: "8px",
+                fontSize: "11px",
+                fontFamily: "monospace",
+                color: "#e2b857",
+                margin: 0,
+                textAlign: "left",
+                whiteSpace: "pre-wrap",
+                border: "1px solid rgba(226, 184, 87, 0.15)"
+              }}>
+                {migrationLog}
+              </pre>
+            )}
+          </div>
         </div>
 
         {/* SMTP Mail Panel */}
