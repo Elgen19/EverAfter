@@ -63,7 +63,7 @@ function LetterReader() {
   }, [d]);
 
   const [dbData, setDbData] = useState<any>(null);
-  const [fetchingDb, setFetchingDb] = useState(!!id && (!preview || !d));
+  const [fetchingDb, setFetchingDb] = useState(!!id);
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -72,7 +72,7 @@ function LetterReader() {
 
   useEffect(() => {
     const fetchFromDb = async () => {
-      if (!id || (preview && d)) return;
+      if (!id) return;
       setFetchingDb(true);
       try {
         if (db) {
