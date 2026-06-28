@@ -53,6 +53,9 @@ function MailboxContent() {
   const [editMusicFile, setEditMusicFile] = useState<File | null>(null);
   const [editMusicFileName, setEditMusicFileName] = useState("");
   const [editMusicAutoplay, setEditMusicAutoplay] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editAccentColor, setEditAccentColor] = useState<"gold" | "rose" | "lavender" | "midnight">("gold");
+  const [editParticles, setEditParticles] = useState<"blossoms" | "hearts" | "stars" | "snow" | "none">("blossoms");
   const [isSaving, setIsSaving] = useState(false);
 
   const isSender = !!(user && refLetter && user.uid === refLetter.userId);
@@ -63,6 +66,9 @@ function MailboxContent() {
       setEditBgUrl(refLetter.mailboxTheme?.customBgUrl || "");
       setEditMusicUrl(refLetter.mailboxTheme?.musicUrl || "");
       setEditMusicAutoplay(refLetter.mailboxTheme?.musicAutoplay || false);
+      setEditTitle(refLetter.mailboxTheme?.customTitle || "");
+      setEditAccentColor(refLetter.mailboxTheme?.accentColor || "gold");
+      setEditParticles(refLetter.mailboxTheme?.particles || "blossoms");
     }
   }, [refLetter]);
 
@@ -92,7 +98,10 @@ function MailboxContent() {
           customBgUrl: finalBgUrl.trim() || "",
           musicUrl: finalMusicUrl.trim() || "",
           musicAutoplay: editMusicAutoplay,
-          statement: editStatement.trim() || ""
+          statement: editStatement.trim() || "",
+          customTitle: editTitle.trim() || "",
+          accentColor: editAccentColor,
+          particles: editParticles
         };
         await updateDoc(docRef, { mailboxTheme: newTheme });
 
@@ -454,6 +463,15 @@ function MailboxContent() {
     }
   };
 
+  const getDisplayUrl = (absoluteUrl: string) => {
+    try {
+      const url = new URL(absoluteUrl);
+      return url.pathname + url.search;
+    } catch (e) {
+      return absoluteUrl;
+    }
+  };
+
   const getRelativeLink = (absoluteUrl: string) => {
     try {
       const url = new URL(absoluteUrl);
@@ -463,17 +481,110 @@ function MailboxContent() {
     }
   };
 
+  const accentColor = refLetter?.mailboxTheme?.accentColor || "gold";
+  const particlesType = refLetter?.mailboxTheme?.particles || "blossoms";
+
+  const getThemeColors = (color: string) => {
+    switch (color) {
+      case "rose":
+        return {
+          accent: "#ff4b72",
+          glow008: "rgba(255, 75, 114, 0.08)",
+          glow015: "rgba(255, 75, 114, 0.15)",
+          glow02: "rgba(255, 75, 114, 0.2)",
+          glow025: "rgba(255, 75, 114, 0.25)",
+          glow03: "rgba(255, 75, 114, 0.3)",
+          glow035: "rgba(255, 75, 114, 0.35)",
+          glow04: "rgba(255, 75, 114, 0.4)",
+          glow05: "rgba(255, 75, 114, 0.5)",
+          glow06: "rgba(255, 75, 114, 0.6)",
+          glow075: "rgba(255, 75, 114, 0.75)",
+          glow085: "rgba(255, 75, 114, 0.85)"
+        };
+      case "lavender":
+        return {
+          accent: "#c084fc",
+          glow008: "rgba(192, 132, 252, 0.08)",
+          glow015: "rgba(192, 132, 252, 0.15)",
+          glow02: "rgba(192, 132, 252, 0.2)",
+          glow025: "rgba(192, 132, 252, 0.25)",
+          glow03: "rgba(192, 132, 252, 0.3)",
+          glow035: "rgba(192, 132, 252, 0.35)",
+          glow04: "rgba(192, 132, 252, 0.4)",
+          glow05: "rgba(192, 132, 252, 0.5)",
+          glow06: "rgba(192, 132, 252, 0.6)",
+          glow075: "rgba(192, 132, 252, 0.75)",
+          glow085: "rgba(192, 132, 252, 0.85)"
+        };
+      case "midnight":
+        return {
+          accent: "#94a3b8",
+          glow008: "rgba(148, 163, 184, 0.08)",
+          glow015: "rgba(148, 163, 184, 0.15)",
+          glow02: "rgba(148, 163, 184, 0.2)",
+          glow025: "rgba(148, 163, 184, 0.25)",
+          glow03: "rgba(148, 163, 184, 0.3)",
+          glow035: "rgba(148, 163, 184, 0.35)",
+          glow04: "rgba(148, 163, 184, 0.4)",
+          glow05: "rgba(148, 163, 184, 0.5)",
+          glow06: "rgba(148, 163, 184, 0.6)",
+          glow075: "rgba(148, 163, 184, 0.75)",
+          glow085: "rgba(148, 163, 184, 0.85)"
+        };
+      default: // gold
+        return {
+          accent: "#e2b857",
+          glow008: "rgba(226, 184, 87, 0.08)",
+          glow015: "rgba(226, 184, 87, 0.15)",
+          glow02: "rgba(226, 184, 87, 0.2)",
+          glow025: "rgba(226, 184, 87, 0.25)",
+          glow03: "rgba(226, 184, 87, 0.3)",
+          glow035: "rgba(226, 184, 87, 0.35)",
+          glow04: "rgba(226, 184, 87, 0.4)",
+          glow05: "rgba(226, 184, 87, 0.5)",
+          glow06: "rgba(226, 184, 87, 0.6)",
+          glow075: "rgba(226, 184, 87, 0.75)",
+          glow085: "rgba(226, 184, 87, 0.85)"
+        };
+    }
+  };
+
+  const themeColors = getThemeColors(accentColor);
   const customBg = refLetter?.mailboxTheme?.customBgUrl;
 
   return (
-    <div className="mailbox-inner-container">
+    <div 
+      className="mailbox-inner-container"
+      style={{
+        "--mailbox-accent": themeColors.accent,
+        "--mailbox-glow": themeColors.glow04
+      } as React.CSSProperties}
+    >
+      <style>{`
+        :root {
+          --accent-gold: ${themeColors.accent} !important;
+        }
+        @keyframes active-envelope-glow {
+          0%, 100% {
+            box-shadow: 0 25px 50px rgba(0,0,0,0.7), 0 0 15px ${themeColors.glow035};
+          }
+          50% {
+            box-shadow: 0 25px 50px rgba(0,0,0,0.7), 0 0 35px ${themeColors.glow075};
+          }
+        }
+        @keyframes pulse-keyhole {
+          0%, 100% { transform: scale(1); opacity: 0.7; }
+          50% { transform: scale(1.08); opacity: 1; box-shadow: 0 0 40px ${themeColors.glow04}, inset 0 0 15px ${themeColors.glow02}; }
+        }
+      `}</style>
+
       {customBg && (
         <div 
           style={{
             position: "fixed",
             inset: 0,
             backgroundImage: `
-              radial-gradient(circle at 50% 30%, rgba(226, 184, 87, 0.08) 0%, transparent 65%),
+              radial-gradient(circle at 50% 30%, ${themeColors.glow008} 0%, transparent 65%),
               url(${customBg})
             `,
             backgroundSize: "cover",
@@ -869,47 +980,77 @@ function MailboxContent() {
       `}</style>
 
 
-      {/* Floating Cherry Blossom Petals */}
-      <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", overflow: "hidden", pointerEvents: "none", zIndex: 2 }}>
-        {[...Array(8)].map((_, i) => {
-          const isLeft = i % 2 === 0;
-          const delay = i * 2.2;
-          const duration = 8 + (i % 3) * 3;
-          const leftPos = isLeft ? (i * 2) % 15 : 85 + (i * 2) % 15;
-          const size = 10 + (i % 3) * 6;
-          return (
-            <div
-              key={i}
-              style={{
-                position: "absolute",
-                top: "-20px",
-                left: `${leftPos}%`,
-                width: `${size}px`,
-                height: `${size * 0.8}px`,
-                backgroundColor: i % 2 === 0 ? "#ffb7c5" : "#ffa3b1",
-                borderRadius: "50% 0% 50% 50%",
-                opacity: 0,
-                animation: `${isLeft ? "fall-left" : "fall-right"} ${duration}s linear infinite`,
-                animationDelay: `${delay}s`,
-                transformOrigin: "center"
-              }}
-            />
-          );
-        })}
-      </div>
+      {/* Floating Particles */}
+      {particlesType !== "none" && (
+        <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", overflow: "hidden", pointerEvents: "none", zIndex: 2 }}>
+          {[...Array(10)].map((_, i) => {
+            const isLeft = i % 2 === 0;
+            const delay = i * 1.8;
+            const duration = 7 + (i % 3) * 3;
+            const leftPos = isLeft ? (i * 2) % 15 : 85 + (i * 2) % 15;
+            const size = 10 + (i % 3) * 6;
+            
+            if (particlesType === "blossoms") {
+              return (
+                <div
+                  key={i}
+                  style={{
+                    position: "absolute",
+                    top: "-20px",
+                    left: `${leftPos}%`,
+                    width: `${size}px`,
+                    height: `${size * 0.8}px`,
+                    backgroundColor: i % 2 === 0 ? "#ffb7c5" : "#ffa3b1",
+                    borderRadius: "50% 0% 50% 50%",
+                    opacity: 0,
+                    animation: `${isLeft ? "fall-left" : "fall-right"} ${duration}s linear infinite`,
+                    animationDelay: `${delay}s`,
+                    transformOrigin: "center"
+                  }}
+                />
+              );
+            } else {
+              // hearts, stars, snow
+              let char = "🌸";
+              if (particlesType === "hearts") char = i % 2 === 0 ? "❤️" : "💖";
+              else if (particlesType === "stars") char = i % 2 === 0 ? "✨" : "⭐";
+              else if (particlesType === "snow") char = i % 2 === 0 ? "❄️" : "⚪";
+              
+              return (
+                <div
+                  key={i}
+                  style={{
+                    position: "absolute",
+                    top: "-30px",
+                    left: `${5 + (i * 9) % 90}%`,
+                    fontSize: `${14 + (i % 3) * 6}px`,
+                    opacity: 0,
+                    animation: `${isLeft ? "fall-left" : "fall-right"} ${duration}s linear infinite`,
+                    animationDelay: `${delay}s`,
+                    transformOrigin: "center",
+                    filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))"
+                  }}
+                >
+                  {char}
+                </div>
+              );
+            }
+          })}
+        </div>
+      )}
 
       <header className="mailbox-header" style={{ textAlign: "center", flexShrink: 0 }}>
         <div style={{ display: "inline-block", fontSize: "40px", marginBottom: "4px", filter: "drop-shadow(0 2px 6px rgba(226,184,87,0.25))" }}>📬</div>
         <h1 style={{ 
           fontSize: "42px", 
           fontFamily: "var(--font-cursive)", 
-          background: "linear-gradient(to right, #ff4b72, #e2b857, #9c6cfa)", 
+          background: "linear-gradient(to right, #ff4b72, var(--accent-gold), #9c6cfa)", 
           WebkitBackgroundClip: "text", 
           WebkitTextFillColor: "transparent", 
           marginBottom: "6px",
           textShadow: "0 2px 8px rgba(0,0,0,0.5)"
         }}>
-          My Memory Chest
+          {refLetter?.mailboxTheme?.customTitle || "My Memory Chest"}
         </h1>
         <p style={{ fontSize: "14px", color: "var(--text-muted)", fontStyle: "italic", maxWidth: "600px", margin: "0 auto", lineHeight: "1.4" }}>
           {refLetter?.mailboxTheme?.statement ? (
@@ -1671,6 +1812,91 @@ function MailboxContent() {
               </label>
             </div>
 
+            {/* Chest Title */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: "11px", color: "var(--text-muted)", textAlign: "left" }}>Chest Title Header</label>
+              <input
+                type="text"
+                placeholder="e.g. Avery & Jordan's Secret Vault 🔒"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                style={{
+                  backgroundColor: "rgba(0,0,0,0.2)",
+                  border: "1px solid var(--border-card)",
+                  borderRadius: "6px",
+                  padding: "8px 12px",
+                  color: "#fff",
+                  fontSize: "13px",
+                  outline: "none"
+                }}
+              />
+            </div>
+
+            {/* Accent Color Selection */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px", textAlign: "left" }}>
+              <label style={{ fontSize: "11px", color: "var(--text-muted)" }}>Theme Accent Color</label>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px" }}>
+                {[
+                  { id: "gold", label: "Gold ⚜️", hex: "#e2b857" },
+                  { id: "rose", label: "Rose 🌸", hex: "#ff4b72" },
+                  { id: "lavender", label: "Lavender 💜", hex: "#c084fc" },
+                  { id: "midnight", label: "Silver ❄️", hex: "#94a3b8" }
+                ].map((colorOpt) => (
+                  <button
+                    key={colorOpt.id}
+                    type="button"
+                    onClick={() => setEditAccentColor(colorOpt.id as any)}
+                    style={{
+                      padding: "8px 4px",
+                      borderRadius: "6px",
+                      border: editAccentColor === colorOpt.id ? `1.5px solid ${colorOpt.hex}` : "1px solid var(--border-card)",
+                      background: editAccentColor === colorOpt.id ? `${colorOpt.hex}18` : "transparent",
+                      color: editAccentColor === colorOpt.id ? "#fff" : "var(--text-muted)",
+                      cursor: "pointer",
+                      fontSize: "11px",
+                      fontWeight: editAccentColor === colorOpt.id ? "bold" : "normal",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    {colorOpt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Floating Particles Selection */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px", textAlign: "left" }}>
+              <label style={{ fontSize: "11px", color: "var(--text-muted)" }}>Ambient Particles</label>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
+                {[
+                  { id: "blossoms", label: "Blossoms 🌸" },
+                  { id: "hearts", label: "Hearts 💖" },
+                  { id: "stars", label: "Stars ✨" },
+                  { id: "snow", label: "Snow ❄️" },
+                  { id: "none", label: "None 🚫" }
+                ].map((particleOpt) => (
+                  <button
+                    key={particleOpt.id}
+                    type="button"
+                    onClick={() => setEditParticles(particleOpt.id as any)}
+                    style={{
+                      padding: "8px 4px",
+                      borderRadius: "6px",
+                      border: editParticles === particleOpt.id ? "1.5px solid var(--accent-rose)" : "1px solid var(--border-card)",
+                      background: editParticles === particleOpt.id ? "rgba(255, 75, 114, 0.08)" : "transparent",
+                      color: editParticles === particleOpt.id ? "#fff" : "var(--text-muted)",
+                      cursor: "pointer",
+                      fontSize: "11px",
+                      fontWeight: editParticles === particleOpt.id ? "bold" : "normal",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    {particleOpt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Save & Cancel */}
             <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
               <button
@@ -1722,8 +1948,8 @@ export default function MailboxPage() {
       position: "relative",
       backgroundColor: "#100907", // Deep warm charcoal
       backgroundImage: `
-        radial-gradient(circle at 50% 30%, rgba(226, 184, 87, 0.08) 0%, transparent 65%),
-        url(/memory_chest_bg.png)
+        radial-gradient(circle at 50% 30%, rgba(226, 184, 87, 0.05) 0%, transparent 70%),
+        radial-gradient(circle at 50% 120%, rgba(226, 184, 87, 0.03) 0%, transparent 60%)
       `,
       backgroundSize: "cover",
       backgroundPosition: "center",

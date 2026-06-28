@@ -31,6 +31,9 @@ export interface LetterData {
     musicUrl?: string;
     musicAutoplay?: boolean;
     statement?: string;
+    customTitle?: string;
+    accentColor?: "gold" | "rose" | "lavender" | "midnight";
+    particles?: "blossoms" | "hearts" | "stars" | "snow" | "none";
   };
   email?: string;
   backdrop?: string;
