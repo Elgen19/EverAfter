@@ -32,7 +32,7 @@ export default function MusicCreator({
   user,
   encodedData
 }: MusicCreatorProps) {
-  const isUploaded = !!(musicFile || musicFileName || (musicUrl && musicUrl.includes("firebasestorage.googleapis.com")));
+  const isUploaded = !!(musicFile || musicFileName || (musicUrl && musicUrl.trim() !== "" && musicUrl !== "/cant_help_falling_in_love.mp3"));
   const [selectionMode, setSelectionMode] = useState<"system" | "custom">(isUploaded ? "custom" : "system");
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -212,10 +212,19 @@ export default function MusicCreator({
         return "Uploaded Background Music.mp3";
       }
     }
+    if (musicUrl) {
+      if (musicUrl.includes("youtube.com") || musicUrl.includes("youtu.be")) {
+        return "YouTube Track 🎵";
+      }
+      if (musicUrl.includes("spotify.com")) {
+        return "Spotify Track 🟢";
+      }
+      return "Direct Audio Link 🔗";
+    }
     return "Uploaded Audio";
   };
 
-  const hasUploadedFile = !!(musicFile || musicFileName || (musicUrl && musicUrl.includes("firebasestorage.googleapis.com")));
+  const hasUploadedFile = !!(musicFile || musicFileName || (musicUrl && musicUrl.trim() !== "" && musicUrl !== "/cant_help_falling_in_love.mp3"));
 
   // Stop preview on unmount or if music toggled off
   useEffect(() => {
@@ -467,8 +476,8 @@ export default function MusicCreator({
                       </div>
                     </div>
                   ) : (
-                    // Drag and drop zone
-                    <>
+                    // Drag and drop zone + Link Input
+                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                       <input
                         type="file"
                         ref={fileInputRef}
@@ -486,7 +495,7 @@ export default function MusicCreator({
                           flexDirection: "column",
                           alignItems: "center",
                           justifyContent: "center",
-                          padding: "24px 16px",
+                          padding: "20px 16px",
                           borderRadius: "8px",
                           border: isDragOver ? "1.5px dashed var(--accent-rose)" : "1px dashed rgba(255, 255, 255, 0.15)",
                           backgroundColor: isDragOver ? "rgba(255, 75, 114, 0.04)" : "rgba(255, 255, 255, 0.01)",
@@ -496,17 +505,52 @@ export default function MusicCreator({
                           gap: "8px"
                         }}
                       >
-                        <div style={{ fontSize: "28px" }}>📤</div>
+                        <div style={{ fontSize: "24px" }}>📤</div>
                         <div>
-                          <div style={{ fontSize: "13px", fontWeight: "600", color: "#fff" }}>
+                          <div style={{ fontSize: "12.5px", fontWeight: "600", color: "#fff" }}>
                             Click to browse or drag file here
                           </div>
-                          <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "4px" }}>
+                          <div style={{ fontSize: "10.5px", color: "var(--text-muted)", marginTop: "2px" }}>
                             Supports MP3, WAV, or OGG (Max 10MB)
                           </div>
                         </div>
                       </div>
-                    </>
+
+                      {/* Divider */}
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "4px 0" }}>
+                        <hr style={{ flex: 1, border: "none", borderTop: "1px dashed rgba(255,255,255,0.12)" }} />
+                        <span style={{ fontSize: "10px", color: "var(--text-muted)", fontWeight: "bold" }}>OR</span>
+                        <hr style={{ flex: 1, border: "none", borderTop: "1px dashed rgba(255,255,255,0.12)" }} />
+                      </div>
+
+                      {/* Paste Link Input */}
+                      <div style={{ display: "flex", flexDirection: "column", gap: "6px", textAlign: "left" }}>
+                        <label style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "bold" }}>
+                          Paste Audio Link (YouTube, Spotify, or direct MP3)
+                        </label>
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          <input
+                            type="text"
+                            placeholder="e.g., https://www.youtube.com/watch?v=..."
+                            value={musicUrl && musicUrl !== "/cant_help_falling_in_love.mp3" ? musicUrl : ""}
+                            onChange={(e) => {
+                              setMusicUrl(e.target.value);
+                              setMusicType("url");
+                            }}
+                            style={{
+                              flex: 1,
+                              backgroundColor: "rgba(0,0,0,0.25)",
+                              border: "1px solid var(--border-card)",
+                              borderRadius: "6px",
+                              padding: "8px 12px",
+                              color: "#fff",
+                              fontSize: "12px",
+                              outline: "none"
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
               )}
