@@ -1393,9 +1393,17 @@ function MailboxContent() {
               justifyContent: "center",
               color: "var(--text-muted)",
               gap: "16px",
-              padding: "40px",
+              padding: "40px 30px",
+              maxWidth: "420px",
+              width: "calc(100% - 40px)",
               textAlign: "center",
               animation: "fade-in-btn 0.5s ease-out forwards",
+              background: "rgba(10, 5, 3, 0.65)",
+              border: "1px solid rgba(255, 255, 255, 0.05)",
+              borderRadius: "16px",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
               zIndex: 10
             }}
           >
