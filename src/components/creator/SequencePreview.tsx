@@ -391,7 +391,6 @@ export default function SequencePreview({ form, isMobile = false, onClose }: Seq
               isAdjacentToPolaroids={envelopeAdjacency.isAdjacent}
               polaroidsFirst={envelopeAdjacency.polaroidsFirst}
               onClose={handleNextStep}
-              preview={true}
               narration={form.narrationEnabled ? { enabled: true, audioUrl: form.narrationUrl, syncData: form.narrationSyncData } : undefined}
             />
           </div>
