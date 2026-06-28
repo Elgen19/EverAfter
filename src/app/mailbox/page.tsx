@@ -1059,7 +1059,7 @@ function MailboxContent() {
             </>
           )}
         </p>
-        <div style={{ width: "80px", height: "1px", background: "linear-gradient(to right, transparent, var(--accent-gold), transparent)", marginTop: "10px" }} />
+        <div style={{ width: "80px", height: "1px", background: "linear-gradient(to right, transparent, var(--accent-gold), transparent)", margin: "10px auto 0 auto" }} />
       </header>
 
       {/* Tab Selector */}
