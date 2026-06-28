@@ -452,7 +452,7 @@ export default function Envelope({
         gap: "24px",
       }}
     >
-      <div className="envelope-container" style={{ transform: preview ? "scale(0.82)" : "scale(1)", transformOrigin: "center" }}>
+      <div className={preview ? "envelope-container-preview" : "envelope-container"} style={{ transform: preview ? "scale(0.82)" : "scale(1)", transformOrigin: "center" }}>
         <div 
           className={`envelope-wrapper ${themeClass} vintage-rose-style ${showIdleAnim ? "envelope-idle" : ""}`}
         onClick={handleOpen}

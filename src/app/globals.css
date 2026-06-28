@@ -1364,7 +1364,7 @@ button:hover .quiz-option-badge {
 
 /* MOBILE RESPONSIVE LAYOUT HELPERS */
 
-.envelope-container {
+.envelope-container, .envelope-container-preview {
   display: flex;
   align-items: center;
   justify-content: center;

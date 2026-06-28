@@ -1116,7 +1116,7 @@ export default function LandingClientPage() {
 
           <div className="features-container" style={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%", padding: "0 20px", boxSizing: "border-box" }}>
             {/* Centered Polaroid Stack */}
-            <div className="features-stack-column" style={{ width: "340px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+            <div className="features-stack-column" style={{ width: "100%", maxWidth: "340px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
               <div className="polaroid-stack-container" style={{ position: "relative", width: "320px", height: "420px" }}>
                 {polaroidStack.map((cardIndex, zIndex) => {
                   const card = featuresData[cardIndex];

@@ -262,7 +262,7 @@ export default function ThankYou({
         <div className="thankyou-buttons-container">
           {/* Horizontal row of 3 buttons (stacked on mobile) */}
           <div className="thankyou-row-three">
-            {!isWriteback && (
+            {!isWriteback && !preview && (
               <button onClick={handleWriteBack}
                 style={{ flex: 1, padding: "12px", borderRadius: "8px", background: colors.buttonBg, backgroundImage: theme === "blush" || theme === "royal" ? "none" : "linear-gradient(135deg, #ff4b72, #d9264c)", border: "none", color: "#fff", fontWeight: 600, fontSize: "14px", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", boxShadow: `0 4px 10px ${colors.shadow}` }}
                 onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}

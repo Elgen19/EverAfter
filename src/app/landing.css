@@ -1812,4 +1812,20 @@ html, body {
   }
 }
 
+@media (max-width: 380px) {
+  .polaroid-stack-container {
+    transform: scale(0.85);
+    transform-origin: center center;
+    margin: 0 auto -40px auto !important;
+  }
+}
+
+@media (max-width: 340px) {
+  .polaroid-stack-container {
+    transform: scale(0.75);
+    transform-origin: center center;
+    margin: 0 auto -60px auto !important;
+  }
+}
+
 
