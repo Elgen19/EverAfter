@@ -143,8 +143,8 @@ html, body {
     justify-content: center !important;
   }
   .landing-hero-title {
-    font-size: 48px !important;
-    min-height: 130px !important;
+    font-size: 38px !important;
+    min-height: 110px !important;
     margin-bottom: 8px !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -181,8 +181,8 @@ html, body {
 
 @media (max-width: 600px) {
   .landing-hero-title {
-    font-size: 44px !important;
-    min-height: 110px !important;
+    font-size: 30px !important;
+    min-height: 90px !important;
     margin-bottom: 6px !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -195,8 +195,8 @@ html, body {
     padding: 0 16px !important;
   }
   .features-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 12px !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
   }
   .feature-card {
     padding: 16px 12px !important;
@@ -215,6 +215,34 @@ html, body {
   .feature-desc {
     font-size: 12px !important;
     line-height: 1.4 !important;
+  }
+  .problem-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .demo-envelope-wrapper-parent {
+    width: 290px !important;
+    height: 180px !important;
+  }
+  #how-it-works {
+    padding: 24px 16px !important;
+    border-radius: 16px !important;
+    margin-bottom: 60px !important;
+  }
+  .interactive-demo-box {
+    min-height: 520px !important;
+    padding: 16px 12px !important;
+    border-radius: 16px !important;
+  }
+  #features, #use-cases, #demo, #faq, .problem-section, .story-section {
+    margin-bottom: 60px !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .demo-envelope-wrapper-parent {
+    width: 240px !important;
+    height: 150px !important;
   }
 }
 
@@ -1224,6 +1252,12 @@ html, body {
   top: 15%;
   left: 8%;
   animation-delay: 0s;
+}
+
+.showcase-card-chest {
+  bottom: 15%;
+  right: 8%;
+  animation-delay: 2s;
 }
 
 .reveal-on-scroll {

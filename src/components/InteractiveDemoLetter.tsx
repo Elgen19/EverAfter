@@ -250,7 +250,7 @@ export default function InteractiveDemoLetter() {
 
   return (
     <div 
-      className="glass" 
+      className="glass interactive-demo-box" 
       style={{
         position: "relative",
         width: "100%",
