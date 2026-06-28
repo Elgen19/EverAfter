@@ -3,9 +3,9 @@ import { Metadata } from "next";
 import LandingClientPage from "./LandingClientPage";
 
 export const metadata: Metadata = {
-  title: "EverAfter | Create and Send Interactive Digital Love Letters",
-  description: "Express your feelings with custom stationery, romantic music, and an interactive 3D wax-sealed envelope. Create digital keepsakes your partner will treasure.",
-  keywords: "love letter, valentine, anniversary, anniversary gift, digital letter, animated envelope, wax seal, everafter, digital stationery, romantic card, polaroid photos, love quiz, audio message, relationship milestones, date rsvp",
+  title: "EverAfter | Custom Digital Love Letters & Anniversary Countdown Letters",
+  description: "Create a customized digital love letter with an interactive wax-sealed envelope, lo-fi soundtracks, and polaroids. Design the perfect anniversary countdown letter today!",
+  keywords: "digital love letter, anniversary countdown letter, love letter, time-locked letter, valentine, anniversary gift, digital letter, animated envelope, wax seal, everafter, digital stationery, romantic card, polaroid photos, love quiz, audio message, relationship milestones, date rsvp",
   authors: [{ name: "EverAfter Team" }],
   metadataBase: new URL("https://everafterletters.xyz"),
   alternates: {
@@ -23,8 +23,8 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "EverAfter | Create and Send Interactive Digital Love Letters",
-    description: "Express your feelings with custom stationery, romantic music, and an interactive 3D wax-sealed envelope. Create digital keepsakes your partner will treasure.",
+    title: "EverAfter | Custom Digital Love Letters & Anniversary Countdown Letters",
+    description: "Create a customized digital love letter with an interactive wax-sealed envelope, lo-fi soundtracks, and polaroids. Design the perfect anniversary countdown letter today!",
     type: "website",
     url: "https://everafterletters.xyz",
     siteName: "EverAfter",
@@ -40,8 +40,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "EverAfter | Create and Send Interactive Digital Love Letters",
-    description: "Express your feelings with custom stationery, romantic music, and an interactive 3D wax-sealed envelope. Create digital keepsakes your partner will treasure.",
+    title: "EverAfter | Custom Digital Love Letters & Anniversary Countdown Letters",
+    description: "Create a customized digital love letter with an interactive wax-sealed envelope, lo-fi soundtracks, and polaroids. Design the perfect anniversary countdown letter today!",
     images: ["/og-image.png"],
   },
   verification: {
