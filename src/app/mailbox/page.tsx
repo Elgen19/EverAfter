@@ -1044,11 +1044,9 @@ function MailboxContent() {
         <h1 style={{ 
           fontSize: "42px", 
           fontFamily: "var(--font-cursive)", 
-          background: "linear-gradient(to right, #ff4b72, var(--accent-gold), #9c6cfa)", 
-          WebkitBackgroundClip: "text", 
-          WebkitTextFillColor: "transparent", 
+          color: "var(--accent-gold)",
           marginBottom: "6px",
-          textShadow: "0 2px 8px rgba(0,0,0,0.5)"
+          textShadow: "0 2px 10px rgba(0,0,0,0.7), 0 0 15px var(--mailbox-glow)"
         }}>
           {refLetter?.mailboxTheme?.customTitle || "My Memory Chest"}
         </h1>
@@ -1948,8 +1946,8 @@ export default function MailboxPage() {
       position: "relative",
       backgroundColor: "#100907", // Deep warm charcoal
       backgroundImage: `
-        radial-gradient(circle at 50% 30%, rgba(226, 184, 87, 0.05) 0%, transparent 70%),
-        radial-gradient(circle at 50% 120%, rgba(226, 184, 87, 0.03) 0%, transparent 60%)
+        radial-gradient(circle at 50% 30%, rgba(226, 184, 87, 0.08) 0%, transparent 65%),
+        url(/memory_chest_bg.png)
       `,
       backgroundSize: "cover",
       backgroundPosition: "center",
