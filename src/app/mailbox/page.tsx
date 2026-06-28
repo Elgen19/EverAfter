@@ -3,8 +3,9 @@
 import React, { Suspense, useState, useEffect, useRef, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { db } from "@/utils/firebase";
-import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { db, storage } from "@/utils/firebase";
+import { doc, getDoc, collection, query, where, getDocs, updateDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import FloatingHearts from "@/components/FloatingHearts";
 import { useAuth } from "@/context/AuthContext";
 import { usePagePerformanceLogger } from "@/utils/performance";
@@ -44,6 +45,73 @@ function MailboxContent() {
 
   const mailboxMusicUrl = refLetter?.mailboxTheme?.musicUrl;
   const mailboxMusicAutoplay = refLetter?.mailboxTheme?.musicAutoplay;
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editStatement, setEditStatement] = useState("");
+  const [editBgUrl, setEditBgUrl] = useState("");
+  const [editBgFile, setEditBgFile] = useState<File | null>(null);
+  const [editBgFileName, setEditBgFileName] = useState("");
+  const [editMusicUrl, setEditMusicUrl] = useState("");
+  const [editMusicFile, setEditMusicFile] = useState<File | null>(null);
+  const [editMusicFileName, setEditMusicFileName] = useState("");
+  const [editMusicAutoplay, setEditMusicAutoplay] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const isSender = !!(user && refLetter && user.uid === refLetter.userId);
+
+  useEffect(() => {
+    if (refLetter) {
+      setEditStatement(refLetter.mailboxTheme?.statement || "");
+      setEditBgUrl(refLetter.mailboxTheme?.customBgUrl || "");
+      setEditMusicUrl(refLetter.mailboxTheme?.musicUrl || "");
+      setEditMusicAutoplay(refLetter.mailboxTheme?.musicAutoplay || false);
+    }
+  }, [refLetter]);
+
+  const handleSaveTheme = async () => {
+    if (!refLetter?.id) return;
+    setIsSaving(true);
+    try {
+      let finalBgUrl = editBgUrl;
+      let finalMusicUrl = editMusicUrl;
+
+      if (editBgFile && storage) {
+        const storageRef = ref(storage, `letters/${refLetter.id}/mailbox_custom_bg`);
+        const snapshot = await uploadBytes(storageRef, editBgFile);
+        finalBgUrl = await getDownloadURL(snapshot.ref);
+      }
+
+      if (editMusicFile && storage) {
+        const storageRef = ref(storage, `letters/${refLetter.id}/mailbox_music`);
+        const snapshot = await uploadBytes(storageRef, editMusicFile);
+        finalMusicUrl = await getDownloadURL(snapshot.ref);
+      }
+
+      if (db) {
+        const docRef = doc(db, "letters", refLetter.id);
+        const newTheme = {
+          enabled: true,
+          customBgUrl: finalBgUrl.trim() || "",
+          musicUrl: finalMusicUrl.trim() || "",
+          musicAutoplay: editMusicAutoplay,
+          statement: editStatement.trim() || ""
+        };
+        await updateDoc(docRef, { mailboxTheme: newTheme });
+
+        setRefLetter((prev: any) => ({
+          ...prev,
+          mailboxTheme: newTheme
+        }));
+
+        setIsEditModalOpen(false);
+      }
+    } catch (err) {
+      console.error("Failed to save mailbox settings:", err);
+      alert("An error occurred while saving theme changes.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   useEffect(() => {
     if (mailboxMusicUrl && mailboxAudioRef.current) {
@@ -493,6 +561,43 @@ function MailboxContent() {
             {isMailboxAudioMuted ? "🔇" : "🎵"}
           </button>
         </>
+      )}
+
+      {isSender && (
+        <button
+          onClick={() => setIsEditModalOpen(true)}
+          style={{
+            position: "fixed",
+            top: "20px",
+            right: "20px",
+            padding: "8px 16px",
+            borderRadius: "20px",
+            border: "1px solid rgba(226, 184, 87, 0.4)",
+            background: "rgba(16, 9, 7, 0.75)",
+            color: "#e2b857",
+            fontSize: "12px",
+            fontWeight: 600,
+            cursor: "pointer",
+            zIndex: 10000,
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+            boxShadow: "0 4px 15px rgba(0,0,0,0.35)",
+            transition: "all 0.3s ease"
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "scale(1.05)";
+            e.currentTarget.style.backgroundColor = "rgba(226, 184, 87, 0.15)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "scale(1)";
+            e.currentTarget.style.backgroundColor = "rgba(16, 9, 7, 0.75)";
+          }}
+        >
+          ⚙️ Edit Theme
+        </button>
       )}
       {/* Dynamic Dramatic Loading Screen Overlay */}
       <div 
@@ -1425,6 +1530,250 @@ function MailboxContent() {
           </div>
         )}
       </footer>
+      {isEditModalOpen && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(10, 5, 3, 0.85)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 100000,
+          animation: "fade-in-btn 0.3s ease"
+        }}>
+          <div className="glass" style={{
+            width: "100%",
+            maxWidth: "480px",
+            padding: "30px",
+            borderRadius: "16px",
+            border: "1px solid rgba(226, 184, 87, 0.25)",
+            boxShadow: "0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(226, 184, 87, 0.15)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "16px",
+            maxHeight: "90vh",
+            overflowY: "auto",
+            position: "relative",
+            zIndex: 100001
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.08)", paddingBottom: "12px" }}>
+              <h3 style={{ fontSize: "20px", color: "var(--accent-gold)", fontFamily: "var(--font-cursive)" }}>
+                Customize Memory Chest Theme
+              </h3>
+              <button 
+                onClick={() => setIsEditModalOpen(false)}
+                style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: "18px", cursor: "pointer" }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Statement */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: "11px", color: "var(--text-muted)", textAlign: "left" }}>Cursive Statement Label</label>
+              <input
+                type="text"
+                placeholder="e.g. A collection of letters for my favorite person..."
+                value={editStatement}
+                onChange={(e) => setEditStatement(e.target.value)}
+                style={{
+                  backgroundColor: "rgba(0,0,0,0.2)",
+                  border: "1px solid var(--border-card)",
+                  borderRadius: "6px",
+                  padding: "8px 12px",
+                  color: "#fff",
+                  fontSize: "13px",
+                  outline: "none"
+                }}
+              />
+            </div>
+
+            {/* Background Image */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: "11px", color: "var(--text-muted)", textAlign: "left" }}>Background Image Backdrop</label>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setEditBgFile(file);
+                      setEditBgFileName(file.name);
+                      setEditBgUrl(URL.createObjectURL(file));
+                    }
+                  }}
+                  style={{ display: "none" }}
+                  id="edit-bg-file"
+                />
+                <button
+                  type="button"
+                  onClick={() => document.getElementById("edit-bg-file")?.click()}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: "6px",
+                    border: "1px solid var(--border-card)",
+                    background: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    fontSize: "11px",
+                    cursor: "pointer"
+                  }}
+                >
+                  Upload File
+                </button>
+                <span style={{ fontSize: "11px", color: "var(--text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "left" }}>
+                  {editBgFileName || (editBgUrl ? "Custom URL Linked" : "Default sunset image")}
+                </span>
+                {editBgUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditBgFile(null);
+                      setEditBgFileName("");
+                      setEditBgUrl("");
+                    }}
+                    style={{ background: "none", border: "none", color: "var(--accent-rose)", fontSize: "11px", cursor: "pointer" }}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <input
+                type="text"
+                disabled={!!editBgFile}
+                placeholder="Or paste background image URL directly..."
+                value={editBgFile ? "" : editBgUrl}
+                onChange={(e) => setEditBgUrl(e.target.value)}
+                style={{
+                  backgroundColor: "rgba(0,0,0,0.2)",
+                  border: "1px solid var(--border-card)",
+                  borderRadius: "6px",
+                  padding: "8px 12px",
+                  color: "#fff",
+                  fontSize: "13px",
+                  outline: "none"
+                }}
+              />
+            </div>
+
+            {/* Background Music */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: "11px", color: "var(--text-muted)", textAlign: "left" }}>Background Music Audio</label>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <input
+                  type="file"
+                  accept="audio/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setEditMusicFile(file);
+                      setEditMusicFileName(file.name);
+                      setEditMusicUrl(URL.createObjectURL(file));
+                    }
+                  }}
+                  style={{ display: "none" }}
+                  id="edit-music-file"
+                />
+                <button
+                  type="button"
+                  onClick={() => document.getElementById("edit-music-file")?.click()}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: "6px",
+                    border: "1px solid var(--border-card)",
+                    background: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    fontSize: "11px",
+                    cursor: "pointer"
+                  }}
+                >
+                  Upload File
+                </button>
+                <span style={{ fontSize: "11px", color: "var(--text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "left" }}>
+                  {editMusicFileName || (editMusicUrl ? "Custom Music URL" : "No background music")}
+                </span>
+                {editMusicUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditMusicFile(null);
+                      setEditMusicFileName("");
+                      setEditMusicUrl("");
+                    }}
+                    style={{ background: "none", border: "none", color: "var(--accent-rose)", fontSize: "11px", cursor: "pointer" }}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <input
+                type="text"
+                disabled={!!editMusicFile}
+                placeholder="Or paste background audio URL directly..."
+                value={editMusicFile ? "" : editMusicUrl}
+                onChange={(e) => setEditMusicUrl(e.target.value)}
+                style={{
+                  backgroundColor: "rgba(0,0,0,0.2)",
+                  border: "1px solid var(--border-card)",
+                  borderRadius: "6px",
+                  padding: "8px 12px",
+                  color: "#fff",
+                  fontSize: "13px",
+                  outline: "none"
+                }}
+              />
+              <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "11px", color: "var(--text-muted)", marginTop: "4px", cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  checked={editMusicAutoplay}
+                  onChange={(e) => setEditMusicAutoplay(e.target.checked)}
+                  style={{ accentColor: "var(--accent-rose)" }}
+                />
+                Autoplay background music on open
+              </label>
+            </div>
+
+            {/* Save & Cancel */}
+            <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+              <button
+                disabled={isSaving}
+                onClick={handleSaveTheme}
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: "var(--accent-rose)",
+                  color: "#fff",
+                  fontWeight: "bold",
+                  fontSize: "13px",
+                  cursor: "pointer",
+                  opacity: isSaving ? 0.6 : 1
+                }}
+              >
+                {isSaving ? "Saving..." : "Save Changes 💖"}
+              </button>
+              <button
+                disabled={isSaving}
+                onClick={() => setIsEditModalOpen(false)}
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border-card)",
+                  background: "rgba(255,255,255,0.05)",
+                  color: "#fff",
+                  fontSize: "13px",
+                  cursor: "pointer"
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

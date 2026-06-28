@@ -26,7 +26,6 @@ import SendLaterCreator from "@/components/creator/SendLaterCreator";
 import AudioMessageCreator from "@/components/creator/AudioMessageCreator";
 import PolaroidsCreator from "@/components/creator/PolaroidsCreator";
 import GuestFeatureLockout from "@/components/creator/GuestFeatureLockout";
-import MailboxThemeCreator from "@/components/creator/MailboxThemeCreator";
 
 interface AccordionItemProps {
   title: string;
@@ -638,40 +637,6 @@ function CreateLetterStudio() {
                     />
                   ) : (
                     <SendLaterCreator sendLaterEnabled={form.sendLaterEnabled} setSendLaterEnabled={form.setSendLaterEnabled} sendLaterDate={form.sendLaterDate} setSendLaterDate={form.setSendLaterDate} sendLaterTime={form.sendLaterTime} setSendLaterTime={form.setSendLaterTime} />
-                  )}
-                </AccordionItem>
-
-                <AccordionItem title="Memory Chest Customization" desc="Customize the background, music, and greeting statement of their Memory Chest" icon="📬" enabled={form.mailboxThemeEnabled} isOpen={openAccordion === "mailboxTheme"} onToggle={() => toggleAccordion("mailboxTheme")}>
-                  {!form.user ? (
-                    <GuestFeatureLockout
-                      featureName="Memory Chest Customization"
-                      featureIcon="📬"
-                      featureDesc="Customize the background, music, and statement of the mailbox memory chest page that your recipient unlocks."
-                      encodedData={form.getEncodedState()}
-                    />
-                  ) : (
-                    <MailboxThemeCreator
-                      mailboxThemeEnabled={form.mailboxThemeEnabled}
-                      setMailboxThemeEnabled={form.setMailboxThemeEnabled}
-                      mailboxCustomBgUrl={form.mailboxCustomBgUrl}
-                      setMailboxCustomBgUrl={form.setMailboxCustomBgUrl}
-                      mailboxCustomBgFile={form.mailboxCustomBgFile}
-                      setMailboxCustomBgFile={form.setMailboxCustomBgFile}
-                      mailboxCustomBgFileName={form.mailboxCustomBgFileName}
-                      setMailboxCustomBgFileName={form.setMailboxCustomBgFileName}
-                      mailboxMusicUrl={form.mailboxMusicUrl}
-                      setMailboxMusicUrl={form.setMailboxMusicUrl}
-                      mailboxMusicFile={form.mailboxMusicFile}
-                      setMailboxMusicFile={form.setMailboxMusicFile}
-                      mailboxMusicFileName={form.mailboxMusicFileName}
-                      setMailboxMusicFileName={form.setMailboxMusicFileName}
-                      mailboxMusicAutoplay={form.mailboxMusicAutoplay}
-                      setMailboxMusicAutoplay={form.setMailboxMusicAutoplay}
-                      mailboxStatement={form.mailboxStatement}
-                      setMailboxStatement={form.setMailboxStatement}
-                      mailboxThemeConfirmed={form.mailboxThemeConfirmed}
-                      setMailboxThemeConfirmed={(val) => { form.setMailboxThemeConfirmed(val); if (val) setOpenAccordion(null); }}
-                    />
                   )}
                 </AccordionItem>
               </div>
