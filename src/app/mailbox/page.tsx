@@ -1383,7 +1383,7 @@ function MailboxContent() {
         })}
         </div>
 
-        {letters.length === 0 ? (
+        {displayedLetters.length === 0 && (
           <div 
             style={{
               display: "flex",
@@ -1404,71 +1404,42 @@ function MailboxContent() {
               zIndex: 10
             }}
           >
-            <div style={{ fontSize: "56px", filter: "drop-shadow(0 2px 10px rgba(226,184,87,0.3))", marginBottom: "8px" }}>🕊️</div>
-            <div style={{ fontSize: "20px", fontWeight: 600, color: "#fff", fontFamily: "var(--font-cursive)", letterSpacing: "0.5px" }}>
-              Your Memory Chest is Empty
+            <div style={{ fontSize: "48px", filter: "drop-shadow(0 2px 10px rgba(255, 75, 114, 0.35))" }}>
+              {activeTab === "sent" ? "✍️" : "💌"}
             </div>
-            <div style={{ fontSize: "13px", maxWidth: "340px", lineHeight: "1.6", color: "var(--text-muted)" }}>
-              Every sweet correspondence starts with a single step. Write and send your first love letter to begin filling this chest with memories!
+            <div style={{ fontSize: "18px", fontWeight: 600, color: "#fff", fontFamily: "var(--font-cursive)" }}>
+              {activeTab === "sent" ? "Echoes of an Unspoken Love" : "A Quiet Sanctuary for Your Story"}
             </div>
-            <Link 
-              href="/create" 
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: "12px 24px",
-                borderRadius: "20px",
-                background: "linear-gradient(135deg, #ff4b72 0%, #ff758f 100%)",
-                color: "#fff",
-                fontWeight: 700,
-                fontSize: "13px",
-                textDecoration: "none",
-                boxShadow: "0 6px 20px rgba(255, 75, 114, 0.35)",
-                transition: "all 0.3s ease",
-                marginTop: "8px"
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.05)"; e.currentTarget.style.boxShadow = "0 8px 25px rgba(255, 75, 114, 0.5)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(255, 75, 114, 0.35)"; }}
-            >
-              Write Your First Letter ✍️
-            </Link>
+            <div style={{ fontSize: "12px", maxWidth: "340px", lineHeight: "1.5", color: "var(--text-muted)", fontStyle: "italic" }}>
+              {activeTab === "sent" 
+                ? "Your words hold the power to light up their world. When you open one of their letters, touch the wax seal and write back to send your own heart's echo back to them."
+                : "This chest is waiting to be filled with the whispers of your hearts. Soon, letters of warmth, love, and shared moments will find their home here."}
+            </div>
+            {isSender && activeTab === "received" && (
+              <Link 
+                href="/create" 
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "10px 20px",
+                  borderRadius: "20px",
+                  background: "linear-gradient(135deg, #ff4b72 0%, #ff758f 100%)",
+                  color: "#fff",
+                  fontWeight: 700,
+                  fontSize: "12px",
+                  textDecoration: "none",
+                  boxShadow: "0 6px 20px rgba(255, 75, 114, 0.35)",
+                  transition: "all 0.3s ease",
+                  marginTop: "8px"
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.05)"; e.currentTarget.style.boxShadow = "0 8px 25px rgba(255, 75, 114, 0.5)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(255, 75, 114, 0.35)"; }}
+              >
+                Write Your First Letter ✍️
+              </Link>
+            )}
           </div>
-        ) : (
-          displayedLetters.length === 0 && (
-            <div 
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100%",
-                width: "100%",
-                color: "var(--text-muted)",
-                gap: "12px",
-                padding: "40px",
-                textAlign: "center",
-                animation: "fade-in-btn 0.5s ease-out forwards",
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                zIndex: 10
-              }}
-            >
-              <div style={{ fontSize: "48px", filter: "drop-shadow(0 2px 10px rgba(255, 75, 114, 0.35))" }}>
-                {activeTab === "sent" ? "✍️" : "💌"}
-              </div>
-              <div style={{ fontSize: "18px", fontWeight: 600, color: "#fff", fontFamily: "var(--font-cursive)" }}>
-                {activeTab === "sent" ? "Echoes of an Unspoken Love" : "A Quiet Sanctuary for Your Story"}
-              </div>
-              <div style={{ fontSize: "12px", maxWidth: "340px", lineHeight: "1.5", color: "var(--text-muted)", fontStyle: "italic" }}>
-                {activeTab === "sent" 
-                  ? "Your words hold the power to light up their world. When you open one of their letters, touch the wax seal and write back to send your own heart's echo back to them."
-                  : "This chest is waiting to be filled with the whispers of your hearts. Soon, letters of warmth, love, and shared moments will find their home here."}
-              </div>
-            </div>
-          )
         )}
       </div>
 
