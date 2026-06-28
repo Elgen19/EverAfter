@@ -1402,10 +1402,16 @@ button:hover .quiz-option-badge {
 }
 
 @media (max-width: 600px) {
-  .envelope-container, .envelope-container-preview {
+  .envelope-container {
     transform: scale(calc(100vw / 700)) !important;
     transform-origin: center center;
     height: calc(330px * (100vw / 700)) !important;
+    margin: 10px auto !important;
+  }
+  .envelope-container-preview {
+    transform: scale(calc(100vw / 800)) !important;
+    transform-origin: center center;
+    height: calc(330px * (100vw / 800)) !important;
     margin: 10px auto !important;
   }
   .envelope-wrapper {
@@ -2024,6 +2030,10 @@ button:hover .quiz-option-badge {
     padding: 8px 16px 16px 16px !important;
   }
   .stationery-sheet-portal {
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
     padding-top: 72px !important; /* Stack the paper immediately below the compact timeline dots */
     padding-bottom: 16px !important;
     align-items: flex-start !important;
