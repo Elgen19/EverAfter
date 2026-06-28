@@ -42,6 +42,11 @@ export interface LetterData {
     audioUrl?: string;
     customMessage?: string;
   };
+  narration?: {
+    enabled: boolean;
+    audioUrl?: string;
+    syncData?: { text: string; time: number }[];
+  };
   musicType?: "synth" | "url";
   musicUrl?: string;
   sendLaterDate?: string;

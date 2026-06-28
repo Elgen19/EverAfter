@@ -26,6 +26,7 @@ import SendLaterCreator from "@/components/creator/SendLaterCreator";
 import AudioMessageCreator from "@/components/creator/AudioMessageCreator";
 import PolaroidsCreator from "@/components/creator/PolaroidsCreator";
 import GuestFeatureLockout from "@/components/creator/GuestFeatureLockout";
+import NarrationCreator from "@/components/creator/NarrationCreator";
 
 interface AccordionItemProps {
   title: string;
@@ -343,6 +344,20 @@ function CreateLetterStudio() {
                   style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid var(--border-card)", borderRadius: "8px", padding: "14px", color: "#fff", fontSize: "14px", lineHeight: "1.6", outline: "none", resize: "vertical", minHeight: "120px" }}
                 />
               </div>
+
+              {/* Narration Configuration */}
+              <NarrationCreator
+                content={form.content}
+                narrationEnabled={form.narrationEnabled}
+                setNarrationEnabled={form.setNarrationEnabled}
+                narrationUrl={form.narrationUrl}
+                setNarrationUrl={form.setNarrationUrl}
+                narrationFile={form.narrationFile}
+                setNarrationFile={form.setNarrationFile}
+                narrationSyncData={form.narrationSyncData}
+                setNarrationSyncData={form.setNarrationSyncData}
+                showAlert={form.showRomanticAlert}
+              />
 
               {/* Section 1 Next Button */}
               <div style={{ marginTop: "24px" }}>

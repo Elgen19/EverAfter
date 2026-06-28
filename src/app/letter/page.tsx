@@ -885,6 +885,7 @@ function LetterReader() {
             onClose={() => {
               handleNextStep();
             }}
+            narration={data.narration}
           />
         )}
 

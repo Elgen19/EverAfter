@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { 
   Playfair_Display, 
@@ -127,6 +127,13 @@ interface EnvelopeProps {
   isAdjacentToPolaroids?: boolean;
   polaroidsFirst?: boolean;
   preview?: boolean;
+
+  // Voice Narration
+  narration?: {
+    enabled: boolean;
+    audioUrl?: string;
+    syncData?: { text: string; time: number }[];
+  };
 }
 
 export default function Envelope({
@@ -155,6 +162,7 @@ export default function Envelope({
   isAdjacentToPolaroids = false,
   polaroidsFirst = false,
   preview = false,
+  narration,
 }: EnvelopeProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSealBroken, setIsSealBroken] = useState(false);
@@ -171,6 +179,40 @@ export default function Envelope({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Voice Narration states
+  const [narrationPlaying, setNarrationPlaying] = useState(false);
+  const [narrationTime, setNarrationTime] = useState(0);
+  const [narrationDuration, setNarrationDuration] = useState(0);
+  const [activeSentenceIndex, setActiveSentenceIndex] = useState(-1);
+  const narrationAudioRef = useRef<HTMLAudioElement | null>(null);
+  const activeSentenceRef = useRef<HTMLSpanElement | null>(null);
+
+  const syncData = narration?.syncData || [];
+
+  const handleTimeUpdate = (e: React.SyntheticEvent<HTMLAudioElement>) => {
+    const time = e.currentTarget.currentTime;
+    setNarrationTime(time);
+    if (syncData.length > 0) {
+      const nextIdx = syncData.findIndex(item => item.time > time);
+      let idx = -1;
+      if (nextIdx !== -1) {
+        idx = Math.max(0, nextIdx - 1);
+      } else {
+        idx = syncData.length - 1;
+      }
+      setActiveSentenceIndex(idx);
+    }
+  };
+
+  useEffect(() => {
+    if (activeSentenceIndex !== -1 && activeSentenceRef.current) {
+      activeSentenceRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+    }
+  }, [activeSentenceIndex]);
 
   // Map legacy state to expanded sub-view
   const isFullView = (isSheetExpanded && activeSheet === "letter") || forceHideEnvelope;
@@ -945,6 +987,102 @@ export default function Envelope({
                 </div>
               )}
 
+              {/* Voice Narration Audio Player Card */}
+              {narration?.enabled && narration.audioUrl && (
+                <div 
+                  style={{
+                    background: "rgba(255, 255, 255, 0.05)",
+                    border: "1px solid rgba(255, 255, 255, 0.08)",
+                    borderRadius: "12px",
+                    padding: "12px 18px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "14px",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+                    margin: "4px 0 16px 0",
+                    animation: "fade-in-btn 0.5s ease-out forwards",
+                    fontFamily: "sans-serif"
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!narrationAudioRef.current) return;
+                      if (narrationPlaying) {
+                        narrationAudioRef.current.pause();
+                        setNarrationPlaying(false);
+                      } else {
+                        narrationAudioRef.current.play().then(() => {
+                          setNarrationPlaying(true);
+                        });
+                      }
+                    }}
+                    style={{
+                      width: "36px",
+                      height: "36px",
+                      borderRadius: "50%",
+                      backgroundColor: theme === "blush" ? "#B76E79" : "var(--accent-rose)",
+                      color: "#fff",
+                      border: "none",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0
+                    }}
+                  >
+                    {narrationPlaying ? (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="6" y="4" width="4" height="16" />
+                        <rect x="14" y="4" width="4" height="16" />
+                      </svg>
+                    ) : (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: "2px" }}>
+                        <polygon points="5 3 19 12 5 21" />
+                      </svg>
+                    )}
+                  </button>
+
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "var(--stationery-text)", fontWeight: 600 }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        🎙️ Play Voice Narration
+                      </span>
+                      {narrationPlaying && (
+                        <div style={{ display: "flex", gap: "3px", alignItems: "center", height: "12px" }}>
+                          <style>{`
+                            @keyframes bounce-bar-audio {
+                              0% { transform: scaleY(0.3); }
+                              100% { transform: scaleY(1.2); }
+                            }
+                          `}</style>
+                          <div style={{ width: "2px", height: "10px", background: theme === "blush" ? "#B76E79" : "var(--accent-rose)", transformOrigin: "bottom", animation: "bounce-bar-audio 0.6s infinite alternate 0.1s" }} />
+                          <div style={{ width: "2px", height: "10px", background: theme === "blush" ? "#B76E79" : "var(--accent-rose)", transformOrigin: "bottom", animation: "bounce-bar-audio 0.6s infinite alternate 0.3s" }} />
+                          <div style={{ width: "2px", height: "10px", background: theme === "blush" ? "#B76E79" : "var(--accent-rose)", transformOrigin: "bottom", animation: "bounce-bar-audio 0.6s infinite alternate 0.5s" }} />
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div style={{ height: "4px", backgroundColor: "rgba(0,0,0,0.1)", borderRadius: "2px", overflow: "hidden" }}>
+                      <div style={{ height: "100%", backgroundColor: theme === "blush" ? "#B76E79" : "var(--accent-rose)", width: `${narrationDuration ? (narrationTime / narrationDuration) * 100 : 0}%` }} />
+                    </div>
+                  </div>
+
+                  <audio
+                    ref={narrationAudioRef}
+                    src={narration.audioUrl}
+                    onTimeUpdate={handleTimeUpdate}
+                    onLoadedMetadata={(e) => setNarrationDuration(e.currentTarget.duration)}
+                    onEnded={() => {
+                      setNarrationPlaying(false);
+                      setNarrationTime(0);
+                      setActiveSentenceIndex(-1);
+                    }}
+                    style={{ display: "none" }}
+                  />
+                </div>
+              )}
+
               <div
                 className="letter-body"
                 style={{
@@ -958,7 +1096,28 @@ export default function Envelope({
                   paddingBottom: theme === "obsidian_poppy" ? "8px" : "24px"
                 }}
               >
-                {content}
+                {narration?.enabled && syncData.length > 0 ? (
+                  syncData.map((item, idx) => {
+                    const isActive = idx === activeSentenceIndex;
+                    return (
+                      <span
+                        key={idx}
+                        ref={isActive ? activeSentenceRef : null}
+                        style={{
+                          transition: "all 0.4s ease",
+                          color: isActive ? (theme === "blush" ? "#B76E79" : "var(--accent-gold)") : "var(--stationery-text)",
+                          opacity: isActive ? 1 : 0.45,
+                          textShadow: isActive ? (theme === "blush" ? "0 0 8px rgba(183, 110, 121, 0.35)" : "0 0 10px rgba(226, 184, 87, 0.45)") : "none",
+                          fontWeight: isActive ? "bold" : "normal"
+                        }}
+                      >
+                        {item.text}{" "}
+                      </span>
+                    );
+                  })
+                ) : (
+                  content
+                )}
               </div>
 
               {/* Footer: From */}

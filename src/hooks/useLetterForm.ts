@@ -222,6 +222,11 @@ export function useLetterForm() {
   const [audioCustomMessage, setAudioCustomMessage] = useState("Listen to my voice... ❤️");
   const [audioConfirmed, setAudioConfirmed] = useState(false);
 
+  const [narrationEnabled, setNarrationEnabled] = useState(false);
+  const [narrationUrl, setNarrationUrl] = useState("");
+  const [narrationFile, setNarrationFile] = useState<File | null>(null);
+  const [narrationSyncData, setNarrationSyncData] = useState<{ text: string; time: number }[]>([]);
+
   const [polaroidsEnabled, setPolaroidsEnabled] = useState(false);
   const [polaroids, setPolaroids] = useState<any[]>([
     { id: 0, url: "", file: null, caption: "" },
@@ -383,6 +388,11 @@ export function useLetterForm() {
               setAudioUrl(data.audioMessage.audioUrl || "");
               setAudioCustomMessage(data.audioMessage.customMessage || "");
               setAudioConfirmed(true);
+            }
+            if (data.narration) {
+              setNarrationEnabled(data.narration.enabled || false);
+              setNarrationUrl(data.narration.audioUrl || "");
+              setNarrationSyncData(data.narration.syncData || []);
             }
             if (data.polaroids) {
               setPolaroidsEnabled(data.polaroids.enabled || false);
@@ -573,6 +583,11 @@ export function useLetterForm() {
           setAudioUrl(decoded.audioMessage.audioUrl || "");
           setAudioCustomMessage(decoded.audioMessage.customMessage || "");
           setAudioConfirmed(true);
+        }
+        if (decoded.narration) {
+          setNarrationEnabled(decoded.narration.enabled || false);
+          setNarrationUrl(decoded.narration.audioUrl || "");
+          setNarrationSyncData(decoded.narration.syncData || []);
         }
         if (decoded.polaroids) {
           setPolaroidsEnabled(decoded.polaroids.enabled || false);
@@ -1066,6 +1081,11 @@ export function useLetterForm() {
         audioUrl: audioUrl || undefined,
         customMessage: audioCustomMessage.trim() || undefined
       } : undefined,
+      narration: narrationEnabled ? {
+        enabled: true,
+        audioUrl: narrationUrl || undefined,
+        syncData: narrationSyncData
+      } : undefined,
       polaroids: polaroidsEnabled ? {
         enabled: true,
         layout: polaroidsLayout,
@@ -1089,6 +1109,9 @@ export function useLetterForm() {
     const letterDataForEncoding = { ...letterData };
     if (letterDataForEncoding.audioMessage) {
       letterDataForEncoding.audioMessage = { ...letterDataForEncoding.audioMessage, audioUrl: undefined };
+    }
+    if (letterDataForEncoding.narration) {
+      letterDataForEncoding.narration = { ...letterDataForEncoding.narration, audioUrl: undefined };
     }
     if (letterDataForEncoding.polaroids?.items) {
       letterDataForEncoding.polaroids.items = letterDataForEncoding.polaroids.items.map(item => ({
@@ -1130,6 +1153,16 @@ export function useLetterForm() {
                 sanitizedData.audioMessage.audioUrl = finalAudioUrl;
               }
             }
+            let finalNarrationUrl = narrationUrl;
+            if (narrationEnabled && narrationFile) {
+              const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
+              const storageRef = ref(storage, `letters/${editId}/narration_audio`);
+              const snapshot = await uploadBytes(storageRef, narrationFile);
+              finalNarrationUrl = await getDownloadURL(snapshot.ref);
+              if (sanitizedData.narration) {
+                sanitizedData.narration.audioUrl = finalNarrationUrl;
+              }
+            }
             if (music && musicType === "url" && musicFile) {
               const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
               const storageRef = ref(storage, `letters/${editId}/background_music`);
@@ -1159,6 +1192,9 @@ export function useLetterForm() {
             if (audioEnabled && audioFile && initialSanitizedData.audioMessage) {
               initialSanitizedData.audioMessage.audioUrl = null;
             }
+            if (narrationEnabled && narrationFile && initialSanitizedData.narration) {
+              initialSanitizedData.narration.audioUrl = null;
+            }
             if (polaroidsEnabled && initialSanitizedData.polaroids?.items) {
               initialSanitizedData.polaroids.items = initialSanitizedData.polaroids.items.map((item: any) => ({
                 ...item,
@@ -1181,6 +1217,13 @@ export function useLetterForm() {
               const snapshot = await uploadBytes(storageRef, audioFile);
               const finalAudioUrl = await getDownloadURL(snapshot.ref);
               await updateDoc(docRef, { "audioMessage.audioUrl": finalAudioUrl });
+            }
+            if (narrationEnabled && narrationFile) {
+              const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
+              const storageRef = ref(storage, `letters/${letterId}/narration_audio`);
+              const snapshot = await uploadBytes(storageRef, narrationFile);
+              const finalNarrationUrl = await getDownloadURL(snapshot.ref);
+              await updateDoc(docRef, { "narration.audioUrl": finalNarrationUrl });
             }
             if (music && musicType === "url" && musicFile) {
               const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
@@ -1341,6 +1384,9 @@ export function useLetterForm() {
     audioEnabled, setAudioEnabled, audioUrl, setAudioUrl,
     audioFile, setAudioFile, audioCustomMessage, setAudioCustomMessage,
     audioConfirmed, setAudioConfirmed,
+    // Narration
+    narrationEnabled, setNarrationEnabled, narrationUrl, setNarrationUrl,
+    narrationFile, setNarrationFile, narrationSyncData, setNarrationSyncData,
     // Polaroids
     polaroidsEnabled, setPolaroidsEnabled,
     polaroids, setPolaroids,
