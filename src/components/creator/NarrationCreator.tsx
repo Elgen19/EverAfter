@@ -286,6 +286,26 @@ export default function NarrationCreator({
       {narrationEnabled && (
         <div style={{ display: "flex", flexDirection: "column", gap: "16px", animation: "fade-in-btn 0.3s ease-out" }}>
           
+          {/* Helpful Guide Card */}
+          <div style={{ 
+            background: "rgba(255, 75, 114, 0.03)", 
+            border: "1px solid rgba(255, 75, 114, 0.12)", 
+            borderRadius: "10px", 
+            padding: "14px", 
+            fontSize: "12.5px", 
+            color: "var(--text-muted)", 
+            lineHeight: "1.6" 
+          }}>
+            <div style={{ fontWeight: "bold", color: "#fff", marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
+              ✨ Quick Guide: How to Sync Your Voice
+            </div>
+            <ul style={{ margin: 0, paddingLeft: "18px", display: "flex", flexDirection: "column", gap: "4px" }}>
+              <li>✍️ <strong>Step 1:</strong> Make sure you have finished writing your letter in the body input above.</li>
+              <li>🎙️ <strong>Step 2:</strong> Record a fresh voice message below or upload an audio file.</li>
+              <li>⏱️ <strong>Step 3:</strong> Click <strong>Start Tap-Sync</strong>, listen to your playback, and tap the heart button as you hear yourself say the start of each sentence!</li>
+            </ul>
+          </div>
+          
           {/* Step 1: Voice input source */}
           {!narrationUrl ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
