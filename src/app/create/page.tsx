@@ -840,7 +840,22 @@ function CreateLetterStudio() {
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)"}
                 >🔄 Reset Animation</button>
                 <div className="studio-preview-envelope-scaler" style={{ transform: "scale(0.8)" }}>
-                  <Envelope key={form.envelopeResetKey} recipient={form.recipient} sender={form.sender} content={form.content} theme={form.theme} sealSymbol={form.sealSymbol} sealColor={form.sealColor} envelopeStyle={form.envelopeStyle} greeting={form.greeting} farewell={form.farewell} backdrop={form.backdrop} onClose={() => {}} preview={true} />
+                  <Envelope 
+                    key={form.envelopeResetKey} 
+                    recipient={form.recipient} 
+                    sender={form.sender} 
+                    content={form.content} 
+                    theme={form.theme} 
+                    sealSymbol={form.sealSymbol} 
+                    sealColor={form.sealColor} 
+                    envelopeStyle={form.envelopeStyle} 
+                    greeting={form.greeting} 
+                    farewell={form.farewell} 
+                    backdrop={form.backdrop} 
+                    onClose={() => {}} 
+                    preview={true} 
+                    narration={form.narrationEnabled ? { enabled: true, audioUrl: form.narrationUrl, syncData: form.narrationSyncData } : undefined}
+                  />
                 </div>
               </div>
             ) : form.previewMode === "background" ? (

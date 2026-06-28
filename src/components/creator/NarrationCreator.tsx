@@ -41,6 +41,7 @@ export default function NarrationCreator({
   // Tap sync helpers
   const [syncActive, setSyncActive] = useState(false);
   const [activeSyncIndex, setActiveSyncIndex] = useState(0);
+  const [previewSentenceIndex, setPreviewSentenceIndex] = useState(-1);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -107,16 +108,20 @@ export default function NarrationCreator({
       const time = audioRef.current.currentTime;
       setCurrentTime(time);
 
-      // If playing in Sync Mode, auto-highlight matching sentences
-      if (syncActive) {
-        // Find if current time matches next sentences
-        const nextIdx = narrationSyncData.findIndex((item) => item.time > time);
-        if (nextIdx !== -1) {
-          setActiveSyncIndex(Math.max(0, nextIdx - 1));
+      // Auto-highlight matching sentences for playback preview
+      const nextIdx = narrationSyncData.findIndex((item) => item.time > time);
+      let idx = -1;
+      if (nextIdx !== -1) {
+        idx = Math.max(0, nextIdx - 1);
+      } else {
+        const firstUnset = narrationSyncData.findIndex(item => item.time === -1);
+        if (firstUnset !== -1) {
+          idx = Math.max(0, firstUnset - 1);
         } else {
-          setActiveSyncIndex(narrationSyncData.length - 1);
+          idx = narrationSyncData.length - 1;
         }
       }
+      setPreviewSentenceIndex(idx);
     }
   };
 
@@ -130,6 +135,7 @@ export default function NarrationCreator({
     setIsPlaying(false);
     setCurrentTime(0);
     setSyncActive(false);
+    setPreviewSentenceIndex(-1);
   };
 
   // Start Mic Recording
@@ -460,7 +466,9 @@ export default function NarrationCreator({
                       const syncItem = narrationSyncData[idx];
                       const timeVal = syncItem ? syncItem.time : -1;
                       const isCompleted = timeVal !== -1;
-                      const isCurrent = syncActive && idx === activeSyncIndex;
+                      const isCurrent = syncActive 
+                        ? (idx === activeSyncIndex)
+                        : (isPlaying && idx === previewSentenceIndex);
 
                       return (
                         <div
