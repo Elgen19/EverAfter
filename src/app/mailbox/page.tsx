@@ -1139,6 +1139,7 @@ function MailboxContent() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          justifyContent: "center",
           boxSizing: "border-box",
           position: "relative"
         }}
@@ -1390,17 +1391,11 @@ function MailboxContent() {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              height: "100%",
-              width: "100%",
               color: "var(--text-muted)",
               gap: "16px",
               padding: "40px",
               textAlign: "center",
               animation: "fade-in-btn 0.5s ease-out forwards",
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
               zIndex: 10
             }}
           >
