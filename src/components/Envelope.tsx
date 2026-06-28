@@ -207,10 +207,21 @@ export default function Envelope({
 
   useEffect(() => {
     if (activeSentenceIndex !== -1 && activeSentenceRef.current) {
-      activeSentenceRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-      });
+      const activeSpan = activeSentenceRef.current;
+      const container = activeSpan.closest(".stationery-scroll-container") as HTMLElement;
+      if (container) {
+        const containerRect = container.getBoundingClientRect();
+        const spanRect = activeSpan.getBoundingClientRect();
+        
+        // Calculate exact relative scroll position to center the active sentence
+        const relativeTop = spanRect.top - containerRect.top + container.scrollTop;
+        const targetScrollTop = relativeTop - (container.clientHeight / 2) + (spanRect.height / 2);
+        
+        container.scrollTo({
+          top: Math.max(0, targetScrollTop),
+          behavior: "smooth"
+        });
+      }
     }
   }, [activeSentenceIndex]);
 
