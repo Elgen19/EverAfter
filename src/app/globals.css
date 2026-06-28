@@ -358,6 +358,7 @@ body {
   --envelope-full-transform: scale(0.8) translateY(100px);
   --envelope-open-transform: translateY(110px) scale(0.95);
   --envelope-closed-transform: scale(1);
+  flex-shrink: 0;
 }
 
 .envelope-wrapper:hover {
@@ -636,7 +637,7 @@ body {
   width: 100%;
   height: 100%;
   background-image: var(--env-bg-image, url(/vintage_envelope_open.png));
-  background-size: 130.1% 199.2%;
+  background-size: 715.6px 657.4px;
   background-position: var(--env-bg-pos, -81.7px -277.3px);
   background-repeat: no-repeat;
   transition: clip-path 1.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -657,7 +658,7 @@ body {
   width: 100%;
   height: 100%;
   background-image: var(--env-bg-image, url(/vintage_envelope_open.png));
-  background-size: 130.1% 199.2%;
+  background-size: 715.6px 657.4px;
   background-position: var(--env-bg-pos, -81.7px -277.3px);
   background-repeat: no-repeat;
   clip-path: inset(0% 0% 0% 0%); /* clips the pocket bounds */
@@ -1373,6 +1374,7 @@ button:hover .quiz-option-badge {
   height: 330px;
   position: relative;
   margin: 0 auto;
+  flex-shrink: 0;
 }
 
 .mailbox-envelope-container {
@@ -1400,10 +1402,10 @@ button:hover .quiz-option-badge {
 }
 
 @media (max-width: 600px) {
-  .envelope-container {
-    transform: scale(calc(100vw / 620)) !important;
+  .envelope-container, .envelope-container-preview {
+    transform: scale(calc(100vw / 700)) !important;
     transform-origin: center center;
-    height: calc(330px * (100vw / 620)) !important;
+    height: calc(330px * (100vw / 700)) !important;
     margin: 10px auto !important;
   }
   .envelope-wrapper {

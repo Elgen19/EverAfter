@@ -439,10 +439,11 @@ export default function LandingClientPage() {
   return (
     <div className="landing-page-root" style={{ 
       minHeight: "100vh", 
+      width: "100%",
       display: "flex",
       flexDirection: "column",
       position: "relative", 
-      overflow: "hidden"
+      overflowX: "hidden"
     }}>
       {/* Parallax varying backgrounds */}
       <div className="fixed-parallax-bg-container">
@@ -609,6 +610,7 @@ export default function LandingClientPage() {
               ) : (
                 <Link 
                   href="/login"
+                  className="header-dashboard-btn"
                   style={{
                     fontSize: "14px",
                     color: "var(--text-main)",
@@ -656,7 +658,7 @@ export default function LandingClientPage() {
       </header>
 
       {/* Main Container */}
-      <main className="landing-main" style={{ maxWidth: "1200px", margin: "140px auto 0 auto", padding: "0 24px", flexGrow: 1 }}>
+      <main className="landing-main" style={{ width: "100%", maxWidth: "1200px", margin: "140px auto 0 auto", padding: "0 24px", flexGrow: 1, overflowX: "hidden", boxSizing: "border-box" }}>
         
         {/* HERO SECTION */}
         <section className="landing-hero" style={{ gap: "40px", alignItems: "center", minHeight: "500px", marginBottom: "80px" }}>
