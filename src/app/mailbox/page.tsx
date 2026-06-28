@@ -81,13 +81,13 @@ function MailboxContent() {
 
       if (editBgFile && storage) {
         const storageRef = ref(storage, `letters/${refLetter.id}/mailbox_custom_bg`);
-        const snapshot = await uploadBytes(storageRef, editBgFile);
+        const snapshot = await uploadBytes(storageRef, editBgFile, { cacheControl: "public,max-age=31536000" });
         finalBgUrl = await getDownloadURL(snapshot.ref);
       }
 
       if (editMusicFile && storage) {
         const storageRef = ref(storage, `letters/${refLetter.id}/mailbox_music`);
-        const snapshot = await uploadBytes(storageRef, editMusicFile);
+        const snapshot = await uploadBytes(storageRef, editMusicFile, { cacheControl: "public,max-age=31536000" });
         finalMusicUrl = await getDownloadURL(snapshot.ref);
       }
 

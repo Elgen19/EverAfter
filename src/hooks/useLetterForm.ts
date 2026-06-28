@@ -1147,7 +1147,7 @@ export function useLetterForm() {
             if (audioEnabled && audioFile) {
               const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
               const storageRef = ref(storage, `letters/${editId}/audio_message`);
-              const snapshot = await uploadBytes(storageRef, audioFile);
+              const snapshot = await uploadBytes(storageRef, audioFile, { cacheControl: "public,max-age=31536000" });
               finalAudioUrl = await getDownloadURL(snapshot.ref);
               if (sanitizedData.audioMessage) {
                 sanitizedData.audioMessage.audioUrl = finalAudioUrl;
@@ -1157,7 +1157,7 @@ export function useLetterForm() {
             if (narrationEnabled && narrationFile) {
               const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
               const storageRef = ref(storage, `letters/${editId}/narration_audio`);
-              const snapshot = await uploadBytes(storageRef, narrationFile);
+              const snapshot = await uploadBytes(storageRef, narrationFile, { cacheControl: "public,max-age=31536000" });
               finalNarrationUrl = await getDownloadURL(snapshot.ref);
               if (sanitizedData.narration) {
                 sanitizedData.narration.audioUrl = finalNarrationUrl;
@@ -1166,7 +1166,7 @@ export function useLetterForm() {
             if (music && musicType === "url" && musicFile) {
               const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
               const storageRef = ref(storage, `letters/${editId}/background_music`);
-              const snapshot = await uploadBytes(storageRef, musicFile);
+              const snapshot = await uploadBytes(storageRef, musicFile, { cacheControl: "public,max-age=31536000" });
               const finalMusicUrl = await getDownloadURL(snapshot.ref);
               sanitizedData.musicUrl = finalMusicUrl;
             }
@@ -1176,7 +1176,7 @@ export function useLetterForm() {
                 const p = polaroids[i];
                 if (p.file) {
                   const storageRef = ref(storage, `letters/${editId}/polaroid_${i}`);
-                  const snapshot = await uploadBytes(storageRef, p.file);
+                  const snapshot = await uploadBytes(storageRef, p.file, { cacheControl: "public,max-age=31536000" });
                   const downloadUrl = await getDownloadURL(snapshot.ref);
                   if (sanitizedData.polaroids.items[i]) {
                     sanitizedData.polaroids.items[i].imageUrl = downloadUrl;
@@ -1214,21 +1214,21 @@ export function useLetterForm() {
             if (audioEnabled && audioFile) {
               const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
               const storageRef = ref(storage, `letters/${letterId}/audio_message`);
-              const snapshot = await uploadBytes(storageRef, audioFile);
+              const snapshot = await uploadBytes(storageRef, audioFile, { cacheControl: "public,max-age=31536000" });
               const finalAudioUrl = await getDownloadURL(snapshot.ref);
               await updateDoc(docRef, { "audioMessage.audioUrl": finalAudioUrl });
             }
             if (narrationEnabled && narrationFile) {
               const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
               const storageRef = ref(storage, `letters/${letterId}/narration_audio`);
-              const snapshot = await uploadBytes(storageRef, narrationFile);
+              const snapshot = await uploadBytes(storageRef, narrationFile, { cacheControl: "public,max-age=31536000" });
               const finalNarrationUrl = await getDownloadURL(snapshot.ref);
               await updateDoc(docRef, { "narration.audioUrl": finalNarrationUrl });
             }
             if (music && musicType === "url" && musicFile) {
               const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
               const storageRef = ref(storage, `letters/${letterId}/background_music`);
-              const snapshot = await uploadBytes(storageRef, musicFile);
+              const snapshot = await uploadBytes(storageRef, musicFile, { cacheControl: "public,max-age=31536000" });
               const finalMusicUrl = await getDownloadURL(snapshot.ref);
               await updateDoc(docRef, { musicUrl: finalMusicUrl });
             }
@@ -1240,7 +1240,7 @@ export function useLetterForm() {
                 const p = polaroids[i];
                 if (p.file) {
                   const storageRef = ref(storage, `letters/${letterId}/polaroid_${i}`);
-                  const snapshot = await uploadBytes(storageRef, p.file);
+                  const snapshot = await uploadBytes(storageRef, p.file, { cacheControl: "public,max-age=31536000" });
                   const downloadUrl = await getDownloadURL(snapshot.ref);
                   if (updatedItems[i]) {
                     updatedItems[i].imageUrl = downloadUrl;
@@ -1256,13 +1256,13 @@ export function useLetterForm() {
               const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
               if (mailboxCustomBgFile) {
                 const storageRef = ref(storage, `letters/${letterId}/mailbox_custom_bg`);
-                const snapshot = await uploadBytes(storageRef, mailboxCustomBgFile);
+                const snapshot = await uploadBytes(storageRef, mailboxCustomBgFile, { cacheControl: "public,max-age=31536000" });
                 const finalBgUrl = await getDownloadURL(snapshot.ref);
                 await updateDoc(docRef, { "mailboxTheme.customBgUrl": finalBgUrl });
               }
               if (mailboxMusicFile) {
                 const storageRef = ref(storage, `letters/${letterId}/mailbox_music`);
-                const snapshot = await uploadBytes(storageRef, mailboxMusicFile);
+                const snapshot = await uploadBytes(storageRef, mailboxMusicFile, { cacheControl: "public,max-age=31536000" });
                 const finalPolMusicUrl = await getDownloadURL(snapshot.ref);
                 await updateDoc(docRef, { "mailboxTheme.musicUrl": finalPolMusicUrl });
               }
