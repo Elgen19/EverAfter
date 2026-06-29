@@ -1,6 +1,6 @@
 import React from "react";
 
-export type LetterStyle = "royal" | "scroll" | "blush" | "lavender" | "celestial" | "midnight_rose" | "obsidian_poppy";
+export type LetterStyle = "vintage" | "blush" | "royal" | "minimalist";
 
 /**
  * Renders the theme-specific decorations (corner ornaments, inner borders, etc.)
@@ -58,7 +58,7 @@ export function renderDecorations(styleKey: LetterStyle, isMini: boolean): React
         </>
       )}
 
-      {styleKey === "scroll" && (
+      {styleKey === "vintage" && (
         <>
           <div style={{ position: "absolute", top: paddingVal, left: paddingVal, fontSize: emojiSize, color: "#c3a175", pointerEvents: "none", zIndex: 5, fontFamily: "serif" }}>❀</div>
           <div style={{ position: "absolute", top: paddingVal, right: paddingVal, fontSize: emojiSize, color: "#c3a175", pointerEvents: "none", zIndex: 5, fontFamily: "serif" }}>❀</div>
@@ -67,88 +67,12 @@ export function renderDecorations(styleKey: LetterStyle, isMini: boolean): React
         </>
       )}
 
-      {styleKey === "lavender" && (
+      {styleKey === "minimalist" && (
         <>
-          {/* Golden Rose Emblem at Bottom Right */}
-          <div style={{ position: "absolute", bottom: isMini ? "8px" : "16px", right: isMini ? "8px" : "16px", width: isMini ? "32px" : "64px", height: isMini ? "32px" : "64px", zIndex: 6, pointerEvents: "none" }}>
-            <svg width="100%" height="100%" viewBox="0 0 100 100">
-              <defs>
-                <linearGradient id="goldGradPdf" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#ffeea1" />
-                  <stop offset="50%" stopColor="#d4af37" />
-                  <stop offset="100%" stopColor="#aa7c11" />
-                </linearGradient>
-              </defs>
-              <path d="M 55,60 Q 40,75 35,90 M 55,65 Q 65,70 60,75 M 48,70 Q 30,70 38,65 Z" fill="none" stroke="url(#goldGradPdf)" strokeWidth="2" />
-              <path d="M 40,72 C 34,70 28,74 34,78 C 40,82 44,78 40,72 Z" fill="url(#goldGradPdf)" stroke="url(#goldGradPdf)" strokeWidth="0.5" />
-              <path d="M 58,74 C 64,72 70,76 64,80 C 58,84 54,80 58,74 Z" fill="url(#goldGradPdf)" stroke="url(#goldGradPdf)" strokeWidth="0.5" />
-              <path d="M 50,22 C 35,22 30,38 50,58 C 70,38 65,22 50,22 Z" fill="url(#goldGradPdf)" fillOpacity="0.8" stroke="url(#goldGradPdf)" strokeWidth="0.8" />
-              <path d="M 50,30 C 40,32 40,48 50,48 C 60,48 60,32 50,30 Z" fill="url(#goldGradPdf)" stroke="url(#goldGradPdf)" strokeWidth="0.8" />
-              <circle cx="50" cy="40" r="8" fill="#fff" fillOpacity="0.15" stroke="url(#goldGradPdf)" strokeWidth="1" />
-              <circle cx="50" cy="40" r="4" fill="url(#goldGradPdf)" />
-            </svg>
-          </div>
-        </>
-      )}
-
-      {styleKey === "celestial" && (
-        <>
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", zIndex: 5 }}>
-            <svg width="100%" height="100%" style={{ position: "absolute", top: 0, left: 0 }}>
-              <defs>
-                <g id="celestial-corner-pdf">
-                  <path d="M 8,8 L 30,12 L 20,28 L 8,8 M 20,28 L 36,36 L 24,48" fill="none" stroke="rgba(220, 221, 225, 0.4)" strokeWidth="0.8" strokeDasharray="2,2" />
-                  <circle cx="8" cy="8" r="2.5" fill="#dcdde1" />
-                  <circle cx="30" cy="12" r="1.5" fill="#dcdde1" />
-                  <circle cx="20" cy="28" r="3" fill="#fff" style={{ filter: "drop-shadow(0 0 3px #fff)" }} />
-                  <circle cx="36" cy="36" r="1.5" fill="#dcdde1" />
-                  <circle cx="24" cy="48" r="2" fill="#dcdde1" />
-                </g>
-              </defs>
-              <use href="#celestial-corner-pdf" x="0" y="0" />
-              <use href="#celestial-corner-pdf" x="0" y="0" transform="translate(100%, 0) scale(-1, 1)" style={{ transformOrigin: "right top" }} />
-              <use href="#celestial-corner-pdf" x="0" y="0" transform="translate(0, 100%) scale(1, -1)" style={{ transformOrigin: "left bottom" }} />
-              <use href="#celestial-corner-pdf" x="0" y="0" transform="translate(100%, 100%) scale(-1, -1)" style={{ transformOrigin: "right bottom" }} />
-            </svg>
-          </div>
-        </>
-      )}
-
-      {styleKey === "midnight_rose" && (
-        <>
-          <div style={{ position: "absolute", top: paddingVal, left: paddingVal, fontSize: emojiSize, color: "#8c6c30", pointerEvents: "none", zIndex: 5 }}>🌹</div>
-          <div style={{ position: "absolute", top: paddingVal, right: paddingVal, fontSize: emojiSize, color: "#8c6c30", pointerEvents: "none", zIndex: 5 }}>🌹</div>
-          <div style={{ position: "absolute", bottom: paddingVal, left: paddingVal, fontSize: emojiSize, color: "#8c6c30", pointerEvents: "none", zIndex: 5 }}>🌹</div>
-          <div style={{ position: "absolute", bottom: paddingVal, right: paddingVal, fontSize: emojiSize, color: "#8c6c30", pointerEvents: "none", zIndex: 5 }}>🌹</div>
-        </>
-      )}
-
-      {styleKey === "obsidian_poppy" && (
-        <>
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", zIndex: 5 }}>
-            <svg width="100%" height="100%" style={{ position: "absolute", top: 0, left: 0 }}>
-              <defs>
-                <linearGradient id="roseGoldGradPdf" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#ebd1c5" />
-                  <stop offset="50%" stopColor="#c59279" />
-                  <stop offset="100%" stopColor="#8c5b43" />
-                </linearGradient>
-                <g id="poppy-corner-pdf">
-                  <path d="M 12,12 L 48,12 M 12,12 L 12,48" fill="none" stroke="url(#roseGoldGradPdf)" strokeWidth="1.5" />
-                  <path d="M 18,18 L 38,18 M 18,18 L 18,38" fill="none" stroke="url(#roseGoldGradPdf)" strokeWidth="0.8" opacity="0.7" />
-                  <path d="M 12,30 L 30,12" fill="none" stroke="url(#roseGoldGradPdf)" strokeWidth="0.8" />
-                  <path d="M 18,32 L 32,18" fill="none" stroke="url(#roseGoldGradPdf)" strokeWidth="0.8" />
-                  <path d="M 22,22 L 26,26 L 22,30 L 18,26 Z" fill="url(#roseGoldGradPdf)" fillOpacity="0.25" stroke="url(#roseGoldGradPdf)" strokeWidth="0.8" />
-                  <circle cx="26" cy="26" r="1.5" fill="#e8c4b0" />
-                </g>
-              </defs>
-              <rect x="16" y="16" width="calc(100% - 32px)" height="calc(100% - 32px)" fill="none" stroke="url(#roseGoldGradPdf)" strokeWidth="0.8" opacity="0.3" />
-              <use href="#poppy-corner-pdf" x="0" y="0" />
-              <use href="#poppy-corner-pdf" x="0" y="0" transform="translate(100%, 0) scale(-1, 1)" style={{ transformOrigin: "right top" }} />
-              <use href="#poppy-corner-pdf" x="0" y="0" transform="translate(0, 100%) scale(1, -1)" style={{ transformOrigin: "left bottom" }} />
-              <use href="#poppy-corner-pdf" x="0" y="0" transform="translate(100%, 100%) scale(-1, -1)" style={{ transformOrigin: "right bottom" }} />
-            </svg>
-          </div>
+          <div style={{ position: "absolute", top: isMini ? "6px" : "10px", left: isMini ? "6px" : "10px", fontSize: isMini ? "10px" : "12px", color: "#888888", fontFamily: "monospace", pointerEvents: "none", zIndex: 5 }}>┌</div>
+          <div style={{ position: "absolute", top: isMini ? "6px" : "10px", right: isMini ? "6px" : "10px", fontSize: isMini ? "10px" : "12px", color: "#888888", fontFamily: "monospace", pointerEvents: "none", zIndex: 5 }}>┐</div>
+          <div style={{ position: "absolute", bottom: isMini ? "6px" : "10px", left: isMini ? "6px" : "10px", fontSize: isMini ? "10px" : "12px", color: "#888888", fontFamily: "monospace", pointerEvents: "none", zIndex: 5 }}>└</div>
+          <div style={{ position: "absolute", bottom: isMini ? "6px" : "10px", right: isMini ? "6px" : "10px", fontSize: isMini ? "10px" : "12px", color: "#888888", fontFamily: "monospace", pointerEvents: "none", zIndex: 5 }}>┘</div>
         </>
       )}
     </>
@@ -168,38 +92,29 @@ export function getThemeColors(theme: string) {
 }
 
 export function getPreviewStyle(styleKey: LetterStyle): React.CSSProperties {
-  const base: React.CSSProperties = { backgroundSize: "100% 100%", backgroundPosition: "center", backgroundRepeat: "no-repeat" };
   switch (styleKey) {
-    case "blush": return { ...base, backgroundColor: "#FFFDF7", color: "#2F2F2F", border: "1px solid #B76E79", boxShadow: "inset 0 0 0 4px #FFFDF7, inset 0 0 0 5px #B76E79" };
-    case "royal": return { ...base, backgroundColor: "#F7F1E3", color: "#3A2618", border: "4px double #C9A227" };
-    case "lavender": return { ...base, backgroundColor: "#3d020a", backgroundImage: "url('/crimson_gold_rose_bg.jpg')", color: "#f5e6e8", border: "none" };
-    case "celestial": return { ...base, backgroundColor: "#090e24", backgroundImage: "url('/celestial_eagle_bg.jpg')", color: "#f5f6fa", border: "none" };
-    case "midnight_rose": return { ...base, backgroundColor: "#fdfbf7", backgroundImage: "url('/midnight_rose_bg.jpg')", color: "#3c2f2f", border: "none" };
-    case "obsidian_poppy": return { ...base, backgroundColor: "#1c1c1f", backgroundImage: "url('/obsidian_poppy_bg.jpg')", color: "#e8c4b0", border: "none" };
-    case "scroll":
-    default: return { ...base, backgroundColor: "#eddcb9", backgroundImage: "radial-gradient(circle at 10% 20%, rgba(139, 90, 43, 0.03) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(139, 90, 43, 0.03) 0%, transparent 40%)", color: "#2c1a0c", border: "none" };
+    case "blush": return { backgroundColor: "#fffdfc", color: "#5f2f45", border: "2px solid #e8b4b8" };
+    case "royal": return { backgroundColor: "#fffdf9", color: "#7b1e1e", border: "3px double #c9a227" };
+    case "minimalist": return { backgroundColor: "#ffffff", color: "#222222", border: "1px solid #eeeeee" };
+    case "vintage":
+    default: return { backgroundColor: "#fcf8ee", color: "#4a2c11", border: "4px double #c3a175" };
   }
 }
 
 export function getPdfPageStyle(styleKey: LetterStyle): React.CSSProperties {
-  const base: React.CSSProperties = { width: "215.9mm", height: "279.4mm", boxSizing: "border-box", position: "relative", textAlign: "left", display: "flex", flexDirection: "column", justifyContent: "flex-start", backgroundClip: "padding-box", backgroundSize: "100% 100%", backgroundPosition: "center", backgroundRepeat: "no-repeat" };
+  const base: React.CSSProperties = { width: "215.9mm", height: "279.4mm", boxSizing: "border-box", position: "relative", textAlign: "left", display: "flex", flexDirection: "column", justifyContent: "flex-start", backgroundClip: "padding-box", padding: "25.4mm 25.4mm 25.4mm 38.1mm" };
   switch (styleKey) {
-    case "blush": return { ...base, backgroundColor: "#FFFDF7", color: "#2F2F2F", border: "1px solid #B76E79", padding: "50px 45px 65px 45px", fontFamily: "'Playfair Display', Georgia, serif", boxShadow: "inset 0 0 0 4px #FFFDF7, inset 0 0 0 5px #B76E79" };
-    case "royal": return { ...base, backgroundColor: "#F7F1E3", color: "#3A2618", border: "4px double #C9A227", padding: "60px 45px 50px 45px", fontFamily: "'Cinzel', Times, serif" };
-    case "lavender": return { ...base, backgroundColor: "#3d020a", backgroundImage: "url('/crimson_gold_rose_bg.jpg')", color: "#f5e6e8", border: "none", padding: "50px 45px", fontFamily: "'Playfair Display', Georgia, serif" };
-    case "celestial": return { ...base, backgroundColor: "#090e24", backgroundImage: "url('/celestial_eagle_bg.jpg')", color: "#f5f6fa", border: "none", padding: "50px 45px", fontFamily: "'Playfair Display', Georgia, serif" };
-    case "midnight_rose": return { ...base, backgroundColor: "#fdfbf7", backgroundImage: "url('/midnight_rose_bg.jpg')", color: "#3c2f2f", border: "none", padding: "50px 45px", fontFamily: "'Cormorant Garamond', Georgia, serif" };
-    case "obsidian_poppy": return { ...base, backgroundColor: "#1c1c1f", backgroundImage: "url('/obsidian_poppy_bg.jpg')", color: "#e8c4b0", border: "none", padding: "50px 45px", fontFamily: "'Source Serif 4', Georgia, serif" };
-    case "scroll":
-    default: return { ...base, backgroundColor: "#eddcb9", backgroundImage: "radial-gradient(circle at 10% 20%, rgba(139, 90, 43, 0.03) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(139, 90, 43, 0.03) 0%, transparent 40%)", color: "#2c1a0c", border: "none", padding: "50px 45px", fontFamily: "'Playfair Display', Georgia, serif" };
+    case "blush": return { ...base, backgroundColor: "#fffdfc", color: "#5f2f45", border: "2px solid #e8b4b8", fontFamily: "'Playfair Display', Georgia, serif" };
+    case "royal": return { ...base, backgroundColor: "#fffdf9", color: "#7b1e1e", border: "3px double #c9a227", fontFamily: "'Cinzel', Times, serif" };
+    case "minimalist": return { ...base, backgroundColor: "#ffffff", color: "#222222", border: "1px solid #eeeeee", fontFamily: "'Playfair Display', Georgia, serif" };
+    case "vintage":
+    default: return { ...base, backgroundColor: "#fcf8ee", color: "#4a2c11", border: "8px double #c3a175", fontFamily: "'Playfair Display', Georgia, serif" };
   }
 }
 
 export function splitContentIntoPages(text: string, styleKey: LetterStyle): string[] {
-  let charLimit = 1000;
-  if (styleKey === "royal") charLimit = 900;
-  if (styleKey === "midnight_rose") charLimit = 950;
-  if (styleKey === "obsidian_poppy") charLimit = 950;
+  let charLimit = 900;
+  if (styleKey === "royal") charLimit = 800;
 
   const paragraphs = text.split("\n");
   const pages: string[] = [];

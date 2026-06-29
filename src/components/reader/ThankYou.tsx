@@ -27,32 +27,27 @@ interface ThankYouProps {
 }
 
 const STYLE_OPTIONS = [
-  { id: "scroll", name: "Vintage Scroll", bg: "#fcf8ee", border: "#c3a175", font: "serif", color: "#4a2c11", desc: "Sepia parchment with double gold scroll border" },
+  { id: "vintage", name: "Vintage Scroll", bg: "#fcf8ee", border: "#c3a175", font: "serif", color: "#4a2c11", desc: "Sepia parchment with double gold scroll border" },
   { id: "blush", name: "Blush Rose", bg: "#fffdfc", border: "#e8b4b8", font: "serif", color: "#5f2f45", desc: "Cream stationery sheet with pink highlights" },
   { id: "royal", name: "Royal Crimson", bg: "#fffdf9", border: "#c9a227", font: "serif", color: "#7b1e1e", desc: "Ivory paper with gold borders and red text" },
-  { id: "lavender", name: "Lavender Gold", bg: "#3d020a", border: "#d4af37", font: "serif", color: "#f7f1e3", desc: "Deep crimson with gold highlights and light text" },
-  { id: "celestial", name: "Celestial Navy", bg: "#090e24", border: "#e2b857", font: "serif", color: "#f5f6fa", desc: "Midnight blue with gold star accents and light text" },
-  { id: "midnight_rose", name: "Midnight Rose", bg: "#110e10", border: "#8c6c30", font: "serif", color: "#e8c4b0", desc: "Velvet black with gold floral frames and soft pink text" },
-  { id: "obsidian_poppy", name: "Obsidian Poppy", bg: "#1c1c1f", border: "#c59279", font: "serif", color: "#e8c4b0", desc: "Charcoal paper with rose-gold poppies and elegant text" },
+  { id: "minimalist", name: "Minimalist Clean", bg: "#ffffff", border: "#eeeeee", font: "sans-serif", color: "#222222", desc: "Modern white paper layout with serif text" },
 ] as const;
 
 const getCursiveFont = (styleKey: LetterStyle) => {
   if (styleKey === "royal") return "'Great Vibes', cursive";
   if (styleKey === "blush") return "'Allura', cursive";
-  if (styleKey === "scroll") return "'Dancing Script', cursive";
+  if (styleKey === "vintage") return "'Dancing Script', cursive";
   return "var(--font-cursive)";
 };
 
 const getBodyFont = (styleKey: LetterStyle) => {
   if (styleKey === "royal") return "'Cinzel', Times, serif";
-  if (styleKey === "midnight_rose") return "'Cormorant Garamond', serif";
-  if (styleKey === "obsidian_poppy") return "'Source Serif 4', serif";
   return "'Playfair Display', Georgia, serif";
 };
 
 const getSignatureColor = (styleKey: LetterStyle) => {
   const styleOpt = STYLE_OPTIONS.find(o => o.id === styleKey);
-  return styleOpt ? styleOpt.color : "#ffffff";
+  return styleOpt ? styleOpt.color : "#222222";
 };
 
 export default function ThankYou({
@@ -80,7 +75,9 @@ export default function ThankYou({
       window.location.reload();
     }
   };
-  const [selectedStyle, setSelectedStyle] = useState<LetterStyle>((theme as LetterStyle) || "scroll");
+  const [selectedStyle, setSelectedStyle] = useState<LetterStyle>(
+    ["vintage", "blush", "royal", "minimalist"].includes(theme) ? (theme as LetterStyle) : "vintage"
+  );
   const [showFullPreview, setShowFullPreview] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
