@@ -644,8 +644,8 @@ export default function Envelope({
                 position: "relative",
                 width: "100%",
                 maxWidth: "590px",
-                height: preview ? "90%" : "85vh",
-                maxHeight: preview ? "600px" : "calc(100vh - 110px)",
+                height: preview ? "92%" : "90vh",
+                maxHeight: preview ? "680px" : "calc(100vh - 80px)",
                 backgroundColor: "var(--stationery-bg)",
                 backgroundImage: "var(--bg-image)",
                 backgroundSize: "cover",
@@ -934,6 +934,7 @@ export default function Envelope({
               style={{
                 overflowY: "auto",
                 flex: 1,
+                minHeight: "0px",
                 display: "flex",
                 flexDirection: "column",
                 gap: theme === "obsidian_poppy" ? "8px" : "24px",

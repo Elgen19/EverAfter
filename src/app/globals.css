@@ -1582,6 +1582,9 @@ button:hover .quiz-option-badge {
 .letter-reader-container .stationery-sheet-portal {
   position: fixed !important;
 }
+.stationery-scroll-container {
+  min-height: 0;
+}
 
 /* --- Mobile Responsiveness for EverAfter Studio --- */
 .mobile-only, .mobile-flex-only {
@@ -1655,14 +1658,17 @@ button:hover .quiz-option-badge {
   }
   .stationery-scroll-container {
     padding: 48px 12px 16px 12px !important;
+    min-height: 0 !important;
   }
   .theme-royal .stationery-scroll-container {
     padding: 48px 10px 16px 10px !important;
+    min-height: 0 !important;
   }
   .theme-obsidian_poppy .stationery-scroll-container,
   .theme-midnight_rose .stationery-scroll-container,
   .theme-celestial .stationery-scroll-container {
     padding: 48px 12px 16px 12px !important;
+    min-height: 0 !important;
   }
 }
 
