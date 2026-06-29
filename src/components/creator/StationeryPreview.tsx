@@ -91,6 +91,16 @@ export default function StationeryPreview({
   getGlassyBg,
   getGlassyBorder,
 }: StationeryPreviewProps) {
+  const [isMobileViewport, setIsMobileViewport] = React.useState(false);
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobileViewport(window.innerWidth <= 991);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   const getBackdropOverlay = (themeName: string) => {
     switch (themeName) {
       case "celestial":
@@ -127,10 +137,10 @@ export default function StationeryPreview({
       <div
         className={`stationery-sheet theme-${theme} studio-preview-card`}
         style={{
-          width: "100%",
-          maxWidth: "590px",
+          width: isMobileViewport ? "82%" : "100%",
+          maxWidth: isMobileViewport ? "420px" : "590px",
           margin: "0 auto",
-          height: "800px",
+          height: isMobileViewport ? "410px" : "800px",
           backgroundColor: "var(--stationery-bg)",
           backgroundImage: "var(--bg-image)",
           backgroundSize: "cover",

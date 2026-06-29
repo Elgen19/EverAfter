@@ -175,6 +175,16 @@ export default function Envelope({
   const [isFirstOpen, setIsFirstOpen] = useState(true);
   const [forceHideEnvelope, setForceHideEnvelope] = useState(false);
 
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobileViewport(window.innerWidth <= 991);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
@@ -624,7 +634,7 @@ export default function Envelope({
               opacity: isSheetExpanded ? 1 : 0,
               pointerEvents: isSheetExpanded ? "auto" : "none",
               transition: "opacity 1.4s cubic-bezier(0.4, 0, 0.2, 1)",
-              position: preview ? "absolute" : "fixed",
+              position: preview ? (isMobileViewport ? "fixed" : "absolute") : "fixed",
               top: 0,
               left: 0,
               right: 0,
@@ -633,8 +643,11 @@ export default function Envelope({
               width: "100%",
               height: "100%",
               display: "flex",
-              alignItems: "center",
+              alignItems: isMobileViewport ? "flex-start" : "center",
               justifyContent: "center",
+              paddingTop: isMobileViewport ? (isOnlyStep || !activeStep ? "20px" : "72px") : "0px",
+              paddingBottom: isMobileViewport ? "16px" : "0px",
+              boxSizing: "border-box",
             }}
           >
             {/* The beautiful letter paper page */}
@@ -642,10 +655,12 @@ export default function Envelope({
               className={`stationery-sheet ${themeClass}`}
               style={{
                 position: "relative",
-                width: "100%",
-                maxWidth: "590px",
-                height: preview ? "92%" : "90vh",
-                maxHeight: preview ? "680px" : "calc(100vh - 80px)",
+                width: isMobileViewport ? "85%" : "100%",
+                maxWidth: isMobileViewport ? "440px" : "590px",
+                height: isMobileViewport 
+                  ? (isOnlyStep || !activeStep ? "calc(100dvh - 110px)" : "calc(100dvh - 150px)") 
+                  : (preview ? "92%" : "90vh"),
+                maxHeight: isMobileViewport ? "none" : (preview ? "680px" : "calc(100vh - 80px)"),
                 backgroundColor: "var(--stationery-bg)",
                 backgroundImage: "var(--bg-image)",
                 backgroundSize: "cover",
