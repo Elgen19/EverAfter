@@ -98,7 +98,7 @@ export default function ThankYou({
           filename: `${recipient.replace(/\s+/g, "_") || "love"}_letter.pdf`,
           image: { type: "jpeg", quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true, logging: false, letterRendering: true, scrollX: 0, scrollY: 0 },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          jsPDF: { unit: "mm", format: "letter", orientation: "portrait" },
           pagebreak: { mode: ["css", "legacy"] }
         };
         await html2pdf().from(element).set(opt as any).save();
@@ -128,7 +128,7 @@ export default function ThankYou({
   // ── PDF hidden render target ──
   const PdfHiddenTarget = isGeneratingPDF ? (
     <div style={{ position: "fixed", left: 0, top: 0, width: "100vw", height: "100vh", zIndex: 99999, overflow: "hidden" }}>
-      <div id="letter-download-hidden-target" style={{ position: "relative", zIndex: 1, opacity: 1, width: "210mm", margin: 0, padding: 0, background: "none" }}>
+      <div id="letter-download-hidden-target" style={{ position: "relative", zIndex: 1, opacity: 1, width: "215.9mm", margin: 0, padding: 0, background: "none" }}>
         {splitContentIntoPages(content, selectedStyle).map((pageText, idx, arr) => (
           <div key={idx} className={`pdf-page-break pdf-stationery-sheet theme-${selectedStyle}`} style={{ ...getPdfPageStyle(selectedStyle), pageBreakBefore: idx === 0 ? "avoid" : "always" } as React.CSSProperties}>
             {renderDecorations(selectedStyle, false)}
