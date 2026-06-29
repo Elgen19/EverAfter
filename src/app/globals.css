@@ -2056,6 +2056,12 @@ button:hover .quiz-option-badge {
   .studio-preview-card {
     height: 480px !important; /* Scale down preview card height on mobile */
   }
+  .stationery-sheet.studio-preview-card {
+    width: calc(100% - 24px) !important;
+    height: 410px !important; /* Shorter to fit inside the 480px glass wrapper */
+    margin: 10px auto !important;
+    box-sizing: border-box !important;
+  }
 }
 
 /* Mailbox root inner container and header responsive styles */
