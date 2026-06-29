@@ -27,22 +27,32 @@ interface ThankYouProps {
 }
 
 const STYLE_OPTIONS = [
-  { id: "vintage", name: "Vintage Scroll", bg: "#fcf8ee", border: "#c3a175", font: "serif", color: "#4a2c11", desc: "Sepia parchment with double gold scroll border" },
+  { id: "scroll", name: "Vintage Scroll", bg: "#fcf8ee", border: "#c3a175", font: "serif", color: "#4a2c11", desc: "Sepia parchment with double gold scroll border" },
   { id: "blush", name: "Blush Rose", bg: "#fffdfc", border: "#e8b4b8", font: "serif", color: "#5f2f45", desc: "Cream stationery sheet with pink highlights" },
   { id: "royal", name: "Royal Crimson", bg: "#fffdf9", border: "#c9a227", font: "serif", color: "#7b1e1e", desc: "Ivory paper with gold borders and red text" },
-  { id: "minimalist", name: "Minimalist Clean", bg: "#ffffff", border: "#eeeeee", font: "sans-serif", color: "#222222", desc: "Modern white paper layout with serif text" },
+  { id: "lavender", name: "Lavender Gold", bg: "#3d020a", border: "#d4af37", font: "serif", color: "#f7f1e3", desc: "Deep crimson with gold highlights and light text" },
+  { id: "celestial", name: "Celestial Navy", bg: "#090e24", border: "#e2b857", font: "serif", color: "#f5f6fa", desc: "Midnight blue with gold star accents and light text" },
+  { id: "midnight_rose", name: "Midnight Rose", bg: "#110e10", border: "#8c6c30", font: "serif", color: "#e8c4b0", desc: "Velvet black with gold floral frames and soft pink text" },
+  { id: "obsidian_poppy", name: "Obsidian Poppy", bg: "#1c1c1f", border: "#c59279", font: "serif", color: "#e8c4b0", desc: "Charcoal paper with rose-gold poppies and elegant text" },
 ] as const;
 
 const getCursiveFont = (styleKey: LetterStyle) => {
   if (styleKey === "royal") return "'Great Vibes', cursive";
   if (styleKey === "blush") return "'Allura', cursive";
-  if (styleKey === "vintage") return "'Dancing Script', cursive";
+  if (styleKey === "scroll") return "'Dancing Script', cursive";
   return "var(--font-cursive)";
 };
 
 const getBodyFont = (styleKey: LetterStyle) => {
   if (styleKey === "royal") return "'Cinzel', Times, serif";
+  if (styleKey === "midnight_rose") return "'Cormorant Garamond', serif";
+  if (styleKey === "obsidian_poppy") return "'Source Serif 4', serif";
   return "'Playfair Display', Georgia, serif";
+};
+
+const getSignatureColor = (styleKey: LetterStyle) => {
+  const styleOpt = STYLE_OPTIONS.find(o => o.id === styleKey);
+  return styleOpt ? styleOpt.color : "#ffffff";
 };
 
 export default function ThankYou({
@@ -70,7 +80,7 @@ export default function ThankYou({
       window.location.reload();
     }
   };
-  const [selectedStyle, setSelectedStyle] = useState<LetterStyle>("vintage");
+  const [selectedStyle, setSelectedStyle] = useState<LetterStyle>((theme as LetterStyle) || "scroll");
   const [showFullPreview, setShowFullPreview] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
@@ -123,17 +133,17 @@ export default function ThankYou({
           <div key={idx} className="pdf-page-break" style={{ ...getPdfPageStyle(selectedStyle), pageBreakBefore: idx === 0 ? "avoid" : "always" } as React.CSSProperties}>
             {renderDecorations(selectedStyle, false)}
             {idx === 0 && (
-              <div style={{ fontSize: selectedStyle === "minimalist" ? "22px" : "28px", fontFamily: getCursiveFont(selectedStyle), fontWeight: selectedStyle === "minimalist" ? "normal" : "bold", marginBottom: "20px" }}>
+              <div style={{ fontSize: "28px", fontFamily: getCursiveFont(selectedStyle), fontWeight: "bold", marginBottom: "20px" }}>
                 Dearest {recipient || "My Love"},
               </div>
             )}
-            <div style={{ fontSize: selectedStyle === "minimalist" ? "16px" : "18px", lineHeight: "1.8", whiteSpace: "pre-wrap", letterSpacing: selectedStyle === "royal" ? "0.5px" : "normal" }}>
+            <div style={{ fontSize: "18px", lineHeight: "1.8", whiteSpace: "pre-wrap", letterSpacing: selectedStyle === "royal" ? "0.5px" : "normal" }}>
               {pageText}
             </div>
             {idx === arr.length - 1 && (
-              <div style={{ textAlign: "right", fontSize: selectedStyle === "minimalist" ? "24px" : "30px", fontFamily: getCursiveFont(selectedStyle), color: selectedStyle === "vintage" ? "#5c3818" : selectedStyle === "blush" ? "#b76e79" : selectedStyle === "royal" ? "#7b1e1e" : "#111111", marginTop: "20px" }}>
+              <div style={{ textAlign: "right", fontSize: "30px", fontFamily: getCursiveFont(selectedStyle), color: getSignatureColor(selectedStyle), marginTop: "20px" }}>
                 Yours Truly,<br />
-                <span style={{ fontSize: selectedStyle === "minimalist" ? "22px" : "26px" }}>{sender || "Yours Truly"}</span>
+                <span style={{ fontSize: "26px" }}>{sender || "Yours Truly"}</span>
               </div>
             )}
           </div>
@@ -159,10 +169,10 @@ export default function ThankYou({
           </h3>
           <div className="thankyou-preview-sheet" style={{ width: "100%", maxHeight: "50vh", overflowY: "auto", borderRadius: "12px", padding: "40px", boxSizing: "border-box", textAlign: "left", position: "relative", boxShadow: "inset 0 4px 20px rgba(0,0,0,0.15), 0 10px 30px rgba(0,0,0,0.25)", fontFamily: getBodyFont(selectedStyle), ...getPreviewStyle(selectedStyle) }}>
             {renderDecorations(selectedStyle, false)}
-            <div style={{ fontSize: selectedStyle === "minimalist" ? "22px" : "28px", fontFamily: getCursiveFont(selectedStyle), fontWeight: selectedStyle === "minimalist" ? "normal" : "bold", marginBottom: "20px" }}>Dearest {recipient || "My Love"},</div>
-            <div style={{ fontSize: selectedStyle === "minimalist" ? "16px" : "18px", lineHeight: "1.8", whiteSpace: "pre-wrap", marginBottom: "40px", letterSpacing: selectedStyle === "royal" ? "0.5px" : "normal" }}>{content}</div>
-            <div style={{ textAlign: "right", fontSize: selectedStyle === "minimalist" ? "24px" : "30px", fontFamily: getCursiveFont(selectedStyle), color: selectedStyle === "vintage" ? "#5c3818" : selectedStyle === "blush" ? "#b76e79" : selectedStyle === "royal" ? "#7b1e1e" : "#111111" }}>
-              Yours Truly,<br /><span style={{ fontSize: selectedStyle === "minimalist" ? "22px" : "26px" }}>{sender || "Yours Truly"}</span>
+            <div style={{ fontSize: "28px", fontFamily: getCursiveFont(selectedStyle), fontWeight: "bold", marginBottom: "20px" }}>Dearest {recipient || "My Love"},</div>
+            <div style={{ fontSize: "18px", lineHeight: "1.8", whiteSpace: "pre-wrap", marginBottom: "40px", letterSpacing: selectedStyle === "royal" ? "0.5px" : "normal" }}>{content}</div>
+            <div style={{ textAlign: "right", fontSize: "30px", fontFamily: getCursiveFont(selectedStyle), color: getSignatureColor(selectedStyle) }}>
+              Yours Truly,<br /><span style={{ fontSize: "26px" }}>{sender || "Yours Truly"}</span>
             </div>
           </div>
           <div className="style-picker-buttons" style={{ display: "flex", gap: "10px", width: "100%", marginTop: "8px" }}>
@@ -211,10 +221,10 @@ export default function ThankYou({
             {/* Live mini preview box */}
             <div className="style-picker-preview" style={{ flex: 1.2, width: "50%", height: "235px", boxSizing: "border-box", borderRadius: "8px", padding: "16px 20px", overflowY: "auto", textAlign: "left", position: "relative", transition: "all 0.25s ease", boxShadow: "inset 0 2px 10px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.2)", ...getPreviewStyle(selectedStyle) }}>
               {renderDecorations(selectedStyle, true)}
-              <div style={{ fontSize: selectedStyle === "minimalist" ? "13px" : "15px", fontFamily: getCursiveFont(selectedStyle), fontWeight: selectedStyle === "minimalist" ? "normal" : "bold", marginBottom: "8px" }}>Dearest {recipient || "My Love"},</div>
-              <div style={{ fontSize: selectedStyle === "minimalist" ? "12px" : "13px", lineHeight: "1.6", whiteSpace: "pre-wrap", fontFamily: getBodyFont(selectedStyle) }}>{content || "I love you."}</div>
-              <div style={{ textAlign: "right", marginTop: "16px", fontSize: selectedStyle === "minimalist" ? "13px" : "16px", fontFamily: getCursiveFont(selectedStyle) }}>
-                Yours Truly,<br /><span style={{ fontSize: selectedStyle === "minimalist" ? "14px" : "18px" }}>{sender || "Yours Truly"}</span>
+              <div style={{ fontSize: "15px", fontFamily: getCursiveFont(selectedStyle), fontWeight: "bold", marginBottom: "8px" }}>Dearest {recipient || "My Love"},</div>
+              <div style={{ fontSize: "13px", lineHeight: "1.6", whiteSpace: "pre-wrap", fontFamily: getBodyFont(selectedStyle) }}>{content || "I love you."}</div>
+              <div style={{ textAlign: "right", marginTop: "16px", fontSize: "16px", fontFamily: getCursiveFont(selectedStyle), color: getSignatureColor(selectedStyle) }}>
+                Yours Truly,<br /><span style={{ fontSize: "18px" }}>{sender || "Yours Truly"}</span>
               </div>
             </div>
           </div>

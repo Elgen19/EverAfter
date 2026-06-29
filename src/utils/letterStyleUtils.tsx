@@ -1,6 +1,6 @@
 import React from "react";
 
-export type LetterStyle = "vintage" | "blush" | "royal" | "minimalist";
+export type LetterStyle = "royal" | "scroll" | "blush" | "lavender" | "celestial" | "midnight_rose" | "obsidian_poppy";
 
 /**
  * Renders the theme-specific decorations (corner ornaments, inner borders, etc.)
@@ -20,11 +20,20 @@ export function renderDecorations(styleKey: LetterStyle, isMini: boolean): React
     case "blush":
       innerBorderStyle = { position: "absolute", top: isMini ? "5px" : "8px", left: isMini ? "5px" : "8px", right: isMini ? "5px" : "8px", bottom: isMini ? "5px" : "8px", border: "1px dashed rgba(232, 180, 184, 0.5)", pointerEvents: "none", zIndex: 4 };
       break;
-    case "vintage":
+    case "scroll":
       innerBorderStyle = { position: "absolute", top: isMini ? "7px" : "12px", left: isMini ? "7px" : "12px", right: isMini ? "7px" : "12px", bottom: isMini ? "7px" : "12px", border: "1px solid rgba(195, 161, 117, 0.4)", pointerEvents: "none", zIndex: 4 };
       break;
-    case "minimalist":
-      innerBorderStyle = { position: "absolute", top: isMini ? "4px" : "6px", left: isMini ? "4px" : "6px", right: isMini ? "4px" : "6px", bottom: isMini ? "4px" : "6px", border: "1px solid rgba(34, 34, 34, 0.05)", pointerEvents: "none", zIndex: 4 };
+    case "lavender":
+      innerBorderStyle = { position: "absolute", top: isMini ? "6px" : "10px", left: isMini ? "6px" : "10px", right: isMini ? "6px" : "10px", bottom: isMini ? "6px" : "10px", border: "1px solid rgba(212, 175, 55, 0.35)", pointerEvents: "none", zIndex: 4 };
+      break;
+    case "celestial":
+      innerBorderStyle = { position: "absolute", top: isMini ? "6px" : "10px", left: isMini ? "6px" : "10px", right: isMini ? "6px" : "10px", bottom: isMini ? "6px" : "10px", border: "1px dashed rgba(220, 221, 225, 0.3)", pointerEvents: "none", zIndex: 4 };
+      break;
+    case "midnight_rose":
+      innerBorderStyle = { position: "absolute", top: isMini ? "6px" : "10px", left: isMini ? "6px" : "10px", right: isMini ? "6px" : "10px", bottom: isMini ? "6px" : "10px", border: "1px solid rgba(140, 108, 48, 0.35)", pointerEvents: "none", zIndex: 4 };
+      break;
+    case "obsidian_poppy":
+      innerBorderStyle = { position: "absolute", top: isMini ? "6px" : "10px", left: isMini ? "6px" : "10px", right: isMini ? "6px" : "10px", bottom: isMini ? "6px" : "10px", border: "1px solid rgba(197, 146, 121, 0.35)", pointerEvents: "none", zIndex: 4 };
       break;
   }
 
@@ -76,7 +85,7 @@ export function renderDecorations(styleKey: LetterStyle, isMini: boolean): React
         </>
       )}
 
-      {styleKey === "vintage" && (
+      {styleKey === "scroll" && (
         <>
           <div style={{ position: "absolute", top: paddingVal, left: paddingVal, fontSize: emojiSize, color: "#c3a175", pointerEvents: "none", zIndex: 5, fontFamily: "serif" }}>❀</div>
           <div style={{ position: "absolute", top: paddingVal, right: paddingVal, fontSize: emojiSize, color: "#c3a175", pointerEvents: "none", zIndex: 5, fontFamily: "serif" }}>❀</div>
@@ -85,12 +94,39 @@ export function renderDecorations(styleKey: LetterStyle, isMini: boolean): React
         </>
       )}
 
-      {styleKey === "minimalist" && (
+      {styleKey === "lavender" && (
         <>
-          <div style={{ position: "absolute", top: isMini ? "6px" : "10px", left: isMini ? "6px" : "10px", fontSize: isMini ? "10px" : "12px", color: "#888888", fontFamily: "monospace", pointerEvents: "none", zIndex: 5 }}>┌</div>
-          <div style={{ position: "absolute", top: isMini ? "6px" : "10px", right: isMini ? "6px" : "10px", fontSize: isMini ? "10px" : "12px", color: "#888888", fontFamily: "monospace", pointerEvents: "none", zIndex: 5 }}>┐</div>
-          <div style={{ position: "absolute", bottom: isMini ? "6px" : "10px", left: isMini ? "6px" : "10px", fontSize: isMini ? "10px" : "12px", color: "#888888", fontFamily: "monospace", pointerEvents: "none", zIndex: 5 }}>└</div>
-          <div style={{ position: "absolute", bottom: isMini ? "6px" : "10px", right: isMini ? "6px" : "10px", fontSize: isMini ? "10px" : "12px", color: "#888888", fontFamily: "monospace", pointerEvents: "none", zIndex: 5 }}>┘</div>
+          <div style={{ position: "absolute", top: paddingVal, left: paddingVal, fontSize: emojiSize, color: "#d4af37", pointerEvents: "none", zIndex: 5, fontFamily: "sans-serif" }}>⚜️</div>
+          <div style={{ position: "absolute", top: paddingVal, right: paddingVal, fontSize: emojiSize, color: "#d4af37", pointerEvents: "none", zIndex: 5, fontFamily: "sans-serif" }}>⚜️</div>
+          <div style={{ position: "absolute", bottom: paddingVal, left: paddingVal, fontSize: emojiSize, color: "#d4af37", pointerEvents: "none", zIndex: 5, fontFamily: "sans-serif" }}>⚜️</div>
+          <div style={{ position: "absolute", bottom: paddingVal, right: paddingVal, fontSize: emojiSize, color: "#d4af37", pointerEvents: "none", zIndex: 5, fontFamily: "sans-serif" }}>⚜️</div>
+        </>
+      )}
+
+      {styleKey === "celestial" && (
+        <>
+          <div style={{ position: "absolute", top: paddingVal, left: paddingVal, fontSize: emojiSize, color: "#e2b857", pointerEvents: "none", zIndex: 5 }}>✨</div>
+          <div style={{ position: "absolute", top: paddingVal, right: paddingVal, fontSize: emojiSize, color: "#e2b857", pointerEvents: "none", zIndex: 5 }}>✨</div>
+          <div style={{ position: "absolute", bottom: paddingVal, left: paddingVal, fontSize: emojiSize, color: "#e2b857", pointerEvents: "none", zIndex: 5 }}>✨</div>
+          <div style={{ position: "absolute", bottom: paddingVal, right: paddingVal, fontSize: emojiSize, color: "#e2b857", pointerEvents: "none", zIndex: 5 }}>✨</div>
+        </>
+      )}
+
+      {styleKey === "midnight_rose" && (
+        <>
+          <div style={{ position: "absolute", top: paddingVal, left: paddingVal, fontSize: emojiSize, color: "#8c6c30", pointerEvents: "none", zIndex: 5 }}>🌹</div>
+          <div style={{ position: "absolute", top: paddingVal, right: paddingVal, fontSize: emojiSize, color: "#8c6c30", pointerEvents: "none", zIndex: 5 }}>🌹</div>
+          <div style={{ position: "absolute", bottom: paddingVal, left: paddingVal, fontSize: emojiSize, color: "#8c6c30", pointerEvents: "none", zIndex: 5 }}>🌹</div>
+          <div style={{ position: "absolute", bottom: paddingVal, right: paddingVal, fontSize: emojiSize, color: "#8c6c30", pointerEvents: "none", zIndex: 5 }}>🌹</div>
+        </>
+      )}
+
+      {styleKey === "obsidian_poppy" && (
+        <>
+          <div style={{ position: "absolute", top: paddingVal, left: paddingVal, fontSize: emojiSize, color: "#c59279", pointerEvents: "none", zIndex: 5 }}>🌺</div>
+          <div style={{ position: "absolute", top: paddingVal, right: paddingVal, fontSize: emojiSize, color: "#c59279", pointerEvents: "none", zIndex: 5 }}>🌺</div>
+          <div style={{ position: "absolute", bottom: paddingVal, left: paddingVal, fontSize: emojiSize, color: "#c59279", pointerEvents: "none", zIndex: 5 }}>🌺</div>
+          <div style={{ position: "absolute", bottom: paddingVal, right: paddingVal, fontSize: emojiSize, color: "#c59279", pointerEvents: "none", zIndex: 5 }}>🌺</div>
         </>
       )}
     </>
@@ -113,8 +149,11 @@ export function getPreviewStyle(styleKey: LetterStyle): React.CSSProperties {
   switch (styleKey) {
     case "blush": return { backgroundColor: "#fffdfc", color: "#5f2f45", border: "2px solid #e8b4b8" };
     case "royal": return { backgroundColor: "#fffdf9", color: "#7b1e1e", border: "3px double #c9a227" };
-    case "minimalist": return { backgroundColor: "#ffffff", color: "#222222", border: "1px solid #eeeeee" };
-    case "vintage":
+    case "lavender": return { backgroundColor: "#3d020a", color: "#f7f1e3", border: "2px solid #d4af37" };
+    case "celestial": return { backgroundColor: "#090e24", color: "#f5f6fa", border: "2px solid #e2b857" };
+    case "midnight_rose": return { backgroundColor: "#110e10", color: "#e8c4b0", border: "2px solid #8c6c30" };
+    case "obsidian_poppy": return { backgroundColor: "#1c1c1f", color: "#e8c4b0", border: "2px solid #c59279" };
+    case "scroll":
     default: return { backgroundColor: "#fcf8ee", color: "#4a2c11", border: "4px double #c3a175" };
   }
 }
@@ -124,8 +163,11 @@ export function getPdfPageStyle(styleKey: LetterStyle): React.CSSProperties {
   switch (styleKey) {
     case "blush": return { ...base, backgroundColor: "#fffdfc", color: "#5f2f45", border: "2px solid #e8b4b8", padding: "50px 45px 65px 45px", fontFamily: "'Playfair Display', Georgia, serif" };
     case "royal": return { ...base, backgroundColor: "#fffdf9", color: "#7b1e1e", border: "3px double #c9a227", padding: "60px 45px 50px 45px", fontFamily: "'Cinzel', Times, serif" };
-    case "minimalist": return { ...base, backgroundColor: "#ffffff", color: "#222222", border: "1px solid #eeeeee", padding: "45px", fontFamily: "'Playfair Display', Georgia, serif" };
-    case "vintage":
+    case "lavender": return { ...base, backgroundColor: "#3d020a", color: "#f7f1e3", border: "4px solid #d4af37", padding: "50px 45px 50px 45px", fontFamily: "'Playfair Display', Georgia, serif" };
+    case "celestial": return { ...base, backgroundColor: "#090e24", color: "#f5f6fa", border: "2px solid #e2b857", padding: "50px 45px 50px 45px", fontFamily: "'Playfair Display', Georgia, serif" };
+    case "midnight_rose": return { ...base, backgroundColor: "#110e10", color: "#e8c4b0", border: "2px solid #8c6c30", padding: "50px 45px 50px 45px", fontFamily: "'Cormorant Garamond', Georgia, serif" };
+    case "obsidian_poppy": return { ...base, backgroundColor: "#1c1c1f", color: "#e8c4b0", border: "2px solid #c59279", padding: "50px 45px 50px 45px", fontFamily: "'Source Serif 4', Georgia, serif" };
+    case "scroll":
     default: return { ...base, backgroundColor: "#fcf8ee", color: "#4a2c11", border: "8px double #c3a175", padding: "50px 45px 50px 45px", fontFamily: "'Playfair Display', Georgia, serif" };
   }
 }
@@ -133,7 +175,8 @@ export function getPdfPageStyle(styleKey: LetterStyle): React.CSSProperties {
 export function splitContentIntoPages(text: string, styleKey: LetterStyle): string[] {
   let charLimit = 1000;
   if (styleKey === "royal") charLimit = 900;
-  if (styleKey === "minimalist") charLimit = 1100;
+  if (styleKey === "midnight_rose") charLimit = 950;
+  if (styleKey === "obsidian_poppy") charLimit = 950;
 
   const paragraphs = text.split("\n");
   const pages: string[] = [];
