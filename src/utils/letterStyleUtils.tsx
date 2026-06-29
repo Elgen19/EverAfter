@@ -146,29 +146,30 @@ export function getThemeColors(theme: string) {
 }
 
 export function getPreviewStyle(styleKey: LetterStyle): React.CSSProperties {
+  const base: React.CSSProperties = { backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" };
   switch (styleKey) {
-    case "blush": return { backgroundColor: "#fffdfc", color: "#5f2f45", border: "2px solid #e8b4b8" };
-    case "royal": return { backgroundColor: "#fffdf9", color: "#7b1e1e", border: "3px double #c9a227" };
-    case "lavender": return { backgroundColor: "#3d020a", color: "#f7f1e3", border: "2px solid #d4af37" };
-    case "celestial": return { backgroundColor: "#090e24", color: "#f5f6fa", border: "2px solid #e2b857" };
-    case "midnight_rose": return { backgroundColor: "#110e10", color: "#e8c4b0", border: "2px solid #8c6c30" };
-    case "obsidian_poppy": return { backgroundColor: "#1c1c1f", color: "#e8c4b0", border: "2px solid #c59279" };
+    case "blush": return { ...base, backgroundColor: "#FFFDF7", color: "#2F2F2F", border: "1px solid #B76E79", boxShadow: "inset 0 0 0 4px #FFFDF7, inset 0 0 0 5px #B76E79" };
+    case "royal": return { ...base, backgroundColor: "#F7F1E3", color: "#3A2618", border: "4px double #C9A227" };
+    case "lavender": return { ...base, backgroundColor: "#3d020a", backgroundImage: "url('/crimson_gold_rose_bg.jpg')", color: "#f5e6e8", border: "none" };
+    case "celestial": return { ...base, backgroundColor: "#090e24", backgroundImage: "url('/celestial_eagle_bg.jpg')", color: "#f5f6fa", border: "none" };
+    case "midnight_rose": return { ...base, backgroundColor: "#fdfbf7", backgroundImage: "url('/midnight_rose_bg.jpg')", color: "#3c2f2f", border: "none" };
+    case "obsidian_poppy": return { ...base, backgroundColor: "#1c1c1f", backgroundImage: "url('/obsidian_poppy_bg.jpg')", color: "#e8c4b0", border: "none" };
     case "scroll":
-    default: return { backgroundColor: "#fcf8ee", color: "#4a2c11", border: "4px double #c3a175" };
+    default: return { ...base, backgroundColor: "#eddcb9", backgroundImage: "radial-gradient(circle at 10% 20%, rgba(139, 90, 43, 0.03) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(139, 90, 43, 0.03) 0%, transparent 40%)", color: "#2c1a0c", border: "none" };
   }
 }
 
 export function getPdfPageStyle(styleKey: LetterStyle): React.CSSProperties {
-  const base: React.CSSProperties = { width: "210mm", height: "296mm", boxSizing: "border-box", position: "relative", textAlign: "left", display: "flex", flexDirection: "column", justifyContent: "flex-start", backgroundClip: "padding-box" };
+  const base: React.CSSProperties = { width: "210mm", height: "296mm", boxSizing: "border-box", position: "relative", textAlign: "left", display: "flex", flexDirection: "column", justifyContent: "flex-start", backgroundClip: "padding-box", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" };
   switch (styleKey) {
-    case "blush": return { ...base, backgroundColor: "#fffdfc", color: "#5f2f45", border: "2px solid #e8b4b8", padding: "50px 45px 65px 45px", fontFamily: "'Playfair Display', Georgia, serif" };
-    case "royal": return { ...base, backgroundColor: "#fffdf9", color: "#7b1e1e", border: "3px double #c9a227", padding: "60px 45px 50px 45px", fontFamily: "'Cinzel', Times, serif" };
-    case "lavender": return { ...base, backgroundColor: "#3d020a", color: "#f7f1e3", border: "4px solid #d4af37", padding: "50px 45px 50px 45px", fontFamily: "'Playfair Display', Georgia, serif" };
-    case "celestial": return { ...base, backgroundColor: "#090e24", color: "#f5f6fa", border: "2px solid #e2b857", padding: "50px 45px 50px 45px", fontFamily: "'Playfair Display', Georgia, serif" };
-    case "midnight_rose": return { ...base, backgroundColor: "#110e10", color: "#e8c4b0", border: "2px solid #8c6c30", padding: "50px 45px 50px 45px", fontFamily: "'Cormorant Garamond', Georgia, serif" };
-    case "obsidian_poppy": return { ...base, backgroundColor: "#1c1c1f", color: "#e8c4b0", border: "2px solid #c59279", padding: "50px 45px 50px 45px", fontFamily: "'Source Serif 4', Georgia, serif" };
+    case "blush": return { ...base, backgroundColor: "#FFFDF7", color: "#2F2F2F", border: "1px solid #B76E79", padding: "50px 45px 65px 45px", fontFamily: "'Playfair Display', Georgia, serif", boxShadow: "inset 0 0 0 4px #FFFDF7, inset 0 0 0 5px #B76E79" };
+    case "royal": return { ...base, backgroundColor: "#F7F1E3", color: "#3A2618", border: "4px double #C9A227", padding: "60px 45px 50px 45px", fontFamily: "'Cinzel', Times, serif" };
+    case "lavender": return { ...base, backgroundColor: "#3d020a", backgroundImage: "url('/crimson_gold_rose_bg.jpg')", color: "#f5e6e8", border: "none", padding: "50px 45px", fontFamily: "'Playfair Display', Georgia, serif" };
+    case "celestial": return { ...base, backgroundColor: "#090e24", backgroundImage: "url('/celestial_eagle_bg.jpg')", color: "#f5f6fa", border: "none", padding: "50px 45px", fontFamily: "'Playfair Display', Georgia, serif" };
+    case "midnight_rose": return { ...base, backgroundColor: "#fdfbf7", backgroundImage: "url('/midnight_rose_bg.jpg')", color: "#3c2f2f", border: "none", padding: "50px 45px", fontFamily: "'Cormorant Garamond', Georgia, serif" };
+    case "obsidian_poppy": return { ...base, backgroundColor: "#1c1c1f", backgroundImage: "url('/obsidian_poppy_bg.jpg')", color: "#e8c4b0", border: "none", padding: "50px 45px", fontFamily: "'Source Serif 4', Georgia, serif" };
     case "scroll":
-    default: return { ...base, backgroundColor: "#fcf8ee", color: "#4a2c11", border: "8px double #c3a175", padding: "50px 45px 50px 45px", fontFamily: "'Playfair Display', Georgia, serif" };
+    default: return { ...base, backgroundColor: "#eddcb9", backgroundImage: "radial-gradient(circle at 10% 20%, rgba(139, 90, 43, 0.03) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(139, 90, 43, 0.03) 0%, transparent 40%)", color: "#2c1a0c", border: "none", padding: "50px 45px", fontFamily: "'Playfair Display', Georgia, serif" };
   }
 }
 

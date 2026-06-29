@@ -130,7 +130,7 @@ export default function ThankYou({
     <div style={{ position: "fixed", left: 0, top: 0, width: "100vw", height: "100vh", zIndex: 99999, overflow: "hidden" }}>
       <div id="letter-download-hidden-target" style={{ position: "relative", zIndex: 1, opacity: 1, width: "210mm", margin: 0, padding: 0, background: "none" }}>
         {splitContentIntoPages(content, selectedStyle).map((pageText, idx, arr) => (
-          <div key={idx} className="pdf-page-break" style={{ ...getPdfPageStyle(selectedStyle), pageBreakBefore: idx === 0 ? "avoid" : "always" } as React.CSSProperties}>
+          <div key={idx} className={`pdf-page-break stationery-sheet theme-${selectedStyle}`} style={{ ...getPdfPageStyle(selectedStyle), pageBreakBefore: idx === 0 ? "avoid" : "always" } as React.CSSProperties}>
             {renderDecorations(selectedStyle, false)}
             {idx === 0 && (
               <div style={{ fontSize: "28px", fontFamily: getCursiveFont(selectedStyle), fontWeight: "bold", marginBottom: "20px" }}>
@@ -167,7 +167,7 @@ export default function ThankYou({
           <h3 className="thankyou-title" style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: colors.accent, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontFamily: "'Dancing Script', 'Great Vibes', 'Sacramento', cursive" }}>
             🔍 Full Letter Preview ({STYLE_OPTIONS.find(s => s.id === selectedStyle)?.name})
           </h3>
-          <div className="thankyou-preview-sheet" style={{ width: "100%", maxHeight: "50vh", overflowY: "auto", borderRadius: "12px", padding: "40px", boxSizing: "border-box", textAlign: "left", position: "relative", boxShadow: "inset 0 4px 20px rgba(0,0,0,0.15), 0 10px 30px rgba(0,0,0,0.25)", fontFamily: getBodyFont(selectedStyle), ...getPreviewStyle(selectedStyle) }}>
+          <div className={`thankyou-preview-sheet stationery-sheet theme-${selectedStyle}`} style={{ width: "100%", maxHeight: "50vh", overflowY: "auto", borderRadius: "12px", padding: "40px", boxSizing: "border-box", textAlign: "left", position: "relative", boxShadow: "inset 0 4px 20px rgba(0,0,0,0.15), 0 10px 30px rgba(0,0,0,0.25)", fontFamily: getBodyFont(selectedStyle), ...getPreviewStyle(selectedStyle) }}>
             {renderDecorations(selectedStyle, false)}
             <div style={{ fontSize: "28px", fontFamily: getCursiveFont(selectedStyle), fontWeight: "bold", marginBottom: "20px" }}>Dearest {recipient || "My Love"},</div>
             <div style={{ fontSize: "18px", lineHeight: "1.8", whiteSpace: "pre-wrap", marginBottom: "40px", letterSpacing: selectedStyle === "royal" ? "0.5px" : "normal" }}>{content}</div>
@@ -219,7 +219,7 @@ export default function ThankYou({
               ))}
             </div>
             {/* Live mini preview box */}
-            <div className="style-picker-preview" style={{ flex: 1.2, width: "50%", height: "235px", boxSizing: "border-box", borderRadius: "8px", padding: "16px 20px", overflowY: "auto", textAlign: "left", position: "relative", transition: "all 0.25s ease", boxShadow: "inset 0 2px 10px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.2)", ...getPreviewStyle(selectedStyle) }}>
+            <div className={`style-picker-preview stationery-sheet theme-${selectedStyle}`} style={{ flex: 1.2, width: "50%", height: "235px", boxSizing: "border-box", borderRadius: "8px", padding: "16px 20px", overflowY: "auto", textAlign: "left", position: "relative", transition: "all 0.25s ease", boxShadow: "inset 0 2px 10px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.2)", ...getPreviewStyle(selectedStyle) }}>
               {renderDecorations(selectedStyle, true)}
               <div style={{ fontSize: "15px", fontFamily: getCursiveFont(selectedStyle), fontWeight: "bold", marginBottom: "8px" }}>Dearest {recipient || "My Love"},</div>
               <div style={{ fontSize: "13px", lineHeight: "1.6", whiteSpace: "pre-wrap", fontFamily: getBodyFont(selectedStyle) }}>{content || "I love you."}</div>
