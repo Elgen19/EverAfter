@@ -819,7 +819,9 @@ function CreateLetterStudio() {
             {form.previewMode === "envelope" ? (
               <div className="glass studio-preview-card" style={{
                 width: "100%",
-                height: "680px",
+                maxWidth: "590px",
+                margin: "0 auto",
+                height: "720px",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -861,7 +863,9 @@ function CreateLetterStudio() {
             ) : form.previewMode === "background" ? (
               <div style={{
                 width: "100%",
-                height: "680px",
+                maxWidth: "590px",
+                margin: "0 auto",
+                height: "720px",
                 borderRadius: "16px",
                 backgroundImage: previewBackdropUrl ? `linear-gradient(${getBackdropOverlay()}, ${getBackdropOverlay()}), url(${previewBackdropUrl})` : "none",
                 backgroundColor: previewBackdropUrl ? "transparent" : "#161110",

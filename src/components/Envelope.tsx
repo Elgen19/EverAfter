@@ -643,9 +643,9 @@ export default function Envelope({
               style={{
                 position: "relative",
                 width: "100%",
-                maxWidth: preview ? "90%" : "680px",
-                height: preview ? "85%" : "80vh",
-                maxHeight: preview ? "520px" : "calc(100vh - 160px)",
+                maxWidth: "590px",
+                height: preview ? "90%" : "85vh",
+                maxHeight: preview ? "600px" : "calc(100vh - 110px)",
                 backgroundColor: "var(--stationery-bg)",
                 backgroundImage: "var(--bg-image)",
                 backgroundSize: "cover",

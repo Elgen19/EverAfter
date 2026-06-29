@@ -128,7 +128,9 @@ export default function StationeryPreview({
         className={`stationery-sheet theme-${theme} studio-preview-card`}
         style={{
           width: "100%",
-          height: "680px",
+          maxWidth: "590px",
+          margin: "0 auto",
+          height: "720px",
           backgroundColor: "var(--stationery-bg)",
           backgroundImage: "var(--bg-image)",
           backgroundSize: "cover",
