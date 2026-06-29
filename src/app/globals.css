@@ -1656,24 +1656,26 @@ button:hover .quiz-option-badge {
   .theme-lavender.stationery-sheet,
   .theme-celestial.stationery-sheet,
   .theme-midnight_rose.stationery-sheet,
-  .theme-obsidian_poppy.stationery-sheet {
-    padding: 24px 20px !important;
-  }
+  .theme-obsidian_poppy.stationery-sheet,
   .theme-scroll.stationery-sheet {
-    padding: 24px 28px !important;
+    padding: 44px 0px 40px 0px !important;
   }
   .stationery-scroll-container {
-    padding: 48px 24px 16px 24px !important;
+    padding: 8px 24px !important;
     min-height: 0 !important;
   }
   .theme-royal .stationery-scroll-container {
-    padding: 48px 20px 16px 20px !important;
+    padding: 8px 20px !important;
+    min-height: 0 !important;
+  }
+  .theme-scroll .stationery-scroll-container {
+    padding: 8px 28px !important;
     min-height: 0 !important;
   }
   .theme-obsidian_poppy .stationery-scroll-container,
   .theme-midnight_rose .stationery-scroll-container,
   .theme-celestial .stationery-scroll-container {
-    padding: 48px 24px 16px 24px !important;
+    padding: 8px 24px !important;
     min-height: 0 !important;
   }
 }
