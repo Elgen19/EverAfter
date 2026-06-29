@@ -130,7 +130,7 @@ export default function ThankYou({
     <div style={{ position: "fixed", left: 0, top: 0, width: "100vw", height: "100vh", zIndex: 99999, overflow: "hidden" }}>
       <div id="letter-download-hidden-target" style={{ position: "relative", zIndex: 1, opacity: 1, width: "210mm", margin: 0, padding: 0, background: "none" }}>
         {splitContentIntoPages(content, selectedStyle).map((pageText, idx, arr) => (
-          <div key={idx} className={`pdf-page-break stationery-sheet theme-${selectedStyle}`} style={{ ...getPdfPageStyle(selectedStyle), pageBreakBefore: idx === 0 ? "avoid" : "always" } as React.CSSProperties}>
+          <div key={idx} className={`pdf-page-break pdf-stationery-sheet theme-${selectedStyle}`} style={{ ...getPdfPageStyle(selectedStyle), pageBreakBefore: idx === 0 ? "avoid" : "always" } as React.CSSProperties}>
             {renderDecorations(selectedStyle, false)}
             {idx === 0 && (
               <div style={{ fontSize: "28px", fontFamily: getCursiveFont(selectedStyle), fontWeight: "bold", marginBottom: "20px" }}>
