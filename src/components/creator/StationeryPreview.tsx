@@ -137,10 +137,10 @@ export default function StationeryPreview({
       <div
         className={`stationery-sheet theme-${theme} studio-preview-card`}
         style={{
-          width: isMobileViewport ? "82%" : "100%",
-          maxWidth: isMobileViewport ? "420px" : "590px",
+          width: isMobileViewport ? "92%" : "100%",
+          maxWidth: isMobileViewport ? "460px" : "590px",
           margin: "0 auto",
-          height: isMobileViewport ? "410px" : "800px",
+          height: isMobileViewport ? "460px" : "800px",
           backgroundColor: "var(--stationery-bg)",
           backgroundImage: "var(--bg-image)",
           backgroundSize: "cover",

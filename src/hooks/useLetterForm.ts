@@ -250,6 +250,7 @@ export function useLetterForm() {
   const [mailboxMusicAutoplay, setMailboxMusicAutoplay] = useState(false);
   const [mailboxStatement, setMailboxStatement] = useState("");
   const [mailboxThemeConfirmed, setMailboxThemeConfirmed] = useState(false);
+  const [originalMailboxTheme, setOriginalMailboxTheme] = useState<any>(null);
 
   const [quizEnabled, setQuizEnabled] = useState(false);
   const [quizPrizeTitle, setQuizPrizeTitle] = useState("A Sweet Reward");
@@ -423,6 +424,7 @@ export function useLetterForm() {
               setPolaroidsConfirmed(true);
             }
             if (data.mailboxTheme) {
+              setOriginalMailboxTheme(data.mailboxTheme);
               setMailboxThemeEnabled(data.mailboxTheme.enabled || false);
               setMailboxCustomBgUrl(data.mailboxTheme.customBgUrl || "");
               setMailboxMusicUrl(data.mailboxTheme.musicUrl || "");
@@ -618,6 +620,7 @@ export function useLetterForm() {
           setPolaroidsConfirmed(true);
         }
         if (decoded.mailboxTheme) {
+          setOriginalMailboxTheme(decoded.mailboxTheme);
           setMailboxThemeEnabled(decoded.mailboxTheme.enabled || false);
           setMailboxCustomBgUrl(decoded.mailboxTheme.customBgUrl || "");
           setMailboxMusicUrl(decoded.mailboxTheme.musicUrl || "");
@@ -1097,6 +1100,7 @@ export function useLetterForm() {
         }))
       } : undefined,
       mailboxTheme: mailboxThemeEnabled ? {
+        ...originalMailboxTheme,
         enabled: true,
         customBgUrl: mailboxCustomBgUrl.trim() || undefined,
         musicUrl: mailboxMusicUrl.trim() || undefined,

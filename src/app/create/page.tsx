@@ -758,6 +758,7 @@ function CreateLetterStudio() {
                 </button>
                 <button
                   type="button"
+                  className="hidden-mobile"
                   onClick={() => {
                     form.setPreviewMode("sequence");
                     setIsMobilePreviewOpen(true);
@@ -1021,77 +1022,46 @@ function CreateLetterStudio() {
             
             {/* Visual Preview Container */}
             <div style={{ width: "100%", marginTop: "4px" }}>
-              {pendingSelection.type === "theme" && (() => {
-                const isLavender = pendingSelection.id === "lavender";
-                const isCelestial = pendingSelection.id === "celestial";
-                const isMidnightRose = pendingSelection.id === "midnight_rose";
-                const isObsidianPoppy = pendingSelection.id === "obsidian_poppy";
-                const isRoyal = pendingSelection.id === "royal";
-                const isScroll = pendingSelection.id === "scroll";
-
-                const cardStyle: React.CSSProperties = {
-                  width: "100%",
-                  height: "140px",
-                  backgroundColor: isCelestial ? "#070a1c" : isLavender ? "#150b24" : isMidnightRose ? "#110e10" : isObsidianPoppy ? "#1c1c1f" : "var(--stationery-bg, #F7F1E3)",
-                  backgroundImage: isCelestial 
-                    ? "radial-gradient(circle at center, #151a3a, #070a1c)" 
-                    : isLavender 
-                      ? "linear-gradient(rgba(199, 125, 255, 0.05) 1px, transparent 1px)" 
-                      : isMidnightRose
-                        ? "radial-gradient(circle at center, #1b0c10, #110e10)"
-                        : isObsidianPoppy
-                          ? "radial-gradient(circle at center, #352520, #1c1c1f)"
-                          : "none",
-                  backgroundSize: isLavender ? "100% 16px" : "auto",
-                  border: isRoyal 
-                    ? "4px double var(--stationery-border, #C9A227)" 
-                    : isScroll 
-                      ? "2px solid #5c381f" 
-                      : isMidnightRose
-                        ? "1.5px solid #ff4b72"
-                        : isObsidianPoppy
-                          ? "1.5px solid #c59279"
-                          : "1.5px solid var(--stationery-border, #C9A227)",
-                  borderRadius: isScroll ? "4px" : "8px",
-                  padding: "16px",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  color: isCelestial ? "#e2b857" : isLavender ? "#e0aaff" : isMidnightRose ? "#f5e6e8" : isObsidianPoppy ? "#e8c4b0" : "var(--stationery-text, #3A2618)",
-                  fontFamily: isCelestial ? "var(--stationery-font)" : isLavender ? "var(--stationery-font)" : isMidnightRose ? "var(--stationery-font)" : isObsidianPoppy ? "var(--stationery-font)" : "var(--stationery-font, serif)",
-                  boxShadow: isCelestial
-                    ? "0 0 15px rgba(226, 184, 87, 0.15), inset 0 0 10px rgba(226, 184, 87, 0.1)"
-                    : isLavender
-                      ? "0 0 15px rgba(199, 125, 255, 0.15), inset 0 0 10px rgba(123, 44, 191, 0.2)"
-                      : isMidnightRose
-                        ? "0 0 15px rgba(255, 75, 114, 0.12), inset 0 0 10px rgba(156, 28, 46, 0.15)"
-                        : isObsidianPoppy
-                          ? "0 0 15px rgba(197, 146, 121, 0.15), inset 0 0 10px rgba(74, 51, 40, 0.2)"
-                          : "inset 0 0 15px rgba(0,0,0,0.05)",
-                  position: "relative",
+              {pendingSelection.type === "theme" && (
+                <div style={{ 
+                  display: "flex", 
+                  justifyContent: "center", 
+                  alignItems: "center", 
+                  background: "rgba(255, 255, 255, 0.02)", 
+                  border: "1px solid rgba(255, 255, 255, 0.08)", 
+                  borderRadius: "12px", 
+                  padding: "16px", 
+                  width: "100%", 
+                  height: "160px",
+                  overflow: "hidden",
                   boxSizing: "border-box"
-                };
-
-                return (
-                  <div className={`theme-${pendingSelection.id}`} style={cardStyle}>
-                    {isScroll && (
-                      <>
-                        <div style={{ position: "absolute", top: "-5px", left: "0", right: "0", height: "5px", backgroundColor: "#8b5a2b", borderRadius: "1px" }} />
-                        <div style={{ position: "absolute", bottom: "-5px", left: "0", right: "0", height: "5px", backgroundColor: "#8b5a2b", borderRadius: "1px" }} />
-                      </>
-                    )}
-                    <div style={{ fontSize: "11px", fontWeight: "bold", opacity: 0.8, fontFamily: "var(--stationery-greeting-font, var(--stationery-font, serif))" }}>Dearest {form.recipient || "Beloved"},</div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", margin: "6px 0" }}>
-                      <div style={{ height: "1px", background: "var(--stationery-text, #3A2618)", opacity: 0.15, width: "90%" }} />
-                      <div style={{ height: "1px", background: "var(--stationery-text, #3A2618)", opacity: 0.15, width: "80%" }} />
-                      <div style={{ height: "1px", background: "var(--stationery-text, #3A2618)", opacity: 0.15, width: "85%" }} />
-                    </div>
-                    <div style={{ fontSize: "11px", textAlign: "right", opacity: 0.8, color: "var(--stationery-accent, #7B1E1E)", fontFamily: "var(--stationery-sig-font, var(--stationery-font, serif))" }}>
-                      With love, {form.sender || "Sender"} ❤️
-                    </div>
+                }}>
+                  <div style={{ 
+                    transform: "scale(0.38)", 
+                    transformOrigin: "center center", 
+                    width: "420px", 
+                    height: "410px", 
+                    display: "flex", 
+                    alignItems: "center", 
+                    justifyContent: "center",
+                    flexShrink: 0
+                  }}>
+                    <StationeryPreview
+                      theme={pendingSelection.id}
+                      backdrop={form.backdrop}
+                      previewBackdropUrl={form.backdrop && form.backdrop !== "none" ? BACKDROP_PREVIEWS[form.backdrop] : ""}
+                      hasBackdrop={!!(form.backdrop && form.backdrop !== "none")}
+                      greeting={form.greeting}
+                      farewell={form.farewell}
+                      recipient={form.recipient}
+                      sender={form.sender}
+                      content={form.content || "Your romantic love letter will be beautifully displayed here in this selected stationery style..."}
+                      getGlassyBg={getGlassyBg}
+                      getGlassyBorder={getGlassyBorder}
+                    />
                   </div>
-                );
-              })()}
+                </div>
+              )}
 
               {pendingSelection.type === "backdrop" && (
                 pendingSelection.id === "none" ? (

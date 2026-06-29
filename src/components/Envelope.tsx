@@ -657,10 +657,10 @@ export default function Envelope({
               className={`stationery-sheet ${themeClass}`}
               style={{
                 position: "relative",
-                width: isMobileViewport ? "85%" : "100%",
-                maxWidth: isMobileViewport ? "440px" : "590px",
+                width: isMobileViewport ? "92%" : "100%",
+                maxWidth: isMobileViewport ? "480px" : "590px",
                 height: isMobileViewport 
-                  ? (isOnlyStep || !activeStep ? "calc(100dvh - 120px)" : "calc(100dvh - 185px)") 
+                  ? (isOnlyStep || !activeStep ? "calc(100dvh - 56px)" : "calc(100dvh - 142px)") 
                   : (preview ? "92%" : "90vh"),
                 maxHeight: isMobileViewport 
                   ? "none" 
