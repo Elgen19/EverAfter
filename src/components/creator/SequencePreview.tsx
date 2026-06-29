@@ -513,6 +513,7 @@ export default function SequencePreview({ form, isMobile = false, onClose }: Seq
               isWriteback={form.isWriteback || false}
               onReplay={() => handleJumpToStep(0)}
               onExit={() => {}}
+              preview={true}
             />
           </div>
         )}

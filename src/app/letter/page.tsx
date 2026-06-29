@@ -1006,6 +1006,7 @@ function LetterReader() {
                 }, 150);
               }
             }}
+            preview={preview}
           />
         )}
       </div>
