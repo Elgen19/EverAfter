@@ -12,35 +12,8 @@ export function renderDecorations(styleKey: LetterStyle, isMini: boolean): React
   const vineSize = isMini ? "10px" : "12px";
   const topOffset = isMini ? "8px" : "14px";
 
-  let innerBorderStyle: React.CSSProperties = {};
-  switch (styleKey) {
-    case "royal":
-      innerBorderStyle = { position: "absolute", top: isMini ? "6px" : "10px", left: isMini ? "6px" : "10px", right: isMini ? "6px" : "10px", bottom: isMini ? "6px" : "10px", border: "1px solid rgba(201, 162, 39, 0.35)", pointerEvents: "none", zIndex: 4 };
-      break;
-    case "blush":
-      innerBorderStyle = { position: "absolute", top: isMini ? "5px" : "8px", left: isMini ? "5px" : "8px", right: isMini ? "5px" : "8px", bottom: isMini ? "5px" : "8px", border: "1px dashed rgba(232, 180, 184, 0.5)", pointerEvents: "none", zIndex: 4 };
-      break;
-    case "scroll":
-      innerBorderStyle = { position: "absolute", top: isMini ? "7px" : "12px", left: isMini ? "7px" : "12px", right: isMini ? "7px" : "12px", bottom: isMini ? "7px" : "12px", border: "1px solid rgba(195, 161, 117, 0.4)", pointerEvents: "none", zIndex: 4 };
-      break;
-    case "lavender":
-      innerBorderStyle = { position: "absolute", top: isMini ? "6px" : "10px", left: isMini ? "6px" : "10px", right: isMini ? "6px" : "10px", bottom: isMini ? "6px" : "10px", border: "1px solid rgba(212, 175, 55, 0.35)", pointerEvents: "none", zIndex: 4 };
-      break;
-    case "celestial":
-      innerBorderStyle = { position: "absolute", top: isMini ? "6px" : "10px", left: isMini ? "6px" : "10px", right: isMini ? "6px" : "10px", bottom: isMini ? "6px" : "10px", border: "1px dashed rgba(220, 221, 225, 0.3)", pointerEvents: "none", zIndex: 4 };
-      break;
-    case "midnight_rose":
-      innerBorderStyle = { position: "absolute", top: isMini ? "6px" : "10px", left: isMini ? "6px" : "10px", right: isMini ? "6px" : "10px", bottom: isMini ? "6px" : "10px", border: "1px solid rgba(140, 108, 48, 0.35)", pointerEvents: "none", zIndex: 4 };
-      break;
-    case "obsidian_poppy":
-      innerBorderStyle = { position: "absolute", top: isMini ? "6px" : "10px", left: isMini ? "6px" : "10px", right: isMini ? "6px" : "10px", bottom: isMini ? "6px" : "10px", border: "1px solid rgba(197, 146, 121, 0.35)", pointerEvents: "none", zIndex: 4 };
-      break;
-  }
-
   return (
     <>
-      <div style={innerBorderStyle} />
-
       {styleKey === "royal" && (
         <>
           <div style={{ position: "absolute", top: paddingVal, left: paddingVal, fontSize: emojiSize, color: "#c9a227", pointerEvents: "none", zIndex: 5, fontFamily: "sans-serif" }}>⚜️</div>
@@ -96,19 +69,48 @@ export function renderDecorations(styleKey: LetterStyle, isMini: boolean): React
 
       {styleKey === "lavender" && (
         <>
-          <div style={{ position: "absolute", top: paddingVal, left: paddingVal, fontSize: emojiSize, color: "#d4af37", pointerEvents: "none", zIndex: 5, fontFamily: "sans-serif" }}>⚜️</div>
-          <div style={{ position: "absolute", top: paddingVal, right: paddingVal, fontSize: emojiSize, color: "#d4af37", pointerEvents: "none", zIndex: 5, fontFamily: "sans-serif" }}>⚜️</div>
-          <div style={{ position: "absolute", bottom: paddingVal, left: paddingVal, fontSize: emojiSize, color: "#d4af37", pointerEvents: "none", zIndex: 5, fontFamily: "sans-serif" }}>⚜️</div>
-          <div style={{ position: "absolute", bottom: paddingVal, right: paddingVal, fontSize: emojiSize, color: "#d4af37", pointerEvents: "none", zIndex: 5, fontFamily: "sans-serif" }}>⚜️</div>
+          {/* Golden Rose Emblem at Bottom Right */}
+          <div style={{ position: "absolute", bottom: isMini ? "8px" : "16px", right: isMini ? "8px" : "16px", width: isMini ? "32px" : "64px", height: isMini ? "32px" : "64px", zIndex: 6, pointerEvents: "none" }}>
+            <svg width="100%" height="100%" viewBox="0 0 100 100">
+              <defs>
+                <linearGradient id="goldGradPdf" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#ffeea1" />
+                  <stop offset="50%" stopColor="#d4af37" />
+                  <stop offset="100%" stopColor="#aa7c11" />
+                </linearGradient>
+              </defs>
+              <path d="M 55,60 Q 40,75 35,90 M 55,65 Q 65,70 60,75 M 48,70 Q 30,70 38,65 Z" fill="none" stroke="url(#goldGradPdf)" strokeWidth="2" />
+              <path d="M 40,72 C 34,70 28,74 34,78 C 40,82 44,78 40,72 Z" fill="url(#goldGradPdf)" stroke="url(#goldGradPdf)" strokeWidth="0.5" />
+              <path d="M 58,74 C 64,72 70,76 64,80 C 58,84 54,80 58,74 Z" fill="url(#goldGradPdf)" stroke="url(#goldGradPdf)" strokeWidth="0.5" />
+              <path d="M 50,22 C 35,22 30,38 50,58 C 70,38 65,22 50,22 Z" fill="url(#goldGradPdf)" fillOpacity="0.8" stroke="url(#goldGradPdf)" strokeWidth="0.8" />
+              <path d="M 50,30 C 40,32 40,48 50,48 C 60,48 60,32 50,30 Z" fill="url(#goldGradPdf)" stroke="url(#goldGradPdf)" strokeWidth="0.8" />
+              <circle cx="50" cy="40" r="8" fill="#fff" fillOpacity="0.15" stroke="url(#goldGradPdf)" strokeWidth="1" />
+              <circle cx="50" cy="40" r="4" fill="url(#goldGradPdf)" />
+            </svg>
+          </div>
         </>
       )}
 
       {styleKey === "celestial" && (
         <>
-          <div style={{ position: "absolute", top: paddingVal, left: paddingVal, fontSize: emojiSize, color: "#e2b857", pointerEvents: "none", zIndex: 5 }}>✨</div>
-          <div style={{ position: "absolute", top: paddingVal, right: paddingVal, fontSize: emojiSize, color: "#e2b857", pointerEvents: "none", zIndex: 5 }}>✨</div>
-          <div style={{ position: "absolute", bottom: paddingVal, left: paddingVal, fontSize: emojiSize, color: "#e2b857", pointerEvents: "none", zIndex: 5 }}>✨</div>
-          <div style={{ position: "absolute", bottom: paddingVal, right: paddingVal, fontSize: emojiSize, color: "#e2b857", pointerEvents: "none", zIndex: 5 }}>✨</div>
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", zIndex: 5 }}>
+            <svg width="100%" height="100%" style={{ position: "absolute", top: 0, left: 0 }}>
+              <defs>
+                <g id="celestial-corner-pdf">
+                  <path d="M 8,8 L 30,12 L 20,28 L 8,8 M 20,28 L 36,36 L 24,48" fill="none" stroke="rgba(220, 221, 225, 0.4)" strokeWidth="0.8" strokeDasharray="2,2" />
+                  <circle cx="8" cy="8" r="2.5" fill="#dcdde1" />
+                  <circle cx="30" cy="12" r="1.5" fill="#dcdde1" />
+                  <circle cx="20" cy="28" r="3" fill="#fff" style={{ filter: "drop-shadow(0 0 3px #fff)" }} />
+                  <circle cx="36" cy="36" r="1.5" fill="#dcdde1" />
+                  <circle cx="24" cy="48" r="2" fill="#dcdde1" />
+                </g>
+              </defs>
+              <use href="#celestial-corner-pdf" x="0" y="0" />
+              <use href="#celestial-corner-pdf" x="0" y="0" transform="translate(100%, 0) scale(-1, 1)" style={{ transformOrigin: "right top" }} />
+              <use href="#celestial-corner-pdf" x="0" y="0" transform="translate(0, 100%) scale(1, -1)" style={{ transformOrigin: "left bottom" }} />
+              <use href="#celestial-corner-pdf" x="0" y="0" transform="translate(100%, 100%) scale(-1, -1)" style={{ transformOrigin: "right bottom" }} />
+            </svg>
+          </div>
         </>
       )}
 
@@ -123,10 +125,30 @@ export function renderDecorations(styleKey: LetterStyle, isMini: boolean): React
 
       {styleKey === "obsidian_poppy" && (
         <>
-          <div style={{ position: "absolute", top: paddingVal, left: paddingVal, fontSize: emojiSize, color: "#c59279", pointerEvents: "none", zIndex: 5 }}>🌺</div>
-          <div style={{ position: "absolute", top: paddingVal, right: paddingVal, fontSize: emojiSize, color: "#c59279", pointerEvents: "none", zIndex: 5 }}>🌺</div>
-          <div style={{ position: "absolute", bottom: paddingVal, left: paddingVal, fontSize: emojiSize, color: "#c59279", pointerEvents: "none", zIndex: 5 }}>🌺</div>
-          <div style={{ position: "absolute", bottom: paddingVal, right: paddingVal, fontSize: emojiSize, color: "#c59279", pointerEvents: "none", zIndex: 5 }}>🌺</div>
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", zIndex: 5 }}>
+            <svg width="100%" height="100%" style={{ position: "absolute", top: 0, left: 0 }}>
+              <defs>
+                <linearGradient id="roseGoldGradPdf" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#ebd1c5" />
+                  <stop offset="50%" stopColor="#c59279" />
+                  <stop offset="100%" stopColor="#8c5b43" />
+                </linearGradient>
+                <g id="poppy-corner-pdf">
+                  <path d="M 12,12 L 48,12 M 12,12 L 12,48" fill="none" stroke="url(#roseGoldGradPdf)" strokeWidth="1.5" />
+                  <path d="M 18,18 L 38,18 M 18,18 L 18,38" fill="none" stroke="url(#roseGoldGradPdf)" strokeWidth="0.8" opacity="0.7" />
+                  <path d="M 12,30 L 30,12" fill="none" stroke="url(#roseGoldGradPdf)" strokeWidth="0.8" />
+                  <path d="M 18,32 L 32,18" fill="none" stroke="url(#roseGoldGradPdf)" strokeWidth="0.8" />
+                  <path d="M 22,22 L 26,26 L 22,30 L 18,26 Z" fill="url(#roseGoldGradPdf)" fillOpacity="0.25" stroke="url(#roseGoldGradPdf)" strokeWidth="0.8" />
+                  <circle cx="26" cy="26" r="1.5" fill="#e8c4b0" />
+                </g>
+              </defs>
+              <rect x="16" y="16" width="calc(100% - 32px)" height="calc(100% - 32px)" fill="none" stroke="url(#roseGoldGradPdf)" strokeWidth="0.8" opacity="0.3" />
+              <use href="#poppy-corner-pdf" x="0" y="0" />
+              <use href="#poppy-corner-pdf" x="0" y="0" transform="translate(100%, 0) scale(-1, 1)" style={{ transformOrigin: "right top" }} />
+              <use href="#poppy-corner-pdf" x="0" y="0" transform="translate(0, 100%) scale(1, -1)" style={{ transformOrigin: "left bottom" }} />
+              <use href="#poppy-corner-pdf" x="0" y="0" transform="translate(100%, 100%) scale(-1, -1)" style={{ transformOrigin: "right bottom" }} />
+            </svg>
+          </div>
         </>
       )}
     </>
