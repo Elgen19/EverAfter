@@ -168,7 +168,7 @@ export function getThemeColors(theme: string) {
 }
 
 export function getPreviewStyle(styleKey: LetterStyle): React.CSSProperties {
-  const base: React.CSSProperties = { backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" };
+  const base: React.CSSProperties = { backgroundSize: "100% 100%", backgroundPosition: "center", backgroundRepeat: "no-repeat" };
   switch (styleKey) {
     case "blush": return { ...base, backgroundColor: "#FFFDF7", color: "#2F2F2F", border: "1px solid #B76E79", boxShadow: "inset 0 0 0 4px #FFFDF7, inset 0 0 0 5px #B76E79" };
     case "royal": return { ...base, backgroundColor: "#F7F1E3", color: "#3A2618", border: "4px double #C9A227" };
@@ -182,7 +182,7 @@ export function getPreviewStyle(styleKey: LetterStyle): React.CSSProperties {
 }
 
 export function getPdfPageStyle(styleKey: LetterStyle): React.CSSProperties {
-  const base: React.CSSProperties = { width: "210mm", height: "296mm", boxSizing: "border-box", position: "relative", textAlign: "left", display: "flex", flexDirection: "column", justifyContent: "flex-start", backgroundClip: "padding-box", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" };
+  const base: React.CSSProperties = { width: "210mm", height: "296mm", boxSizing: "border-box", position: "relative", textAlign: "left", display: "flex", flexDirection: "column", justifyContent: "flex-start", backgroundClip: "padding-box", backgroundSize: "100% 100%", backgroundPosition: "center", backgroundRepeat: "no-repeat" };
   switch (styleKey) {
     case "blush": return { ...base, backgroundColor: "#FFFDF7", color: "#2F2F2F", border: "1px solid #B76E79", padding: "50px 45px 65px 45px", fontFamily: "'Playfair Display', Georgia, serif", boxShadow: "inset 0 0 0 4px #FFFDF7, inset 0 0 0 5px #B76E79" };
     case "royal": return { ...base, backgroundColor: "#F7F1E3", color: "#3A2618", border: "4px double #C9A227", padding: "60px 45px 50px 45px", fontFamily: "'Cinzel', Times, serif" };
