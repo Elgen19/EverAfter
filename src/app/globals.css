@@ -1402,18 +1402,6 @@ button:hover .quiz-option-badge {
 }
 
 @media (max-width: 600px) {
-  .envelope-container {
-    transform: scale(calc((100vw - 80px) / 550)) !important;
-    transform-origin: center center;
-    height: calc(330px * ((100vw - 80px) / 550)) !important;
-    margin: 10px auto !important;
-  }
-  .envelope-container-preview {
-    transform: scale(calc((100vw - 80px) / 550)) !important;
-    transform-origin: center center;
-    height: calc(330px * ((100vw - 80px) / 550)) !important;
-    margin: 10px auto !important;
-  }
   .envelope-wrapper {
     --envelope-full-transform: scale(0.7) translateY(60px) !important;
     --envelope-open-transform: translateY(40px) scale(0.8) !important;
@@ -1546,13 +1534,7 @@ button:hover .quiz-option-badge {
   }
 }
 
-@media (max-width: 400px) {
-  .envelope-container {
-    transform: scale(0.55);
-    height: 180px;
-    margin: -40px auto;
-  }
-}
+
 
 @media (max-width: 480px) {
   .dashboard-action-bar {
@@ -2082,6 +2064,12 @@ button:hover .quiz-option-badge {
     height: 460px !important; /* Shorter to fit inside the 520px glass wrapper */
     margin: 10px auto !important;
     box-sizing: border-box !important;
+  }
+  .envelope-container, .envelope-container-preview {
+    transform: scale(min(1, calc((100vw - 120px) / 550))) !important;
+    transform-origin: center center;
+    height: calc(330px * min(1, calc((100vw - 120px) / 550))) !important;
+    margin: 10px auto !important;
   }
   .edit-theme-text {
     display: none !important;
