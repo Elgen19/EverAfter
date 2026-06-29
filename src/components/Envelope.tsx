@@ -642,13 +642,13 @@ export default function Envelope({
               right: 0,
               bottom: 0,
               zIndex: 100,
-              width: "100%",
-              height: "100%",
               display: "flex",
-              alignItems: isMobileViewport ? "flex-start" : "center",
+              alignItems: activeStep ? "flex-start" : (isMobileViewport ? "flex-start" : "center"),
               justifyContent: "center",
-              paddingTop: isMobileViewport ? (isOnlyStep || !activeStep ? "24px" : "110px") : "0px",
-              paddingBottom: isMobileViewport ? "16px" : "0px",
+              paddingTop: activeStep 
+                ? (isMobileViewport ? "110px" : "105px") 
+                : (isMobileViewport ? "24px" : "40px"),
+              paddingBottom: "16px",
               boxSizing: "border-box",
             }}
           >
@@ -662,7 +662,9 @@ export default function Envelope({
                 height: isMobileViewport 
                   ? (isOnlyStep || !activeStep ? "calc(100dvh - 120px)" : "calc(100dvh - 185px)") 
                   : (preview ? "92%" : "90vh"),
-                maxHeight: isMobileViewport ? "none" : (preview ? "680px" : "calc(100vh - 80px)"),
+                maxHeight: isMobileViewport 
+                  ? "none" 
+                  : (activeStep ? "calc(100vh - 150px)" : (preview ? "680px" : "calc(100vh - 80px)")),
                 backgroundColor: "var(--stationery-bg)",
                 backgroundImage: "var(--bg-image)",
                 backgroundSize: "cover",
