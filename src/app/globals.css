@@ -2042,13 +2042,15 @@ button:hover .quiz-option-badge {
     padding-top: 20px !important;
   }
   .stationery-sheet-portal .stationery-sheet {
-    width: calc(100% - 32px) !important;
+    width: 85% !important;
+    max-width: 440px !important;
     height: calc(100dvh - 140px) !important; /* Decreased height to prevent bottom clipping */
     max-height: none !important;
     margin: 0 auto !important; /* Center horizontally */
   }
   .stationery-sheet-portal.no-timeline .stationery-sheet {
-    width: calc(100% - 32px) !important;
+    width: 85% !important;
+    max-width: 440px !important;
     height: calc(100dvh - 80px) !important; /* Decreased height to prevent bottom clipping */
     max-height: none !important;
     margin: 0 auto !important; /* Center horizontally */
@@ -2057,7 +2059,8 @@ button:hover .quiz-option-badge {
     height: 480px !important; /* Scale down preview card height on mobile */
   }
   .stationery-sheet.studio-preview-card {
-    width: calc(100% - 24px) !important;
+    width: 82% !important;
+    max-width: 420px !important;
     height: 410px !important; /* Shorter to fit inside the 480px glass wrapper */
     margin: 10px auto !important;
     box-sizing: border-box !important;
