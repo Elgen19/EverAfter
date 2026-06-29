@@ -1403,15 +1403,15 @@ button:hover .quiz-option-badge {
 
 @media (max-width: 600px) {
   .envelope-container {
-    transform: scale(calc((100vw - 48px) / 550)) !important;
+    transform: scale(calc((100vw - 80px) / 550)) !important;
     transform-origin: center center;
-    height: calc(330px * ((100vw - 48px) / 550)) !important;
+    height: calc(330px * ((100vw - 80px) / 550)) !important;
     margin: 10px auto !important;
   }
   .envelope-container-preview {
-    transform: scale(calc((100vw - 48px) / 550)) !important;
+    transform: scale(calc((100vw - 80px) / 550)) !important;
     transform-origin: center center;
-    height: calc(330px * ((100vw - 48px) / 550)) !important;
+    height: calc(330px * ((100vw - 80px) / 550)) !important;
     margin: 10px auto !important;
   }
   .envelope-wrapper {
@@ -1941,17 +1941,21 @@ button:hover .quiz-option-badge {
 
 @media (max-width: 600px) {
   .letter-greeting {
-    font-size: 22px !important;
+    font-size: 24px !important;
   }
   .theme-blush .letter-greeting,
   .theme-royal .letter-greeting {
-    font-size: 24px !important;
+    font-size: 26px !important;
   }
   .letter-farewell {
-    font-size: 16px !important;
+    font-size: 18px !important;
   }
   .letter-signature {
-    font-size: 26px !important;
+    font-size: 28px !important;
+  }
+  .letter-body {
+    font-size: 14px !important;
+    line-height: 1.6 !important;
   }
 }
 
