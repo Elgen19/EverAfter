@@ -127,6 +127,7 @@ interface EnvelopeProps {
   isAdjacentToPolaroids?: boolean;
   polaroidsFirst?: boolean;
   preview?: boolean;
+  forcePortal?: boolean;
 
   // Voice Narration
   narration?: {
@@ -162,6 +163,7 @@ export default function Envelope({
   isAdjacentToPolaroids = false,
   polaroidsFirst = false,
   preview = false,
+  forcePortal = false,
   narration,
 }: EnvelopeProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -627,7 +629,7 @@ export default function Envelope({
 
       {/* Expanded Full Screen Stationery Sheet (Fade-in portal style) */}
       {activeSheet === "letter" && mounted && (
-        <MaybePortal preview={preview}>
+        <MaybePortal preview={preview && !forcePortal}>
           <div
             className={`stationery-sheet-portal ${isOnlyStep || !activeStep ? "no-timeline" : ""} ${playfair.variable} ${allura.variable} ${cinzelDec.variable} ${cormorant.variable} ${geist.variable} ${geistMono.variable} ${libreBaskerville.variable} ${lora.variable} ${dmSerifDisplay.variable} ${sourceSerif4.variable}`}
             style={{
@@ -645,7 +647,7 @@ export default function Envelope({
               display: "flex",
               alignItems: isMobileViewport ? "flex-start" : "center",
               justifyContent: "center",
-              paddingTop: isMobileViewport ? (isOnlyStep || !activeStep ? "20px" : "72px") : "0px",
+              paddingTop: isMobileViewport ? (isOnlyStep || !activeStep ? "24px" : "110px") : "0px",
               paddingBottom: isMobileViewport ? "16px" : "0px",
               boxSizing: "border-box",
             }}
@@ -658,7 +660,7 @@ export default function Envelope({
                 width: isMobileViewport ? "85%" : "100%",
                 maxWidth: isMobileViewport ? "440px" : "590px",
                 height: isMobileViewport 
-                  ? (isOnlyStep || !activeStep ? "calc(100dvh - 110px)" : "calc(100dvh - 150px)") 
+                  ? (isOnlyStep || !activeStep ? "calc(100dvh - 120px)" : "calc(100dvh - 185px)") 
                   : (preview ? "92%" : "90vh"),
                 maxHeight: isMobileViewport ? "none" : (preview ? "680px" : "calc(100vh - 80px)"),
                 backgroundColor: "var(--stationery-bg)",
@@ -1314,7 +1316,7 @@ export default function Envelope({
 
       {/* Expanded Full Screen Polaroid Stack (Fade-in portal style) */}
       {activeSheet === "polaroids" && mounted && (
-        <MaybePortal preview={preview}>
+        <MaybePortal preview={preview && !forcePortal}>
           <div
             style={{
               position: preview ? "absolute" : "fixed",

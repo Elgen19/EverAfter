@@ -886,6 +886,7 @@ function LetterReader() {
               handleNextStep();
             }}
             preview={preview}
+            forcePortal={preview}
             narration={data.narration}
           />
         )}

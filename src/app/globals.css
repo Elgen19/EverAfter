@@ -2046,24 +2046,24 @@ button:hover .quiz-option-badge {
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
-    padding-top: 72px !important; /* Stack the paper immediately below the compact timeline dots */
+    padding-top: 110px !important; /* Clears milestones progress bar */
     padding-bottom: 16px !important;
     align-items: flex-start !important;
   }
   .stationery-sheet-portal.no-timeline {
-    padding-top: 20px !important;
+    padding-top: 24px !important;
   }
   .stationery-sheet-portal .stationery-sheet {
     width: 85% !important;
     max-width: 440px !important;
-    height: calc(100dvh - 150px) !important; /* Decreased height to prevent bottom clipping */
+    height: calc(100dvh - 185px) !important; /* Compensates for increased padding top */
     max-height: none !important;
     margin: 0 auto !important; /* Center horizontally */
   }
   .stationery-sheet-portal.no-timeline .stationery-sheet {
     width: 85% !important;
     max-width: 440px !important;
-    height: calc(100dvh - 110px) !important; /* Decreased height to prevent bottom clipping */
+    height: calc(100dvh - 120px) !important;
     max-height: none !important;
     margin: 0 auto !important; /* Center horizontally */
   }
