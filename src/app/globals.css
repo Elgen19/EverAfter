@@ -2028,7 +2028,7 @@ button:hover .quiz-option-badge {
   box-sizing: border-box;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 991px) {
   :root {
     --page-padding-top: 100px;
     --timeline-btn-size: 28px;
